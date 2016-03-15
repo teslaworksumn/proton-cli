@@ -12,8 +12,8 @@ Command line interface to manipulate ProtonLights projects.
   - update metadata
   - edit permissions
   - edit show
-- `sequence new`: Init a sequence
-- `sequence resection`: (Re-)Section a sequence
+- `sequence new [TODO]`: Init a sequence
+- `sequence resection [TODO]`: (Re-)Section a sequence
   - On init, section as section1.
     - Number each section, and don't delete.
     - Use patch to copy changes.
