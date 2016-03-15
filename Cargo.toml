@@ -4,3 +4,4 @@ version = "0.1.0"
 authors = ["Ramith Jayatilleka <ramith.jayatilleka@gmail.com>"]
 
 [dependencies]
+git2 = "0.4.2"
