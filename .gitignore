@@ -1,2 +1,6 @@
+# Rust
 target
 Cargo.lock
+
+# Sublime Text
+*.sublime-workspace
