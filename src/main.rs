@@ -7,5 +7,8 @@ use std::env;
 fn main() {
     let root = env::args().nth(1).unwrap();
 
-    proton_cli::init::make_project_folder(&root);
+    match proton_cli::init::make_project_folder(&root) {
+        Ok(_) => println!("Worked!"),
+        Err(e) => println!("{:?}", e),
+    }
 }
