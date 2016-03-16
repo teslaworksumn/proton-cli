@@ -1,36 +1,32 @@
 //! This module initializes a project.
 
-use std::fs;
-use std::io::{Result, Error, ErrorKind};
-
+use std::{fs};
+use super::Error;
 use git2::Repository;
 
 /// Creates a folder. The folder must not exist or must be empty.
 ///
 /// Impure.
-pub fn make_project_folder(root: &str) -> Result<()> {
+pub fn make_project_folder(root: &str) -> Result<(), Error> {
     // Make the folder - ignore error.
     let _ = fs::create_dir(root);
 
     // Check that the folder is empty
     fs::read_dir(root)
+        .map_err(|err| Error::Io(err))
         .and_then(|iter| {
             let count = iter.count();
             if count == 0 {
                 Ok(())
             } else {
-                dir_not_empty_err(root, count)
+                Err(Error::FolderNotEmpty(root, count))
             }
         })
-}
-
-fn dir_not_empty_err(root: &str, count: usize) -> Result<()> {
-    Err(Error::new(ErrorKind::Other, format!("{} was not empty: {} files exist", root, count)))
 }
 
 /// Initializes a git repository at root.
 ///
 /// Impure.
-pub fn make_repository(root: &str) -> Result<()> {
-    Ok(())
+pub fn make_repository(root: &str) -> Result<(), Error> {
+    Err(Error::TodoErr)
 }
