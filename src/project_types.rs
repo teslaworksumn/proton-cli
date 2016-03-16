@@ -1,3 +1,4 @@
-pub struct Project<'a> {
-    pub name: &'a str,
+#[derive(Debug, RustcEncodable, RustcDecodable)]
+pub struct Project {
+    pub name: String,
 }
