@@ -1,6 +1,6 @@
 //! This module initializes a project.
 
-use std::fs;
+use std::{fs, path};
 use rustc_serialize::json;
 use git2::Repository;
 
@@ -36,9 +36,13 @@ pub fn make_repository(root: &str) -> Result<Repository, Error> {
 }
 
 pub fn make_protonfile(root: &str) -> Result<(), Error> {
-    let pretty_json = json::as_pretty_json(&Project::empty());
+    let project = Project::empty();
+    let pretty_json = json::as_pretty_json(&project);
 
-    x
+    let mut path = path::PathBuf::from(root);
+    path.push("Protonfile.json");
+
+    let protonfile = try!(fs::File::open(path));
 
     Err(Error::TodoErr)
 }

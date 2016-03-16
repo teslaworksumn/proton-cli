@@ -40,14 +40,14 @@ impl<'a> fmt::Display for Error<'a> {
     }
 }
 
-impl From<io::Error> for Error {   
-    fn from(err: io::Error) -> Error {   
+impl<'a> From<io::Error> for Error<'a> {   
+    fn from(err: io::Error) -> Error<'a> {   
         Error::Io(err)   
     }    
 }    
     
-impl From<git2::Error> for Error {   
-    fn from(err: git2::Error) -> Error {   
+impl<'a> From<git2::Error> for Error<'a> {   
+    fn from(err: git2::Error) -> Error<'a> {   
         Error::Git(err)    
     }    
 }
