@@ -1,6 +1,7 @@
 //! This module initializes a project.
 
 use std::fs;
+use git2::Repository;
 use Error;
 
 /// Creates a folder. The folder must not exist or must be empty.
@@ -27,5 +28,7 @@ pub fn make_project_folder(root: &str) -> Result<(), Error> {
 ///
 /// Impure.
 pub fn make_repository(root: &str) -> Result<(), Error> {
-    Err(Error::TodoErr)
+    Repository::init(root)
+        .map_err(|err| Error::Git(err))
+        .map(|_| ())
 }
