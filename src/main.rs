@@ -4,6 +4,7 @@ extern crate proton_cli;
 
 use std::env;
 use proton_cli::init;
+use proton_cli::project_types;
 
 fn main() {
     let root = env::args().nth(1).unwrap();
