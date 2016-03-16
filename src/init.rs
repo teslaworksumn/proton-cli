@@ -2,7 +2,9 @@
 
 use std::fs;
 use git2::Repository;
+
 use Error;
+use project_types::Project;
 
 /// Creates a folder. The folder must not exist or must be empty.
 ///
@@ -30,4 +32,9 @@ pub fn make_project_folder(root: &str) -> Result<(), Error> {
 pub fn make_repository(root: &str) -> Result<Repository, Error> {
     Repository::init(root)
         .map_err(|err| Error::Git(err))
+}
+
+pub fn make_protonfile(root: &str) -> Result<(), Error> {
+    let _ = Project::empty();
+    Err(Error::TodoErr)
 }
