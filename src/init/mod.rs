@@ -1,8 +1,7 @@
 //! This module initializes a project.
 
-use std::{fs};
-use super::Error;
-use git2::Repository;
+use std::fs;
+use Error;
 
 /// Creates a folder. The folder must not exist or must be empty.
 ///
