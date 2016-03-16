@@ -27,8 +27,7 @@ pub fn make_project_folder(root: &str) -> Result<(), Error> {
 /// Initializes a git repository at root.
 ///
 /// Impure.
-pub fn make_repository(root: &str) -> Result<(), Error> {
+pub fn make_repository(root: &str) -> Result<Repository, Error> {
     Repository::init(root)
         .map_err(|err| Error::Git(err))
-        .map(|_| ())
 }
