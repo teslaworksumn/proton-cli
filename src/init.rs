@@ -1,6 +1,7 @@
 //! This module initializes a project.
 
 use std::fs;
+use rustc_serialize::json;
 use git2::Repository;
 
 use Error;
@@ -35,6 +36,9 @@ pub fn make_repository(root: &str) -> Result<Repository, Error> {
 }
 
 pub fn make_protonfile(root: &str) -> Result<(), Error> {
-    let _ = Project::empty();
+    let proj = Project::empty();
+    let serialized = json::encode(&proj);
+    println!("protonfile content: {}", serialized.unwrap());
+
     Err(Error::TodoErr)
 }

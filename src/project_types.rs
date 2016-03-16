@@ -1,5 +1,5 @@
 /// Structure to represent a Proton Project.
-/// This is what will be written to 
+/// This is what will be written to a Protonfile at the project root.
 #[derive(Debug, RustcEncodable, RustcDecodable)]
 pub struct Project {
     pub name: String,
@@ -9,7 +9,7 @@ impl Project {
     /// Creates an empty project
     pub fn empty() -> Project {
         Project {
-            name: "Name This Project".to_owned(),
+            name: "".to_owned(),
         }
     }
 }
