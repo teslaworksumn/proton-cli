@@ -36,9 +36,9 @@ pub fn make_repository(root: &str) -> Result<Repository, Error> {
 }
 
 pub fn make_protonfile(root: &str) -> Result<(), Error> {
-    let proj = Project::empty();
-    let serialized = json::encode(&proj);
-    println!("protonfile content: {}", serialized.unwrap());
+    let pretty_json = json::as_pretty_json(&Project::empty());
+
+    x
 
     Err(Error::TodoErr)
 }

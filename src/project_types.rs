@@ -9,7 +9,7 @@ impl Project {
     /// Creates an empty project
     pub fn empty() -> Project {
         Project {
-            name: "".to_owned(),
+            name: "New Project".to_owned(),
         }
     }
 }
