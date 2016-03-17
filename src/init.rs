@@ -19,12 +19,19 @@ pub fn make_project_folder(root: &Path) -> Result<(), Error> {
     let _ = fs::create_dir(root);
 
     // Check that the folder is empty
-    let count = try!(fs::read_dir(root)).count();
-    if count == 0 {
-        Ok(())
-    } else {
-        Err(Error::FolderNotEmpty(root.to_str().unwrap().to_owned(), count))
-    }
+    fs::read_dir(root)
+        .map(|iter| iter.count())
+        .map_err(Error::Io)
+        .and_then(|count|
+            if count == 0 {
+                Ok(())
+            } else {
+                Err(folder_not_empty(root, count))
+            })
+}
+
+fn folder_not_empty(root: &Path, count: usize) -> Error {
+    Error::FolderNotEmpty(root.to_str().unwrap().to_owned(), count)
 }
 
 /// Writes an empty Protonfile to the root.
@@ -39,16 +46,17 @@ pub fn make_protonfile(root: &Path) -> Result<(), Error> {
     let mut path = PathBuf::from(root);
     path.push("Protonfile.json");
 
-    // Write file
-    let mut protonfile = try!(File::create(&path));
-    Ok(try!(write!(&mut protonfile, "{}\n", pretty_json)))
+    File::create(&path)
+        .and_then(|mut protonfile| write!(protonfile, "{}\n", pretty_json))
+        .map_err(Error::Io)
 }
 
 /// Initializes a git repository at root.
 ///
 /// Impure.
 pub fn make_repository(root: &Path) -> Result<Repository, Error> {
-    Ok(try!(Repository::init(root)))
+    Repository::init(root)
+        .map_err(Error::Git)
 }
 
 /// Stages the Protonfile and makes an initial commit.
