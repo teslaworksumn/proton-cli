@@ -28,3 +28,14 @@ impl error::Error for Error {
        }
    }
 }
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Error::Io(ref err) => write!(f, "IO error occurred: {}", error::Error::description(err)),
+            Error::Git(ref err) => write!(f, "Libgit2 error occurred: {}", error::Error::description(err)),
+            Error::FolderNotEmpty(ref root, count) => write!(f, "{} was not empty: {} files exist", root, count),
+            Error::TodoErr => write!(f, "TodoErr"),
+        }
+    }
+}
