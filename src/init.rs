@@ -37,7 +37,7 @@ pub fn make_repository(root: &str) -> Result<Repository, Error> {
         .map_err(Error::Git)
 }
 
-/// 
+/// Writes an empty Protonfile to the root.
 ///
 /// Impure.
 pub fn make_protonfile(root: &str) -> Result<(), Error> {
@@ -50,4 +50,11 @@ pub fn make_protonfile(root: &str) -> Result<(), Error> {
     let mut protonfile = try!(fs::File::create(path));
     write!(&mut protonfile, "{}\n", pretty_json)
         .map_err(Error::Io)
+}
+
+/// Stages the Protonfile and makes an initial commit.
+///
+/// Impure.
+pub fn initial_commit(root: &str) -> Result<(), Error> {
+    Err(Error::TodoErr)
 }
