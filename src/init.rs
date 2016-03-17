@@ -11,10 +11,26 @@ use git2::{Oid, Repository, Signature};
 use Error;
 use project_types::Project;
 
+/// Initializes a new project at root. The root must either not exist, or must
+/// be an empty directory. This will
+///
+/// 1. Create the directory if it doesn't exist.
+/// 2. Create a Protonfile
+/// 3. Initialize a git repository and commit the protonfile.
+///
+/// Impure.
+pub fn initialize_project(root: &Path, signature: &Signature) -> Result<(), Error> {
+    make_project_folder(root)
+        .and_then(|_| make_protonfile(root))
+        .and_then(|_| make_repository(root))
+        .and_then(|repo| initial_commit(&repo, &signature))
+        .map(|_| ())
+}
+
 /// Creates a folder. The folder must not exist or must be empty.
 ///
 /// Impure.
-pub fn make_project_folder(root: &Path) -> Result<(), Error> {
+fn make_project_folder(root: &Path) -> Result<(), Error> {
     // Make the folder - ignore error.
     let _ = fs::create_dir(root);
 
@@ -37,7 +53,7 @@ fn folder_not_empty(root: &Path, count: usize) -> Error {
 /// Writes an empty Protonfile to the root.
 ///
 /// Impure.
-pub fn make_protonfile(root: &Path) -> Result<(), Error> {
+fn make_protonfile(root: &Path) -> Result<(), Error> {
     // Create content
     let project = Project::empty();
     let pretty_json = json::as_pretty_json(&project);
@@ -54,7 +70,7 @@ pub fn make_protonfile(root: &Path) -> Result<(), Error> {
 /// Initializes a git repository at root.
 ///
 /// Impure.
-pub fn make_repository(root: &Path) -> Result<Repository, Error> {
+fn make_repository(root: &Path) -> Result<Repository, Error> {
     Repository::init(root)
         .map_err(Error::Git)
 }
@@ -62,7 +78,7 @@ pub fn make_repository(root: &Path) -> Result<Repository, Error> {
 /// Stages the Protonfile and makes an initial commit.
 ///
 /// Impure.
-pub fn initial_commit(repo: &Repository, signature: &Signature) -> Result<Oid, Error> {
+fn initial_commit(repo: &Repository, signature: &Signature) -> Result<Oid, Error> {
     let path = Path::new("Protonfile.json");
 
     repo.index()
