@@ -18,7 +18,7 @@ pub fn make_project_folder(root: &str) -> Result<(), Error> {
 
     // Check that the folder is empty
     fs::read_dir(root)
-        .map_err(|err| Error::Io(err))
+        .map_err(Error::Io)
         .and_then(|iter| {
             let count = iter.count();
             if count == 0 {
@@ -37,6 +37,9 @@ pub fn make_repository(root: &str) -> Result<Repository, Error> {
         .map_err(Error::Git)
 }
 
+/// 
+///
+/// Impure.
 pub fn make_protonfile(root: &str) -> Result<(), Error> {
     let project = Project::empty();
     let pretty_json = json::as_pretty_json(&project);
