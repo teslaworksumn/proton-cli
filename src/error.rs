@@ -45,7 +45,7 @@ impl From<io::Error> for Error {
         Error::Io(err)   
     }    
 }    
-    
+
 impl From<git2::Error> for Error {   
     fn from(err: git2::Error) -> Error {   
         Error::Git(err)    
