@@ -6,7 +6,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use rustc_serialize::json;
-use git2::Repository;
+use git2::{Oid, Repository, Signature};
 
 use Error;
 use project_types::Project;
@@ -62,11 +62,20 @@ pub fn make_repository(root: &Path) -> Result<Repository, Error> {
 /// Stages the Protonfile and makes an initial commit.
 ///
 /// Impure.
-pub fn initial_commit(repo: &Repository) -> Result<(), Error> {
+pub fn initial_commit(repo: &Repository, signature: &Signature) -> Result<Oid, Error> {
     let path = Path::new("Protonfile.json");
 
     repo.index()
         .and_then(|mut index| index.add_path(&path).map(|_| index))
-        .and_then(|mut index| index.write())
+        .and_then(|mut index| index.write().map(|_| index))
+        .and_then(|mut index| index.write_tree())
+        .and_then(|oid| repo.find_tree(oid))
+        .and_then(|tree| repo.commit(
+            Some("HEAD"),
+            signature,
+            signature,
+            "Inital commit.",
+            &tree,
+            &vec![]))
         .map_err(Error::Git)
 }
