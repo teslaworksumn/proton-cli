@@ -29,14 +29,6 @@ pub fn make_project_folder(root: &str) -> Result<(), Error> {
         })
 }
 
-/// Initializes a git repository at root.
-///
-/// Impure.
-pub fn make_repository(root: &str) -> Result<Repository, Error> {
-    Repository::init(root)
-        .map_err(Error::Git)
-}
-
 /// Writes an empty Protonfile to the root.
 ///
 /// Impure.
@@ -52,9 +44,17 @@ pub fn make_protonfile(root: &str) -> Result<(), Error> {
         .map_err(Error::Io)
 }
 
+/// Initializes a git repository at root.
+///
+/// Impure.
+pub fn make_repository(root: &str) -> Result<Repository, Error> {
+    Repository::init(root)
+        .map_err(Error::Git)
+}
+
 /// Stages the Protonfile and makes an initial commit.
 ///
 /// Impure.
-pub fn initial_commit(root: &str) -> Result<(), Error> {
+pub fn initial_commit(repo: &Repository) -> Result<(), Error> {
     Err(Error::TodoErr)
 }
