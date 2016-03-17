@@ -20,6 +20,9 @@ fn main() {
 fn init(root: &Path) -> Result<(), Error> {
     init::make_project_folder(root)
         .and_then(|_| init::make_protonfile(root))
-        .and_then(|_| init::make_repository(root))
-        .and_then(|repo| init::initial_commit(&repo))
+        .and_then(|protonfile| {
+            let repo = try!(init::make_repository(root));
+            Ok((repo, protonfile))
+        })
+        .and_then(|(repo, protonfile)| init::initial_commit(&repo, protonfile.as_path()))
 }
