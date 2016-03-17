@@ -39,15 +39,3 @@ impl fmt::Display for Error {
         }
     }
 }
-
-impl From<io::Error> for Error {   
-    fn from(err: io::Error) -> Error {   
-        Error::Io(err)   
-    }    
-}    
-
-impl From<git2::Error> for Error {   
-    fn from(err: git2::Error) -> Error {   
-        Error::Git(err)    
-    }    
-}

@@ -65,7 +65,8 @@ pub fn make_repository(root: &Path) -> Result<Repository, Error> {
 pub fn initial_commit(repo: &Repository) -> Result<(), Error> {
     let path = Path::new("Protonfile.json");
 
-    Ok(try!(repo.index()
+    repo.index()
         .and_then(|mut index| index.add_path(&path).map(|_| index))
-        .and_then(|mut index| index.write())))
+        .and_then(|mut index| index.write())
+        .map_err(Error::Git)
 }
