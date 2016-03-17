@@ -1,6 +1,7 @@
 /// Executable for proton_cli
 
 extern crate proton_cli;
+extern crate git2;
 
 use std::env;
 use proton_cli::{init, Error};

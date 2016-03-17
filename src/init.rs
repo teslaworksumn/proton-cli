@@ -24,7 +24,7 @@ pub fn make_project_folder(root: &str) -> Result<(), Error> {
             if count == 0 {
                 Ok(())
             } else {
-                Err(Error::FolderNotEmpty(root, count))
+                Err(Error::FolderNotEmpty(root.to_owned(), count))
             }
         })
 }
