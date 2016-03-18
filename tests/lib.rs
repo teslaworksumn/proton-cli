@@ -1,6 +1,3 @@
-#![feature(plugin)]
-#![plugin(stainless)]
-
 extern crate proton_cli;
 extern crate tempdir;
 extern crate git2;
@@ -12,28 +9,41 @@ pub use std::path::{Path, PathBuf};
 pub use std::io::Read;
 
 pub use git2::{Repository, Signature, Time};
-pub use tempdir::TempDir;
 pub use rustc_serialize::json;
+pub use tempdir::TempDir;
 
 pub use proton_cli::{Error, Project, initialize_project};
 
-describe! initialize_project {
-    before_each {
-        let signature = Signature::now("tester", "t@example.com").unwrap();
-        let root_dir = TempDir::new("proton_cli_tests").unwrap();
-    }
+mod initialize_project {
+    use super::*;
 
-    it "works with an empty directory" {
+    #[test]
+    fn works_with_an_empty_directory() {
+        let (signature, root_dir) = setup();
+
         let root = root_dir.path();
         initialize_project(root, &signature).expect("Initialization failed");
+
+        assert_initialized(root);
     }
 
-    it "works with a non-existent directory" {
+    #[test]
+    fn works_with_an_non_existent_directory() {
+        let (signature, root_dir) = setup();
+
         let root = &(root_dir.path().join("nonexistent"));
         initialize_project(root, &signature).expect("Initialization failed");
+
+        assert_initialized(root);
     }
 
-    after_each {
+    fn setup() -> (Signature<'static>, TempDir) {
+        let signature = Signature::now("tester", "t@example.com").unwrap();
+        let root_dir = TempDir::new("proton_cli_tests").unwrap();
+        (signature, root_dir)
+    }
+
+    fn assert_initialized(root: &Path) {
         // Assert that protonfile exists
         let protonfile_path = root.join(Path::new("Protonfile.json"));
         assert!(protonfile_path.is_file(), "protonfile must exist");
@@ -48,13 +58,14 @@ describe! initialize_project {
             .and_then(|content| json::decode(&content).map_err(Error::JsonDecode))
             .expect("Loading protonfile into Project failed"));
 
-        // Open a git repo
+        // Open the git repo and master branch
         let repo = Repository::open(root).unwrap();
         let commit = repo.refname_to_id("refs/heads/master")
             .and_then(|oid| repo.find_commit(oid))
             .expect("Finding master failed");
         let tree = commit.tree().expect("Opening master tree failed");
 
+        // Assert master is correct
         assert!(0 == commit.parents().count(), "master must have 0 parents");
         assert!(tree.get_name("Protonfile.json").is_some(), "master must have protonfile");
     }

@@ -13,5 +13,4 @@ git2 = "0.4.2"
 rustc-serialize = "0.3.18"
 
 [dev-dependencies]
-stainless = "0.1.4"
 tempdir = "0.3.4"
