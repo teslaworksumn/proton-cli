@@ -9,6 +9,7 @@ extern crate rustc_serialize;
 pub use std::{env, fs};
 pub use std::fs::File;
 pub use std::path::{Path, PathBuf};
+pub use std::io::Read;
 
 pub use git2::{Repository, Signature, Time};
 pub use tempdir::TempDir;
@@ -37,16 +38,17 @@ describe! initialize_project {
         assert_eq!(2, fs::read_dir(root).unwrap().count());
 
         // Check that protonfile has right content
-        let project = File::open(&protonfile_path)
-            .and_then(|protonfile| {
+        assert!(File::open(&protonfile_path)
+            .and_then(|mut protonfile| {
                 let mut content = "".to_owned();
                 let read_result = protonfile.read_to_string(&mut content);
                 //read_result.and(Ok(content))
                 read_result.map(|_| content)
             })
             .map_err(Error::Io)
-            .and_then(|content| json::decode(&content).map_err(Error::Json))
-            .and_then(|project: Project| )
+            .and_then(|content| json::decode(&content).map_err(Error::JsonDecode))
+            .and_then(|project: Project| Ok(true))
+            .expect("Protonfile check failed"));
 
         // Open a git repo
         // Check that there is exactly 1 commit
