@@ -19,8 +19,10 @@ use project_types::Project;
 /// 3. Initialize a git repository and commit the protonfile.
 ///
 /// Impure.
-pub fn initialize_project<P: AsRef<Path>>(path: P, signature: &Signature) -> Result<(), Error> {
+pub fn initialize_project<P: AsRef<Path>>(path: P) -> Result<(), Error> {
     let root = path.as_ref();
+    let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
+
     make_project_folder(root)
         .and_then(|_| make_protonfile(root))
         .and_then(|_| make_repository(root))

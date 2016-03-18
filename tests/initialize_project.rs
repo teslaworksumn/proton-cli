@@ -7,7 +7,7 @@ use std::fs::File;
 use std::path::Path;
 use std::io::Read;
 
-use git2::{Repository, Signature};
+use git2::Repository;
 use rustc_serialize::json;
 use tempdir::TempDir;
 
@@ -15,20 +15,20 @@ use proton_cli::{Error, Project, initialize_project};
 
 #[test]
 fn works_with_an_empty_root() {
-    let (signature, root_dir) = setup();
+    let root_dir = setup();
 
     let root = root_dir.path();
-    initialize_project(root, &signature).expect("Initialization failed");
+    initialize_project(root).expect("Initialization failed");
 
     assert_initialized(root);
 }
 
 #[test]
 fn works_with_an_non_existent_root() {
-    let (signature, root_dir) = setup();
+    let root_dir = setup();
 
     let root = &root_dir.path().join("nonexistent");
-    initialize_project(root, &signature).expect("Initialization failed");
+    initialize_project(root).expect("Initialization failed");
 
     assert_initialized(root);
 }
@@ -36,17 +36,15 @@ fn works_with_an_non_existent_root() {
 #[test]
 #[should_panic(expected = "Initialization failed")]
 fn fails_with_a_non_empty_directory() {
-    let (signature, root_dir) = setup();
+    let root_dir = setup();
 
     let root = root_dir.path();
     let _ = File::create(&root.join("unexpected")).expect("Making unexpected file failed");
-    initialize_project(root, &signature).expect("Initialization failed");
+    initialize_project(root).expect("Initialization failed");
 }
 
-fn setup() -> (Signature<'static>, TempDir) {
-    let signature = Signature::now("tester", "t@example.com").unwrap();
-    let root_dir = TempDir::new("proton_cli_tests").unwrap();
-    (signature, root_dir)
+fn setup() -> TempDir {
+    TempDir::new("proton_cli_tests").unwrap()
 }
 
 fn assert_initialized(root: &Path) {
