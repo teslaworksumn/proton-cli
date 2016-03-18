@@ -28,6 +28,11 @@ describe! initialize_project {
         initialize_project(root, &signature).expect("Initialization failed");
     }
 
+    it "works with a non-existent directory" {
+        let root = &(root_dir.path().join("nonexistent"));
+        initialize_project(root, &signature).expect("Initialization failed");
+    }
+
     after_each {
         // Assert that protonfile exists
         let protonfile_path = root.join(Path::new("Protonfile.json"));

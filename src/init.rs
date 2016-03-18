@@ -19,7 +19,8 @@ use project_types::Project;
 /// 3. Initialize a git repository and commit the protonfile.
 ///
 /// Impure.
-pub fn initialize_project(root: &Path, signature: &Signature) -> Result<(), Error> {
+pub fn initialize_project<P: AsRef<Path>>(path: P, signature: &Signature) -> Result<(), Error> {
+    let root = path.as_ref();
     make_project_folder(root)
         .and_then(|_| make_protonfile(root))
         .and_then(|_| make_repository(root))
