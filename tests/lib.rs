@@ -2,6 +2,9 @@
 #![plugin(stainless)]
 
 extern crate proton_cli;
+extern crate tempdir;
+
+use proton_cli::{Error, initialize_project};
 
 describe! initialize_project {
     before_each {
@@ -12,9 +15,13 @@ describe! initialize_project {
         println!("After");
     }
 
-    failing "works" {
-        println!("Hello");
-        panic!("Woah");
+    it "works with no directory" {
+    }
+
+    it "works with an empty directory" {
+    }
+
+    it "fails with a non-empty directory" {
     }
 
 }

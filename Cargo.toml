@@ -2,8 +2,16 @@
 name = "proton_cli"
 version = "0.1.0"
 authors = ["Ramith Jayatilleka <ramith.jayatilleka@gmail.com>"]
+description = "Command line utility for managing ProtonLights projects."
+homepage = "https://github.com/ProtonLights/cli"
+repository = "https://github.com/ProtonLights/cli"
+readme = "README.md"
+license = "MIT"
 
 [dependencies]
 git2 = "0.4.2"
 rustc-serialize = "0.3.18"
+
+[dev-dependencies]
 stainless = "0.1.4"
+tempdir = "0.3.4"
