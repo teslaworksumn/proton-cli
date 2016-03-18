@@ -8,3 +8,4 @@ mod error;
 // Re-exports
 pub use error::*;
 pub use init::*;
+pub use project_types::*;

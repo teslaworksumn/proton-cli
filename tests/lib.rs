@@ -4,14 +4,17 @@
 extern crate proton_cli;
 extern crate tempdir;
 extern crate git2;
+extern crate rustc_serialize;
 
 pub use std::{env, fs};
+pub use std::fs::File;
 pub use std::path::{Path, PathBuf};
 
 pub use git2::{Repository, Signature, Time};
 pub use tempdir::TempDir;
+pub use rustc_serialize::json;
 
-pub use proton_cli::{Error, initialize_project};
+pub use proton_cli::{Error, Project, initialize_project};
 
 describe! initialize_project {
     before_each {
@@ -34,6 +37,16 @@ describe! initialize_project {
         assert_eq!(2, fs::read_dir(root).unwrap().count());
 
         // Check that protonfile has right content
+        let project = File::open(&protonfile_path)
+            .and_then(|protonfile| {
+                let mut content = "".to_owned();
+                let read_result = protonfile.read_to_string(&mut content);
+                //read_result.and(Ok(content))
+                read_result.map(|_| content)
+            })
+            .map_err(Error::Io)
+            .and_then(|content| json::decode(&content).map_err(Error::Json))
+            .and_then(|project: Project| )
 
         // Open a git repo
         // Check that there is exactly 1 commit
