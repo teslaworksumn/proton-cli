@@ -38,18 +38,26 @@ describe! initialize_project {
         assert_eq!(2, fs::read_dir(root).unwrap().count());
 
         // Check that protonfile has right content
-        assert_eq!(Project::empty(), File::open(&protonfile_path)
+        let protonfile_project = File::open(&protonfile_path)
             .and_then(|mut protonfile| {
                 let mut content = "".to_owned();
                 protonfile.read_to_string(&mut content).map(|_| content)
             })
             .map_err(Error::Io)
-            .and_then(|content|
-                json::decode(&content).map_err(Error::JsonDecode))
-            .expect("Failed to load protonfile into Project"));
+            .and_then(|content| json::decode(&content).map_err(Error::JsonDecode))
+            .expect("Failed to load protonfile into Project");
+        assert_eq!(Project::empty(), protonfile_project);
 
         // Open a git repo
-        // Check that there is exactly 1 commit
+        let repo = Repository::open(root).unwrap();
+        match repo.refname_to_id("HEAD")
+            .and_then(|oid| repo.find_commit(oid))
+            .and_then(|commit| Ok(commit.message().unwrap().to_owned())) {
+            Ok(c) => println!("{:?}", c),
+            Err(e) => println!("{:?}", e),
+        }
+        panic!("Hellooerogerv");
+        // Check that master has exactly 1 commit
         // Check that it includes the protonfile
         // Check that it has the right signature
     }
