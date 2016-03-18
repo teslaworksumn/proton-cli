@@ -32,9 +32,9 @@ describe! initialize_project {
         // Assert that exactly Protonfile.json and .git exist.
         let protonfile_path = root.join(Path::new("Protonfile.json"));
         let git_path = root.join(Path::new(".git"));
-        assert!(protonfile_path.is_file());
-        assert!(git_path.is_dir());
-        assert_eq!(2, fs::read_dir(root).unwrap().count());
+        assert!(protonfile_path.is_file(), "protonfile must exist");
+        assert!(git_path.is_dir(), ".git must exist");
+        assert!(2 == fs::read_dir(root).unwrap().count(), "root must have 2 files");
 
         // Check that protonfile has right content
         assert_eq!(Project::empty(), File::open(&protonfile_path)
@@ -53,11 +53,13 @@ describe! initialize_project {
             .expect("Finding master failed");
         let master_tree = master_head.tree().expect("Opening master tree failed");
 
-        // Check that master has exactly 1 commit
-        assert_eq!(0, master_head.parents().count());;
+        // Check that master has only the initial commit.
+        assert_eq!("Initial commit.", master_head.message().unwrap());
+        assert!(0 == master_head.parents().count(), "master must have 0 parents");
 
         // Check that it includes the protonfile
-        
+        assert!(1 == master_tree.len(), "master must have 1 entry");
+        assert!(master_tree.get_name("Protonfile.json").is_some(), "master must have protonfile");
 
         // Check that it has the right signature
     }
