@@ -13,3 +13,12 @@ impl Project {
         }
     }
 }
+
+impl PartialEq for Project {
+    fn eq(&self, other: &Project) -> bool {
+        self.name == other.name
+    }
+}
+
+impl Eq for Project {
+}

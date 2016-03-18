@@ -38,17 +38,15 @@ describe! initialize_project {
         assert_eq!(2, fs::read_dir(root).unwrap().count());
 
         // Check that protonfile has right content
-        assert!(File::open(&protonfile_path)
+        assert_eq!(Project::empty(), File::open(&protonfile_path)
             .and_then(|mut protonfile| {
                 let mut content = "".to_owned();
-                let read_result = protonfile.read_to_string(&mut content);
-                //read_result.and(Ok(content))
-                read_result.map(|_| content)
+                protonfile.read_to_string(&mut content).map(|_| content)
             })
             .map_err(Error::Io)
-            .and_then(|content| json::decode(&content).map_err(Error::JsonDecode))
-            .and_then(|project: Project| Ok(true))
-            .expect("Protonfile check failed"));
+            .and_then(|content|
+                json::decode(&content).map_err(Error::JsonDecode))
+            .expect("Failed to load protonfile into Project"));
 
         // Open a git repo
         // Check that there is exactly 1 commit
