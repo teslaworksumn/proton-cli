@@ -90,7 +90,7 @@ fn initial_commit(repo: &Repository, signature: &Signature) -> Result<Oid, Error
             Some("HEAD"),
             signature,
             signature,
-            "Inital commit.",
+            "Initial commit.",
             &tree,
             &vec![]))
         .map_err(Error::Git)
