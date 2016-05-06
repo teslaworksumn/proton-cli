@@ -18,3 +18,8 @@ Command line interface to manipulate ProtonLights projects.
     - Number each section, and don't delete.
     - Use patch to copy changes.
   - Use git --find-renames=100%?
+
+## Native Dependencies
+
+- cmake
+- libssl-dev
