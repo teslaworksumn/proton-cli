@@ -7,6 +7,9 @@ use std::env;
 use std::path::Path;
 
 fn main() {
+    if env::args().count() != 2 {
+        panic!("Invalid number of arguments given");
+    }
     let root_arg = env::args().nth(1).unwrap();
     let root = Path::new(&root_arg);
 
