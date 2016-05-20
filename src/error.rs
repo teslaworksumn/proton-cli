@@ -8,6 +8,7 @@ pub enum Error {
     Git(git2::Error),
     JsonDecode(json::DecoderError),
     FolderNotEmpty(String, usize),
+    ArgumentNotFound,
     TodoErr,
 }
 
@@ -18,6 +19,7 @@ impl error::Error for Error {
             Error::Git(_) => "Libgit2 error occurred",
             Error::JsonDecode(_) => "Json decoding error occurred",
             Error::FolderNotEmpty(_, _) => "Root folder was not empty",
+            Error::ArgumentNotFound => "Argument not found/matched",
             Error::TodoErr => "Todo",
         }
     }
@@ -28,6 +30,7 @@ impl error::Error for Error {
            Error::Git(ref err) => Some(err),
            Error::JsonDecode(ref err) => Some(err),
            Error::FolderNotEmpty(_, _) => None,
+           Error::ArgumentNotFound => None,
            Error::TodoErr => None,
        }
    }
@@ -44,6 +47,8 @@ impl fmt::Display for Error {
                 "Json decoding error occurred: {}", error::Error::description(err)),
             Error::FolderNotEmpty(ref root, count) => write!(f,
                 "{} was not empty: {} files exist", root, count),
+            Error::ArgumentNotFound => write!(f,
+                "Argument not found. Did you type it correctly?"),
             Error::TodoErr => write!(f, "TodoErr"),
         }
     }
