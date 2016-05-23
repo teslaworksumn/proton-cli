@@ -8,7 +8,9 @@ pub enum Error {
     Git(git2::Error),
     JsonDecode(json::DecoderError),
     FolderNotEmpty(String, usize),
-    ArgumentNotFound,
+    InvalidPublicKey(String),
+    LoadProjectError,
+    DuplicateUser(String, String),
     TodoErr,
 }
 
@@ -19,7 +21,9 @@ impl error::Error for Error {
             Error::Git(_) => "Libgit2 error occurred",
             Error::JsonDecode(_) => "Json decoding error occurred",
             Error::FolderNotEmpty(_, _) => "Root folder was not empty",
-            Error::ArgumentNotFound => "Argument not found/matched",
+            Error::InvalidPublicKey(_) => "Invalid public key",
+            Error::LoadProjectError => "Loading project failed",
+            Error::DuplicateUser(_, _) => "User already exists",
             Error::TodoErr => "Todo",
         }
     }
@@ -30,7 +34,9 @@ impl error::Error for Error {
            Error::Git(ref err) => Some(err),
            Error::JsonDecode(ref err) => Some(err),
            Error::FolderNotEmpty(_, _) => None,
-           Error::ArgumentNotFound => None,
+           Error::InvalidPublicKey(_) => None,
+           Error::LoadProjectError => None,
+           Error::DuplicateUser(_, _) => None,
            Error::TodoErr => None,
        }
    }
@@ -47,8 +53,11 @@ impl fmt::Display for Error {
                 "Json decoding error occurred: {}", error::Error::description(err)),
             Error::FolderNotEmpty(ref root, count) => write!(f,
                 "{} was not empty: {} files exist", root, count),
-            Error::ArgumentNotFound => write!(f,
-                "Argument not found. Did you type it correctly?"),
+            Error::InvalidPublicKey(ref key) => write!(f, 
+                "Public key '{}' is invalid", key),
+            Error::LoadProjectError => write!(f, "Loading project failed"),
+            Error::DuplicateUser(ref key, ref user) => write!(f,
+                "Duplicate user '{}' or key '{}'", user, key),
             Error::TodoErr => write!(f, "TodoErr"),
         }
     }

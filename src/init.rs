@@ -1,15 +1,14 @@
 //! This module initializes a project.
 
 use std::fs;
-use std::fs::File;
 use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
-use rustc_serialize::json;
 use git2::{Oid, Repository, Signature};
 
+use utils;
 use Error;
-use project_types::Project;
+use Project;
 
 /// Initializes a new project at root. The root must either not exist, or must
 /// be an empty directory. This will
@@ -57,17 +56,8 @@ fn folder_not_empty(root: &Path, count: usize) -> Error {
 ///
 /// Impure.
 fn make_protonfile(root: &Path) -> Result<(), Error> {
-    // Create content
     let project = Project::empty();
-    let pretty_json = json::as_pretty_json(&project);
-
-    // Make path
-    let mut path = PathBuf::from(root);
-    path.push("Protonfile.json");
-
-    File::create(&path)
-        .and_then(|mut protonfile| write!(protonfile, "{}\n", pretty_json))
-        .map_err(Error::Io)
+    utils::write_protonfile(&project, Some(root))
 }
 
 /// Initializes a git repository at root.
