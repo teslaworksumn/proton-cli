@@ -10,6 +10,7 @@ license = "MIT"
 
 [dependencies]
 docopt = "0.6"
+openssl = "~0.7"
 git2 = "0.4.2"
 rustc-serialize = "0.3.18"
 

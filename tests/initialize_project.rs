@@ -9,13 +9,13 @@ use std::io::Read;
 
 use git2::Repository;
 use rustc_serialize::json;
-use tempdir::TempDir;
 
 use proton_cli::{Error, Project, initialize_project};
+mod common;
 
 #[test]
 fn works_with_an_empty_root() {
-    let root_dir = setup();
+    let root_dir = common::setup();
 
     let root = root_dir.path();
     initialize_project(root).expect("Initialization failed");
@@ -25,7 +25,7 @@ fn works_with_an_empty_root() {
 
 #[test]
 fn works_with_an_non_existent_root() {
-    let root_dir = setup();
+    let root_dir = common::setup();
 
     let root = &root_dir.path().join("nonexistent");
     initialize_project(root).expect("Initialization failed");
@@ -36,15 +36,11 @@ fn works_with_an_non_existent_root() {
 #[test]
 #[should_panic(expected = "Initialization failed")]
 fn fails_with_a_non_empty_directory() {
-    let root_dir = setup();
+    let root_dir = common::setup();
 
     let root = root_dir.path();
     let _ = File::create(&root.join("unexpected")).expect("Making unexpected file failed");
     initialize_project(root).expect("Initialization failed");
-}
-
-fn setup() -> TempDir {
-    TempDir::new("proton_cli_tests").unwrap()
 }
 
 fn assert_initialized(root: &Path) {

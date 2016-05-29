@@ -1,7 +1,6 @@
 # Rust
 target
 target-install
-Cargo.lock
 
 # Sublime Text
 *.sublime-workspace

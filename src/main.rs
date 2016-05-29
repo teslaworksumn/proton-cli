@@ -17,6 +17,7 @@ Command-line interface for Proton
 Usage:
   ./proton init <folder>
   ./proton new-user <name> <public-key>
+  ./proton id-user <private-key>
   ./proton (-h | --help)
 
 Options:
@@ -27,8 +28,10 @@ Options:
 struct Args {
 	cmd_init: bool,
 	cmd_new_user: bool,
+	cmd_id_user: bool,
 	arg_folder: Option<String>,
 	arg_public_key: Option<String>,
+	arg_private_key: Option<String>,
 	arg_name: Option<String>,
 }
 
@@ -42,6 +45,7 @@ fn main() {
 	let command: fn(Args) -> Result<(), Error> = match env::args().nth(1).unwrap().as_ref() {
 		"init" => run_init,
 		"new-user" => run_new_user,
+		"id-user" => run_id_user,
 		_ => panic!("Invalid first argument"),
 	};
 
@@ -63,5 +67,11 @@ fn run_new_user(args: Args) -> Result<(), Error> {
 	let public_key = args.arg_public_key.unwrap();
 	let public_key_path = Path::new(&public_key);
 	let name = args.arg_name.unwrap();
-	proton_cli::new_user(&public_key_path, name)
+	proton_cli::new_user(&public_key_path, &name)
+}
+
+fn run_id_user(args: Args) -> Result<(), Error> {
+	let private_key = args.arg_private_key.unwrap();
+	try!(proton_cli::id_user(&private_key)
+		.map(|_| Ok(())))
 }
