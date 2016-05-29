@@ -8,6 +8,8 @@ use self::openssl::crypto::rsa::RSA as openssl_RSA;
 use self::openssl::crypto::hash::Type as openssl_HashType;
 use self::openssl::ssl::error::SslError as openssl_Error;
 
+use git2::Signature;
+
 use Error;
 use User;
 use utils;
@@ -21,12 +23,21 @@ use utils;
 ///
 /// Impure.
 pub fn new_user<P: AsRef<Path>>(public_key_path: P, name: &str) -> Result<(), Error> {
+    // Add user
     let pub_key = try!(get_public_key(public_key_path));
     let project = try!(utils::read_protonfile(None::<P>));
-    let new_project = try!(project.add_user(name, &pub_key));
-    utils::write_protonfile(&new_project, None::<P>)
-}
+    let new_project = try!(project.add_user(&name, &pub_key));
+    try!(utils::write_protonfile(&new_project, None::<P>));
 
+    // Commit changes
+    let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
+    let msg = format!("Adding {} as new user", name);
+    let pf_path = Path::new("Protonfile.json");
+    let repo_path: Option<P> = None;
+
+    utils::commit_file(&pf_path, repo_path, &signature, &msg)
+        .map(|_| ())
+}
 /// Identifies a user by their private SSH key by finding the
 /// corresponding public key in the project. This private key
 /// acts like the user's password, and should be protected.
@@ -78,3 +89,4 @@ fn invalid_pub_key_error(key: &str) -> Error {
 fn ssl_error(e: openssl_Error) -> Error {
     Error::Ssl(e)
 }
+
