@@ -4,15 +4,17 @@
 
 extern crate proton_cli;
 extern crate tempdir;
+extern crate git2;
 
 pub mod rsa_keys;
 
 use std::env;
 use std::fs::File;
-use std::io::{Write};
+use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use tempdir::TempDir;
+use self::git2::Repository;
 
 use proton_cli::{utils, Project, User};
 
@@ -51,6 +53,43 @@ pub fn assert_user_added<P: AsRef<Path>>(public_key_path: P, name: &str) {
         public_key: pub_key_contents,
     };
     assert_eq!(project.user_exists(&u), true);
+}
+
+/// Check that changes were actually committed to the repository
+pub fn assert_repo_no_modified_files<P: AsRef<Path>>(repo_path: P) {
+    let repo = Repository::open(&repo_path).unwrap();
+
+    let commit = repo.refname_to_id("refs/heads/master")
+        .and_then(|oid| repo.find_commit(oid))
+        .expect("Finding master failed");
+    let tree = commit.tree().expect("Opening master tree failed");
+
+    let _ = repo.diff_tree_to_workdir_with_index(Some(&tree), None)
+        .and_then(|diff| diff.stats())
+        .map(|stats| {
+            assert!(0 == stats.files_changed(), "No changes should be staged");
+        });
+}
+
+/// Creates a PathBuf that points to the cli/tests directory
+/// Needed because many tests change the current directory,
+/// which makes env::current_dir() point to a temporary directory
+/// that no longer exists instead of the present working directory (pwd)
+///
+/// Impure.
+pub fn get_test_directory_path() -> PathBuf {
+    // The first argument is the path to the executable (most of the time)
+    // This gets us to /.../cli/target/debug/new_sequence-e77ba7396396e159 (or whatever)
+    let exec_path_str = env::args().nth(0).expect("First argument not a valid path");
+    // Now we work our way back up to cli/
+    let mut test_dir_path = PathBuf::from(&exec_path_str);
+    test_dir_path.pop();
+    test_dir_path.pop();
+    test_dir_path.pop();
+    // and back down to cli/tests
+    test_dir_path.push("tests");
+
+    test_dir_path
 }
 
 /// Creates a temporary directory to run a test out of

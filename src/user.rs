@@ -36,7 +36,6 @@ pub fn new_user<P: AsRef<Path>>(public_key_path: P, name: &str) -> Result<(), Er
     let repo_path: Option<P> = None;
 
     utils::commit_file(&pf_path, repo_path, &signature, &msg)
-        .map(|_| ())
 }
 /// Identifies a user by their private SSH key by finding the
 /// corresponding public key in the project. This private key

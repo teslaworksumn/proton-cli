@@ -1,6 +1,5 @@
 //! This module initializes a project.
 
-use std::fs;
 use std::io::Write;
 use std::path::Path;
 
@@ -22,34 +21,11 @@ pub fn initialize_project<P: AsRef<Path>>(path: P) -> Result<(), Error> {
     let root = path.as_ref();
     let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
 
-    make_project_folder(root)
+    utils::create_empty_directory(root)
         .and_then(|_| make_protonfile(root))
         .and_then(|_| make_repository(root))
         .and_then(|repo| initial_commit(&repo, &signature))
         .map(|_| ())
-}
-
-/// Creates a folder. The folder must not exist or must be empty.
-///
-/// Impure.
-fn make_project_folder(root: &Path) -> Result<(), Error> {
-    // Make the folder - ignore error.
-    let _ = fs::create_dir(root);
-
-    // Check that the folder is empty
-    fs::read_dir(root)
-        .map(|iter| iter.count())
-        .map_err(Error::Io)
-        .and_then(|count|
-            if count == 0 {
-                Ok(())
-            } else {
-                Err(folder_not_empty(root, count))
-            })
-}
-
-fn folder_not_empty(root: &Path, count: usize) -> Error {
-    Error::FolderNotEmpty(root.to_str().unwrap().to_owned(), count)
 }
 
 /// Writes an empty Protonfile to the root.

@@ -18,6 +18,7 @@ Usage:
   ./proton init <folder>
   ./proton new-user <name> <public-key>
   ./proton id-user <private-key>
+  ./proton new-sequence <name> <music-file>
   ./proton (-h | --help)
 
 Options:
@@ -29,10 +30,12 @@ struct Args {
 	cmd_init: bool,
 	cmd_new_user: bool,
 	cmd_id_user: bool,
+	cmd_new_sequence: bool,
 	arg_folder: Option<String>,
 	arg_public_key: Option<String>,
 	arg_private_key: Option<String>,
 	arg_name: Option<String>,
+	arg_music_file: Option<String>,
 }
 
 fn main() {
@@ -46,6 +49,7 @@ fn main() {
 		"init" => run_init,
 		"new-user" => run_new_user,
 		"id-user" => run_id_user,
+		"new-sequence" => run_new_sequence,
 		_ => panic!("Invalid first argument"),
 	};
 
@@ -74,4 +78,11 @@ fn run_id_user(args: Args) -> Result<(), Error> {
 	let private_key = args.arg_private_key.unwrap();
 	try!(proton_cli::id_user(&private_key)
 		.map(|_| Ok(())))
+}
+
+fn run_new_sequence(args: Args) -> Result<(), Error> {
+	let name = args.arg_name.unwrap();
+	let music_file = args.arg_music_file.unwrap();
+	let music_file_path = Path::new(&music_file);
+	proton_cli::new_sequence(&name, &music_file_path)
 }

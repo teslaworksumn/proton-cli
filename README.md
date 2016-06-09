@@ -23,3 +23,6 @@ Command line interface to manipulate ProtonLights projects.
 
 - cmake
 - libssl-dev
+- libcsfml-dev
+- libsfml-audio2.3v5
+- libcsfml-audio2.3

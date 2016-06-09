@@ -1,15 +1,9 @@
 extern crate proton_cli;
 extern crate tempdir;
-extern crate git2;
 
 mod common;
 
-use std::path::Path;
-
-use git2::Repository;
-
 use common::rsa_keys::TestKey;
-use proton_cli::Error;
 
 
 /// Warning: This test changes env::current_directory
@@ -35,7 +29,7 @@ fn works_with_new_and_existing_protonfile() {
     common::assert_user_added(key_path_a.as_path(), "Test User");
 
     // Make sure the change was committed
-    assert_commits_added(root.path());
+    common::assert_repo_no_modified_files(&root.path());
 
     // Now try adding another user
     let _ = proton_cli::new_user(&key_path_b.as_path(), &user_name2)
@@ -46,7 +40,7 @@ fn works_with_new_and_existing_protonfile() {
     common::assert_user_added(key_path_b.as_path(), &user_name2);
 
     // Make sure the change was committed
-    assert_commits_added(root.path());
+    common::assert_repo_no_modified_files(&root.path());
 }
 
 #[test]
@@ -138,28 +132,5 @@ fn fails_with_duplicate_user_name() {
     // Now try adding another user with the same key
     let _ = proton_cli::new_user(&key_path_b.as_path(), "Test User")
         .expect("Error adding second user");
-}
-
-/// Check that the new user changes were actually committed to the repository
-fn assert_commits_added<P: AsRef<Path>>(repo_path: P) {
-    // Open the git repo and master branch
-    let repo = Repository::open(repo_path).unwrap();
-    let commit = repo.refname_to_id("refs/heads/master")
-        .and_then(|oid| repo.find_commit(oid))
-        .expect("Finding master failed");
-    let tree = commit.tree().expect("Opening master tree failed");
-
-    // Check that there aren't any non-commited changes
-    let _ = repo.diff_tree_to_workdir_with_index(Some(&tree), None)
-        .and_then(|diff| diff.stats())
-        .map(|stats| {
-            assert!(0 == stats.files_changed(), "No changes should be staged");
-        })
-        .map_err(Error::Git);
-
-    // Assert master is correct
-    assert!(1 == commit.parents().count(), "master must have 1 parent");
-    
-    assert!(tree.get_name("Protonfile.json").is_some(), "master must have protonfile");
 }
 
