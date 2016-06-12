@@ -1,12 +1,9 @@
 //! This module manages project users
-extern crate openssl;
-
 use std::path::Path;
 use std::fs::File;
 use std::io::Cursor;
-use self::openssl::crypto::rsa::RSA as openssl_RSA;
-use self::openssl::crypto::hash::Type as openssl_HashType;
-use self::openssl::ssl::error::SslError as openssl_Error;
+use openssl::crypto::rsa::RSA as openssl_RSA;
+use openssl::crypto::hash::Type as openssl_HashType;
 
 use git2::Signature;
 
@@ -48,10 +45,10 @@ pub fn id_user<P: AsRef<Path>>(private_key_path: P) -> Result<User, Error> {
     let mut private_key_file = try!(File::open(&private_key_path).map_err(Error::Io));
     
     let private_key = try!(openssl_RSA::private_key_from_pem(&mut private_key_file)
-        .map_err(ssl_error));
+        .map_err(Error::Ssl));
 
     let signature = try!(private_key.sign(openssl_HashType::MD5, &test_data)
-        .map_err(ssl_error));
+        .map_err(Error::Ssl));
 
     let project = try!(utils::read_protonfile(None::<P>));
     for user in project.users {
@@ -65,7 +62,7 @@ pub fn id_user<P: AsRef<Path>>(private_key_path: P) -> Result<User, Error> {
             Ok(valid) => if valid {
                 return Ok(user)
             },
-            Err(e) => return Err(ssl_error(e)),
+            Err(e) => return Err(Error::Ssl(e)),
         };
     };
     
@@ -74,18 +71,10 @@ pub fn id_user<P: AsRef<Path>>(private_key_path: P) -> Result<User, Error> {
 
 fn get_public_key<P: AsRef<Path>>(public_key_path: P) -> Result<String, Error> {
     let pub_key = try!(utils::file_as_string(public_key_path));
-    let mut pub_key_readable = Cursor::new(&pub_key);
+    let mut pub_key_readable = Cursor::new(pub_key.clone());
     match openssl_RSA::public_key_from_pem(&mut pub_key_readable) {
-        Ok(_) => Ok(pub_key.clone()),
-        Err(_) => Err(invalid_pub_key_error(&pub_key)),
+        Ok(_) => Ok(pub_key),
+        Err(_) => Err(Error::InvalidPublicKey(pub_key)),
     }
-}
-
-fn invalid_pub_key_error(key: &str) -> Error {
-    Error::InvalidPublicKey(key.to_string())
-}
-
-fn ssl_error(e: openssl_Error) -> Error {
-    Error::Ssl(e)
 }
 

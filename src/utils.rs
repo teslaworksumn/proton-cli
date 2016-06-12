@@ -10,7 +10,6 @@ use project_types::Project;
 use error::Error;
 
 
-
 /// Returns the last part of the path, the file name, if no problems arise
 /// Raises errors if the file name is invalid or cannot be converted to UTF-8
 pub fn file_name_from_path<P: AsRef<Path>>(path: P) -> Result<String, Error> {
@@ -109,12 +108,8 @@ pub fn create_empty_directory<P: AsRef<Path>>(dir_path: P) -> Result<(), Error> 
             if count == 0 {
                 Ok(())
             } else {
-                Err(folder_not_empty(&dir_path, count))
+                Err(Error::FolderNotEmpty(dir_path.as_ref().to_str().unwrap().to_owned(), count))
             })
-}
-
-fn folder_not_empty<P: AsRef<Path>>(folder_path: P, count: usize) -> Error {
-    Error::FolderNotEmpty(folder_path.as_ref().to_str().unwrap().to_owned(), count)
 }
 
 /// Reads a Project from a Protonfile.

@@ -2,6 +2,7 @@ extern crate git2;
 extern crate rustc_serialize;
 extern crate sfml;
 extern crate regex;
+extern crate openssl;
 
 
 pub mod utils;
@@ -12,8 +13,8 @@ mod project_types;
 mod error;
 
 // Re-exports
-pub use error::*;
 pub use init::*;
 pub use user::*;
 pub use sequence::*;
 pub use project_types::*;
+pub use error::*;
