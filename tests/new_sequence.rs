@@ -6,23 +6,18 @@ mod common;
 
 use std::path::{Path, PathBuf};
 
+use common::setup;
 use proton_cli::utils;
+use common::rsa_keys::TestKey;
 
 
 #[test]
 fn works_with_valid_path_and_name() {
-    let root = common::setup_init_cd();
+    let root = setup::setup_init_cd();
+    let root_key_path = common::make_key_file(&root.path(), "root.pem", TestKey::RootKeyPem);
+    setup::try_make_sequence(&root_key_path.as_path(), "New_Sequence", "Dissonance.ogg");
 
-    let name = "New_Sequence".to_string();
-
-    let music_file_path = get_music_file_path("Dissonance.ogg");
-
-    let _ = match proton_cli::new_sequence(&name, &music_file_path) {
-        Ok(_) => (),
-        Err(e) => panic!(e.to_string()),
-    };
-
-    // Make sure the calculated music duration is correct within one second on either side
+    // Make sure the calculated music duration is correct
     // and check that the sequence folder is named correctly
     match utils::read_protonfile(Some(&root.path())) {
         Ok(project) => {
@@ -48,42 +43,69 @@ fn works_with_valid_path_and_name() {
 #[test]
 #[allow(unused_variables)]
 // root reference must be kept to keep temp directory in scope, but is never used
-#[should_panic(expected = "Unsupported file type")]
-fn fails_with_invalid_file_extension() {
-    let root = common::setup_init_cd();
-
-    let name = "New_Sequence".to_string();
-
-    let music_file_path = get_music_file_path("Dissonance.mp3");
-
-    let _ = match proton_cli::new_sequence(&name, &music_file_path) {
-        Ok(_) => (),
-        Err(e) => panic!(e.to_string()),
-    };
+#[should_panic(expected = "No such file or directory")]
+fn fails_with_nonexistent_private_key() {
+    let root = setup::setup_init_cd();
+    let root_key_path = Path::new("nonexistent");
+    setup::try_make_sequence(&root_key_path, "New_Sequence", "Dissonance.ogg");
 }
 
 #[test]
-#[should_panic(expected = "Duplicate sequence")]
+#[should_panic(expected = "UserNotFound")]
+fn fails_with_no_user_private_key() {
+    let root = setup::setup_init_cd();
+    let key_path = common::make_key_file(&root.path(), "a.pem", TestKey::GoodKeyPem);
+    setup::try_make_sequence(&key_path, "New_Sequence", "Dissonance.ogg");
+}
+
+#[test]
+#[should_panic(expected = "UnauthorizedAction")]
+fn fails_with_no_admin_private_key() {
+    let root = setup::setup_init_cd();
+    let root_key_path = common::make_key_file(&root.path(), "root.pem", TestKey::RootKeyPem);
+    let key_path = common::make_key_file(&root.path(), "a.pem", TestKey::GoodKeyPem);
+
+    setup::try_new_user(&root_key_path, &root.path(), "Test user", "a.pub", TestKey::GoodKeyPub);
+    setup::try_make_sequence(&key_path, "New_Sequence", "Dissonance.ogg");
+}
+
+#[test]
+#[should_panic(expected = "Ssl(OpenSslErrors")]
+fn fails_with_invalid_private_key() {
+    let root = setup::setup_init_cd();
+    let root_key_path = common::make_key_file(&root.path(), "root.pem", TestKey::GoodKeyPub);
+    setup::try_make_sequence(&root_key_path, "New_Sequence", "Dissonance.ogg");
+}
+
+#[test]
+#[allow(unused_variables)]
+// root reference must be kept to keep temp directory in scope, but is never used
+#[should_panic(expected = "UnsupportedFileType")]
+fn fails_with_invalid_file_extension() {
+    let root = setup::setup_init_cd();
+    let root_key_path = common::make_key_file(&root.path(), "root.pem", TestKey::RootKeyPem);
+    setup::try_make_sequence(&root_key_path.as_path(), "New_Sequence", "Dissonance.mp3");
+}
+
+#[test]
+#[should_panic(expected = "Duplicate sequence detected, music file not copied")]
 fn fails_with_duplicate_sequence_name() {
-    let root = common::setup_init_cd();
+    let root = setup::setup_init_cd();
 
-    let name = "New_Sequence".to_string();
+    let name = "New_Sequence";
+    let root_key_path = common::make_key_file(&root.path(), "root.pem", TestKey::RootKeyPem);
 
-    let music_file_path_a = get_music_file_path("Dissonance.ogg");
-    let music_file_path_b = get_music_file_path("GlorytotheBells.ogg");
+    setup::try_make_sequence(&root_key_path.as_path(), &name, "Dissonance.ogg");
 
-    match proton_cli::new_sequence(&name, &music_file_path_a) {
+    let music_file_path = common::get_music_file_path("GlorytotheBells.ogg");
+
+    match proton_cli::new_sequence(&root_key_path.as_path(), &name, &music_file_path.as_path()) {
         Ok(_) => (),
-        Err(e) => panic!(e.to_string()),
-    };
-
-    match proton_cli::new_sequence(&name, &music_file_path_b) {
-        Ok(_) => (),
-        Err(e) => {
+        Err(_) => {
             // Make sure the second music file wasn't copied
             let dest_path = Path::new(&root.path()).join("GlorytotheBells.ogg");
             assert!(!dest_path.exists());
-            panic!(e.to_string())
+            panic!("Duplicate sequence detected, music file not copied");
         },
     };
 }
@@ -91,40 +113,20 @@ fn fails_with_duplicate_sequence_name() {
 #[test]
 #[allow(unused_variables)]
 // root reference must be kept to keep temp directory in scope, but is never used
-#[should_panic(expected = "Sequence name had invalid characters")]
+#[should_panic(expected = "InvalidSequenceName")]
 fn fails_with_invalid_sequence_name() {
-    let root = common::setup_init_cd();
-
-    let name = "New Sequence".to_string();
-
-    let music_file_path = get_music_file_path("Dissonance.ogg");
-
-    let _ = match proton_cli::new_sequence(&name, &music_file_path) {
-        Ok(_) => (),
-        Err(e) => panic!(e.to_string()),
-    };
+    let root = setup::setup_init_cd();
+    let root_key_path = common::make_key_file(&root.path(), "root.pem", TestKey::RootKeyPem);
+    setup::try_make_sequence(&root_key_path.as_path(), "New Sequence", "Dissonance.ogg");
 }
 
 #[test]
-#[should_panic(expected = "Music file not found")]
+#[allow(unused_variables)]
+// root reference must be kept to keep temp directory in scope, but is never used
+#[should_panic(expected = "MusicFileNotFound")]
 fn fails_with_nonexistent_music_file_path() {
-    let root = common::setup_init_cd();
-
-    let name = "New_Sequence".to_string();
-    let music_file_path = root.path().join("nonexistent.ogg");
-
-    match proton_cli::new_sequence(&name, &music_file_path) {
-        Ok(_) => (),
-        Err(e) => panic!(e.to_string()),
-    };
-}
-
-/// Returns the path to a music file in /.../cli/tests/music/
-fn get_music_file_path(file_name: &str) -> PathBuf {
-    let mut music_file_path = common::get_test_directory_path();
-    music_file_path.push("music");
-    music_file_path.push(&file_name);
-    
-    music_file_path
+    let root = setup::setup_init_cd();
+    let root_key_path = common::make_key_file(&root.path(), "root.pem", TestKey::RootKeyPem);
+    setup::try_make_sequence(&root_key_path.as_path(), "New_Sequence", "nonexistent.ogg");
 }
 

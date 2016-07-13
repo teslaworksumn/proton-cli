@@ -3,7 +3,10 @@ extern crate tempdir;
 
 mod common;
 
+use std::path::PathBuf;
+
 use common::rsa_keys::TestKey;
+use common::setup;
 
 
 /// Warning: This test changes env::current_directory
@@ -12,78 +15,116 @@ use common::rsa_keys::TestKey;
 /// in serial, which avoids occasional false negatives
 #[test]
 fn works_with_new_and_existing_protonfile() {
-    let root = common::setup_init_cd();
+    let root = setup::setup_init_cd();
+    let root_key_path = common::make_key_file(&root.path(), "root.pem", TestKey::RootKeyPem);
 
-    // Make key files for users
-    let key_path_a = common::make_key_file(root.path(), "a.pub", TestKey::GoodKeyPub);
-    let key_path_b = common::make_key_file(root.path(), "b.pub", TestKey::GoodKey2Pub);
+    setup::try_new_user(
+        &root_key_path.as_path(),
+        root.path(),
+        "Test User",
+        "a.pub",
+        TestKey::GoodKeyPub);
 
-    let user_name = "Test User";
-    let user_name2 = "Test User 2";
-
-    // Add new user to project
-    let _ = proton_cli::new_user(&key_path_a.as_path(), &user_name)
-        .expect("Error adding user");
-
-    // Assert that user was added
-    common::assert_user_added(key_path_a.as_path(), "Test User");
-
-    // Make sure the change was committed
-    common::assert_repo_no_modified_files(&root.path());
-
-    // Now try adding another user
-    let _ = proton_cli::new_user(&key_path_b.as_path(), &user_name2)
-        .expect("Error adding user 2");
-
-    // Assert that both users exist
-    common::assert_user_added(key_path_a.as_path(), &user_name);
-    common::assert_user_added(key_path_b.as_path(), &user_name2);
-
-    // Make sure the change was committed
-    common::assert_repo_no_modified_files(&root.path());
+    setup::try_new_user(
+        &root_key_path.as_path(),
+        root.path(),
+        "Test User 2",
+        "b.pub",
+        TestKey::GoodKey2Pub);
 }
 
 #[test]
-#[should_panic(expected = "Error adding user")]
+#[should_panic(expected = "No such file or directory")]
+fn fails_with_nonexistent_root_key_path() {
+    let root = setup::setup_init_cd();
+    let root_key_path = PathBuf::from("nonexistent");
+
+    setup::try_new_user(
+        &root_key_path.as_path(),
+        root.path(),
+        "Test User",
+        "a.pub",
+        TestKey::GoodKeyPub);
+}
+
+#[test]
+#[should_panic(expected = "Ssl")]
+fn fails_with_invalid_admin_key_format() {
+    let root = setup::setup_init_cd();
+    let root_key_path = common::make_key_file(&root.path(), "root.pem", TestKey::RootKeyPub);
+
+    setup::try_new_user(
+        &root_key_path.as_path(),
+        root.path(),
+        "Test User",
+        "a.pub",
+        TestKey::GoodKeyPub);
+}
+
+#[test]
+#[should_panic(expected = "UnauthorizedAction")]
+fn fails_with_admin_no_privileges() {
+    let root = setup::setup_init_cd();
+    let root_key_path = common::make_key_file(&root.path(), "root.pem", TestKey::RootKeyPem);
+
+    // Create a new user
+    setup::try_new_user(
+        &root_key_path.as_path(),
+        root.path(),
+        "userA",
+        "a.pub",
+        TestKey::GoodKeyPub);
+
+    let user_priv_key_path = common::make_key_file(&root.path(), "a.pem", TestKey::GoodKeyPem);
+
+    // Create second user with first user as admin
+    setup::try_new_user(
+        &user_priv_key_path.as_path(),
+        root.path(),
+        "userB",
+        "b.pub",
+        TestKey::GoodKey2Pub);
+}
+
+#[test]
+#[should_panic(expected = "No such file or directory")]
 fn fails_with_a_nonexistent_protonfile() {
-    let root_dir = common::setup();
-    let root = root_dir.path();
+    // Don't initialize project (no protonfile created)
+    let root_dir = setup::setup();
+    let root_key_path = common::make_key_file(&root_dir.path(), "root.pem", TestKey::RootKeyPem);
 
-    // Make key file, but don't initialize project
-    let key_path = common::make_key_file(root, "a.pub", TestKey::GoodKeyPub);
-
-    match proton_cli::new_user(&key_path.as_path(), "Username") {
-        Ok(_) => (),
-        Err(_) => panic!("Error adding user"),
-    };
+    setup::try_new_user(
+        root_key_path.as_path(),
+        root_dir.path(),
+        "Username",
+        "a.pub",
+        TestKey::GoodKeyPub);
 }
 
 #[test]
 #[should_panic(expected = "Error adding user")]
-fn fails_with_nonexistent_key_path() {
-    let root = common::setup_init_cd();
-    
-    let key_path = root.path().join("nonexistent");
+fn fails_with_nonexistent_user_key_path() {
+    let root = setup::setup_init_cd();
 
-    match proton_cli::new_user(&key_path.as_path(), "Username") {
-        Ok(_) => (),
-        Err(_) => panic!("Error adding user"),
-    };
+    let user_key_path = root.path().join("nonexistent");
+    let root_key_path = common::make_key_file(&root.path(), "root.pem", TestKey::RootKeyPem);
+
+    proton_cli::new_user(&root_key_path.as_path(), &user_key_path.as_path(), "Username")
+        .expect("Error adding user");
 }
 
 #[test]
-#[should_panic(expected = "Public key is invalid")]
+#[should_panic(expected = "InvalidPublicKey")]
 fn fails_with_non_pem_key() {
-    let root = common::setup_init_cd();
+    let root = setup::setup_init_cd();
+    let root_key_path = common::make_key_file(&root.path(), "root.pem", TestKey::RootKeyPem);
 
-    let key_path = common::make_key_file(root.path(), "bad_pub_key.pub", TestKey::BadPubKeyPub);
-
-    // Add new user to project
-    match proton_cli::new_user(&key_path.as_path(), "Test User") {
-        Ok(_) => (),
-        Err(e) => panic!("{}", e),
-    };
-
+    setup::try_new_user(
+        root_key_path.as_path(),
+        root.path(),
+        "Test User",
+        "bad_pub_key.pub",
+        TestKey::BadPubKeyPub);
 }
 
 /// Warning: This test changes env::current_directory
@@ -91,22 +132,23 @@ fn fails_with_non_pem_key() {
 /// Running tests with RUST_TEST_THREADS=1 runs tests
 /// in serial, which avoids occasional false negatives
 #[test]
-#[should_panic(expected = "Error adding user 2")]
+#[should_panic(expected = "DuplicateUser")]
 fn fails_with_duplicate_user_key() {
-    let root = common::setup_init_cd();
- 
-    let key_path = common::make_key_file(root.path(), "a.pub", TestKey::GoodKeyPub);
+    let root = setup::setup_init_cd();
+    let root_key_path = common::make_key_file(&root.path(), "root.pem", TestKey::RootKeyPem);
 
-    // Add new user to project
-    let _ = proton_cli::new_user(&key_path.as_path(), "Test User")
-        .expect("Error adding user");
-
-    // Assert that user was added
-    common::assert_user_added(key_path.as_path(), "Test User");
-
-    // Now try adding another user with the same key
-    let _ = proton_cli::new_user(&key_path.as_path(), "Test User 2")
-        .expect("Error adding user 2");
+    setup::try_new_user(
+        root_key_path.as_path(),
+        root.path(),
+        "Test User 1",
+        "a.pub",
+        TestKey::GoodKeyPub);
+    setup::try_new_user(
+        root_key_path.as_path(),
+        root.path(),
+        "Test User 2",
+        "b.pub",
+        TestKey::GoodKeyPub);
 }
 
 /// Warning: This test changes env::current_directory
@@ -114,23 +156,22 @@ fn fails_with_duplicate_user_key() {
 /// Running tests with RUST_TEST_THREADS=1 runs tests
 /// in serial, which avoids occasional false negatives
 #[test]
-#[should_panic(expected = "Error adding second user")]
+#[should_panic(expected = "DuplicateUser")]
 fn fails_with_duplicate_user_name() {
-    let root = common::setup_init_cd();
+    let root = setup::setup_init_cd();
+    let root_key_path = common::make_key_file(&root.path(), "root.pem", TestKey::RootKeyPem);
 
-    let key_path_a = common::make_key_file(root.path(), "a.pub", TestKey::GoodKeyPub);
-    let key_path_b = common::make_key_file(root.path(), "b.pub", TestKey::GoodKey2Pub);
-
-    
-    // Add new user to project
-    let _ = proton_cli::new_user(&key_path_a.as_path(), "Test User")
-        .expect("Error adding user");
-
-    // Assert that user was added
-    common::assert_user_added(key_path_a.as_path(), "Test User");
-
-    // Now try adding another user with the same key
-    let _ = proton_cli::new_user(&key_path_b.as_path(), "Test User")
-        .expect("Error adding second user");
+    setup::try_new_user(
+        root_key_path.as_path(),
+        root.path(),
+        "Test User",
+        "a.pub",
+        TestKey::GoodKeyPub);
+    setup::try_new_user(
+        root_key_path.as_path(),
+        root.path(),
+        "Test User",
+        "b.pub",
+        TestKey::GoodKey2Pub);
 }
 

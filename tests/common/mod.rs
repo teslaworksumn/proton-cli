@@ -3,20 +3,20 @@
 #![allow(dead_code)]
 
 extern crate proton_cli;
-extern crate tempdir;
 extern crate git2;
 
 pub mod rsa_keys;
+pub mod setup;
 
 use std::env;
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
-use tempdir::TempDir;
 use self::git2::Repository;
 
-use proton_cli::{utils, Project, User};
+use self::proton_cli::utils;
+use self::proton_cli::project_types::{Project, User};
 
 
 /// Creates a key file at the given location
@@ -39,6 +39,15 @@ pub fn make_key_file<P: AsRef<Path>>(
     key_path
 }
 
+/// Returns the path to a music file in /.../cli/tests/music/
+pub fn get_music_file_path(file_name: &str) -> PathBuf {
+    let mut music_file_path = get_test_directory_path();
+    music_file_path.push("music");
+    music_file_path.push(&file_name);
+    
+    music_file_path
+}
+
 /// Check if the public key at the given path exists and contains key_content,
 /// and check to see that the user is in the project at the current directory's protonfile
 pub fn assert_user_added<P: AsRef<Path>>(public_key_path: P, name: &str) {
@@ -48,11 +57,9 @@ pub fn assert_user_added<P: AsRef<Path>>(public_key_path: P, name: &str) {
     let project: Project = utils::read_protonfile(None::<P>)
         .expect("Error reading project");
         
-    let u = User {
-        name: name.to_string(),
-        public_key: pub_key_contents,
-    };
+    let u = User::new(name, &pub_key_contents).expect("Error making user for comparison");
     assert_eq!(project.user_exists(&u), true);
+    assert_eq!(u.permissions.len(), 0);
 }
 
 /// Check that changes were actually committed to the repository
@@ -90,28 +97,4 @@ pub fn get_test_directory_path() -> PathBuf {
     test_dir_path.push("tests");
 
     test_dir_path
-}
-
-/// Creates a temporary directory to run a test out of
-pub fn setup() -> TempDir {
-    TempDir::new("proton_cli_tests").unwrap()
-}
-
-/// Creates a temporary directory, initializes a project in it,
-/// and changes the current directory to it
-/// Returns the path to the temp directory 
-pub fn setup_init_cd() -> TempDir {
-    let root_dir = setup();
-    
-    {
-        let root = root_dir.path();
-
-        let _ = proton_cli::initialize_project(&root)
-            .expect("Error initializing project");
-
-        // Move into temp directory (new_user assumes it is run in project directory)
-        assert!(env::set_current_dir(&root).is_ok());
-    }
-
-    root_dir
 }

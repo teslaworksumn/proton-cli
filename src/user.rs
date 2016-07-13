@@ -7,8 +7,8 @@ use openssl::crypto::hash::Type as openssl_HashType;
 
 use git2::Signature;
 
-use Error;
-use User;
+use error::Error;
+use project_types::User;
 use utils;
 
 
@@ -19,10 +19,18 @@ use utils;
 /// 2. Add the user's name and public key to the protonfile
 ///
 /// Impure.
-pub fn new_user<P: AsRef<Path>>(public_key_path: P, name: &str) -> Result<(), Error> {
+pub fn new_user<P: AsRef<Path>>(
+    admin_key_path: P,
+    public_key_path: P,
+    name: &str
+) -> Result<(), Error> {
+
+    // See if admin has permission to add user
+    try!(utils::validate_admin(&admin_key_path));
+
     // Add user
-    let pub_key = try!(get_public_key(public_key_path));
     let project = try!(utils::read_protonfile(None::<P>));
+    let pub_key = try!(utils::file_as_string(&public_key_path));
     let new_project = try!(project.add_user(&name, &pub_key));
     try!(utils::write_protonfile(&new_project, None::<P>));
 
@@ -69,12 +77,5 @@ pub fn id_user<P: AsRef<Path>>(private_key_path: P) -> Result<User, Error> {
     Err(Error::UserNotFound)
 }
 
-fn get_public_key<P: AsRef<Path>>(public_key_path: P) -> Result<String, Error> {
-    let pub_key = try!(utils::file_as_string(public_key_path));
-    let mut pub_key_readable = Cursor::new(pub_key.clone());
-    match openssl_RSA::public_key_from_pem(&mut pub_key_readable) {
-        Ok(_) => Ok(pub_key),
-        Err(_) => Err(Error::InvalidPublicKey(pub_key)),
-    }
-}
+
 

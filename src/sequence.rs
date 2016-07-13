@@ -7,7 +7,7 @@ use git2::Signature;
 use sfml::audio::Music;
 use regex::Regex;
 
-use Error;
+use error::Error;
 use utils;
 
 
@@ -15,8 +15,15 @@ use utils;
 /// Assumes the current directory contains a Protonfile.json file.
 ///
 /// Impure.
-pub fn new_sequence<P: AsRef<Path>>(name: &str, music_file_path: P) -> Result<(), Error> {
+pub fn new_sequence<P: AsRef<Path>>(
+    admin_key_path: P,
+    name: &str,
+    music_file_path: P
+) -> Result<(), Error> {
     
+    // Check that the admin has sufficient privileges
+    try!(utils::validate_admin(&admin_key_path));
+
     // Make sure the name is valid (needed since it will be used in a file path)
     try!(validate_seq_name(name));
 

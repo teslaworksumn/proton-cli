@@ -6,9 +6,22 @@ use std::env;
 use rustc_serialize::json;
 use git2::{self, Repository, Signature};
 
-use project_types::Project;
+use project_types::{User, Project, Permission, PermissionEnum};
 use error::Error;
+use user;
 
+
+/// Checks if the user with a private key at the given path has
+/// the Administrate permission
+/// Returns this user if found and has permission, else error
+pub fn validate_admin<P: AsRef<Path>>(admin_key_path: P) -> Result<User, Error> {
+    let admin_user = try!(user::id_user(admin_key_path));
+    let perm = try!(Permission::new(PermissionEnum::Administrate, None::<String>));
+    if !admin_user.has_permission(&perm) {
+        return Err(Error::UnauthorizedAction);
+    }
+    Ok(admin_user)
+}
 
 /// Returns the last part of the path, the file name, if no problems arise
 /// Raises errors if the file name is invalid or cannot be converted to UTF-8
