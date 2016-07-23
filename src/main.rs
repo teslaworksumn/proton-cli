@@ -19,6 +19,7 @@ Usage:
   ./proton init <folder> <root-public-key>
   ./proton new-user <admin-key> <name> <public-key>
   ./proton new-sequence <admin-key> <name> <music-file>
+  ./proton remove-sequence <admin-key> <name>
   ./proton id-user <private-key>
   ./proton list-permissions
   ./proton set-permission <admin-key> (add | remove) <name> <permission> [<target>]
@@ -53,6 +54,7 @@ fn main() {
 		"new-user" => run_new_user,
 		"id-user" => run_id_user,
 		"new-sequence" => run_new_sequence,
+		"remove-sequence" => run_remove_sequence,
 		"list-permissions" => run_list_permissions,
 		"set-permission" => run_set_permission,
 		_ => panic!("Invalid first argument"),
@@ -100,6 +102,13 @@ fn run_new_sequence(args: Args) -> Result<(), Error> {
 	proton_cli::new_sequence(&admin_key_path, &name, &music_file_path)
 }
 
+fn run_remove_sequence(args: Args) -> Result<(), Error> {
+	let admin_key = args.arg_admin_key.unwrap();
+	let admin_key_path = Path::new(&admin_key);
+	let name = args.arg_name.unwrap();
+	proton_cli::remove_sequence(&admin_key_path, &name)
+}
+
 #[allow(unused_variables)]
 fn run_list_permissions(args: Args) -> Result<(), Error> {
 	let permissions = proton_cli::get_permissions();
@@ -117,6 +126,3 @@ fn run_set_permission(args: Args) -> Result<(), Error> {
 
 	proton_cli::set_permission(&auth_user, added, &username, permission, target)
 }
-
-
-

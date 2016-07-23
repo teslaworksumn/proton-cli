@@ -22,6 +22,7 @@ pub enum Error {
     MusicFileNotFound(String),
     UnsupportedFileType(String),
     UserNotFound,
+    SequenceNotFound(String),
     UnauthorizedAction,
     TodoErr,
 }
@@ -45,6 +46,7 @@ impl error::Error for Error {
             Error::MusicFileNotFound(_) => "Music file not found",
             Error::UnsupportedFileType(_) => "Unsupported file type",
             Error::UserNotFound => "User not found",
+            Error::SequenceNotFound(_) => "Sequence not found",
             Error::UnauthorizedAction => "Unauthorized action",
             Error::TodoErr => "Todo",
         }
@@ -68,6 +70,7 @@ impl error::Error for Error {
            Error::MusicFileNotFound(_) => None,
            Error::UnsupportedFileType(_) => None,
            Error::UserNotFound => None,
+           Error::SequenceNotFound(_) => None,
            Error::UnauthorizedAction => None,
            Error::TodoErr => None,
        }
@@ -107,6 +110,8 @@ impl fmt::Display for Error {
             Error::UnsupportedFileType(ref file_type) => write!(f, 
                 "Unsupported file type: {}", file_type),
             Error::UserNotFound => write!(f, "User not found"),
+            Error::SequenceNotFound(ref name) => write!(f,
+                "Sequence not found: '{}'", name),
             Error::UnauthorizedAction => write!(f, "Unauthorized action"),
             Error::TodoErr => write!(f, "TodoErr"),
         }

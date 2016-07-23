@@ -1,7 +1,7 @@
 extern crate tempdir;
 
 use std::env;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use self::tempdir::TempDir;
 
@@ -68,5 +68,10 @@ pub fn try_make_sequence(admin_key_path: &Path, name: &str, music_file: &str) {
     let found_sequence = project.find_sequence_by_name(name);
 
     assert!(found_sequence.is_some());
-    assert!(found_sequence.unwrap().num_sections == 1);
+    let seq = found_sequence.unwrap();
+    assert!(seq.num_sections == 1);
+    let mut seq_dir_path = PathBuf::from(&seq.directory_name);
+    assert!(seq_dir_path.exists());
+    seq_dir_path.push(&seq.music_file_name);
+    assert!(seq_dir_path.exists());
 }

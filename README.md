@@ -6,6 +6,7 @@ Command line interface to manipulate ProtonLights projects.
 - `init <folder> <root-public-key>`: Init empty project
 - `new-user <admin-key> <name> <public-key>`: Add user from public key
 - `new-sequence <admin-key> <name> <music-file>`: Init a sequence
+- `remove-sequence <admin-key> <name>`: Removes a sequence and deletes its files
 - `id-user <private-key>`: Identify user by ssh key (public key in repo)
 - `list-permissions`: Get list of all available permissions
 - `set-permission <admin-key> (add | remove) <name> <permission> [<target>]`: Change user permissions

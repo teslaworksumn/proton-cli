@@ -137,6 +137,17 @@ impl Project {
         Ok(new_project)
     }
 
+    pub fn remove_sequence(&self, name: &str) -> Result<Project, Error> {
+        let mut new_project = self.clone();
+        for i in 0..new_project.sequences.len() {
+            if new_project.sequences[i].name == name {
+                new_project.sequences.remove(i);
+                return Ok(new_project);
+            }
+        }
+        Err(Error::SequenceNotFound(name.to_string()))
+    }
+
     /// Changes a user's permissions
     pub fn set_user_permission(
         &mut self,
