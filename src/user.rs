@@ -42,6 +42,38 @@ pub fn new_user<P: AsRef<Path>>(
 
     utils::commit_file(&pf_path, repo_path, &signature, &msg)
 }
+
+/// Removes a user from the project in the current directory
+/// Assumes the current directory contains a Protonfile.json file.
+///
+/// Impure.
+pub fn remove_user<P: AsRef<Path>>(
+    admin_key_path: P,
+    name: &str
+) -> Result<(), Error> {
+
+    // See if admin has permission to add user
+    try!(utils::validate_admin(&admin_key_path));
+
+    // Can't remove root
+    if name == "root" {
+        return Err(Error::UnauthorizedAction);
+    }
+
+    // Remove user
+    let project = try!(utils::read_protonfile(None::<P>));
+    let new_project = try!(project.remove_user(&name));
+    try!(utils::write_protonfile(&new_project, None::<P>));
+
+    // Commit changes
+    let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
+    let msg = format!("Removing user {}", name);
+    let pf_path = Path::new("Protonfile.json");
+    let repo_path: Option<P> = None;
+
+    utils::commit_file(&pf_path, repo_path, &signature, &msg)
+}
+
 /// Identifies a user by their private SSH key by finding the
 /// corresponding public key in the project. This private key
 /// acts like the user's password, and should be protected.

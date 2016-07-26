@@ -91,9 +91,7 @@ impl Project {
 
     /// Removes a user from the project
     /// Returns a new project with the user removed
-    // TODO: make public once command is added
-    #[allow(dead_code)]
-    fn remove_user(&self, name: &str) -> Result<Project, Error> {
+    pub fn remove_user(&self, name: &str) -> Result<Project, Error> {
         let mut new_project = self.clone();
         for i in 0..new_project.users.len() {
             if new_project.users[i].name == name {

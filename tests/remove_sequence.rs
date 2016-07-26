@@ -31,7 +31,7 @@ fn works_with_valid_key_and_name() {
     sequence_dir_path.push("seq_asdf");
     assert!(!sequence_dir_path.exists());
 
-    common::assert_repo_no_modified_files(&root.path());    
+    common::assert_repo_no_modified_files(&root.path());
 }
 
 #[test]
@@ -63,16 +63,17 @@ fn fails_with_nonexistent_admin_key() {
 fn fails_with_unauthorized_admin_key() {
     let root = setup::setup_init_cd();
     let root_key_path = common::make_key_file(&root.path(), "root.pem", TestKey::RootKeyPem);
-    let normal_key_pub_path = common::make_key_file(&root.path(), "normal.pub", TestKey::GoodKeyPub);
-    let normal_key_priv_path = common::make_key_file(&root.path(), "normal.pem", TestKey::GoodKeyPem);
-    let _ = proton_cli::new_user(
+    let normal_key_path = common::make_key_file(&root.path(), "normal.pem", TestKey::GoodKeyPem);
+
+    setup::try_new_user(
         &root_key_path.as_path(),
-        &normal_key_pub_path.as_path(),
-        "normal_user"
-    ).expect("Error creating user");
+        root.path(),
+        &"Test User",
+        "normal.pub",
+        TestKey::GoodKeyPub);
 
     setup::try_make_sequence(&root_key_path.as_path(), "asdf", "Dissonance.ogg");
-    proton_cli::remove_sequence(&normal_key_priv_path.as_path(), "asdf")
+    proton_cli::remove_sequence(&normal_key_path.as_path(), "asdf")
         .expect("Error removing sequence");
 }
 

@@ -18,6 +18,7 @@ Command-line interface for Proton
 Usage:
   ./proton init <folder> <root-public-key>
   ./proton new-user <admin-key> <name> <public-key>
+  ./proton remove-user <admin-key> <name>
   ./proton new-sequence <admin-key> <name> <music-file>
   ./proton remove-sequence <admin-key> <name>
   ./proton id-user <private-key>
@@ -52,6 +53,7 @@ fn main() {
 	let command: fn(Args) -> Result<(), Error> = match env::args().nth(1).unwrap().as_ref() {
 		"init" => run_init,
 		"new-user" => run_new_user,
+		"remove-user" => run_remove_user,
 		"id-user" => run_id_user,
 		"new-sequence" => run_new_sequence,
 		"remove-sequence" => run_remove_sequence,
@@ -91,6 +93,13 @@ fn run_id_user(args: Args) -> Result<(), Error> {
 	let private_key = args.arg_private_key.unwrap();
 	let user = try!(proton_cli::id_user(&private_key));
 	Ok(println!("{:?}", user))
+}
+
+fn run_remove_user(args: Args) -> Result<(), Error> {
+	let admin_key = args.arg_admin_key.unwrap();
+	let admin_key_path = Path::new(&admin_key);
+	let name = args.arg_name.unwrap();
+	proton_cli::remove_user(&admin_key_path, &name)
 }
 
 fn run_new_sequence(args: Args) -> Result<(), Error> {
