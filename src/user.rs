@@ -108,6 +108,3 @@ pub fn id_user<P: AsRef<Path>>(private_key_path: P) -> Result<User, Error> {
     
     Err(Error::UserNotFound)
 }
-
-
-

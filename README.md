@@ -9,9 +9,8 @@ Command line interface to manipulate ProtonLights projects.
 - `new-sequence <admin-key> <name> <music-file>`: Init a sequence
 - `remove-sequence <admin-key> <name>`: Removes a sequence and deletes its files
 - `id-user <private-key>`: Identify user by ssh key (public key in repo)
-- `list-permissions`: Get list of all available permissions
+- `list-permissions <private-key>`: Get list of user's permissions
 - `set-permission <admin-key> (add | remove) <name> <permission> [<target>]`: Change user permissions
-- `list-editable [TODO]`: Get list of editable files for a given user
 - `resection-sequence [TODO]`: (Re-)Section a sequence
   - On init, section as section1.
     - Number each section, and don't delete.

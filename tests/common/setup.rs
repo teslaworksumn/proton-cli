@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 use self::tempdir::TempDir;
 
 use proton_cli;
+use proton_cli::project_types::PermissionEnum;
 
 use super::rsa_keys::{self, TestKey};
 
@@ -74,4 +75,30 @@ pub fn try_make_sequence(admin_key_path: &Path, name: &str, music_file: &str) {
     assert!(seq_dir_path.exists());
     seq_dir_path.push(&seq.music_file_name);
     assert!(seq_dir_path.exists());
+}
+
+/// Tries to modify a user's permission
+/// Panics on error
+///
+/// Impure.
+pub fn try_set_permission<P: AsRef<Path>>(
+    root_path: &Path,
+    auth_private_key_path: P,
+    add: bool,
+    target_username: &str,
+    permission: PermissionEnum,
+    target: Option<String>,
+) {
+    let auth_user = proton_cli::id_user(&auth_private_key_path)
+        .expect("Auth user not found");
+
+    proton_cli::set_permission(
+        &auth_user,
+        add,
+        &target_username,
+        permission.to_owned(),
+        target.to_owned()
+    ).expect("Error setting permission");
+
+    super::assert_repo_no_modified_files(&root_path);
 }

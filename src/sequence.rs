@@ -181,4 +181,3 @@ fn get_music_duration_sec<P: AsRef<Path>>(path: P) -> Result<u32, Error> {
     let duration = duration_time.as_seconds() as u32;
     Ok(duration)
 }
-

@@ -9,32 +9,6 @@ use common::rsa_keys::TestKey;
 use proton_cli::project_types::PermissionEnum;
 
 
-/// Tries to modify a user's permission
-/// Panics on error
-///
-/// Impure.
-fn try_set_permission<P: AsRef<Path>>(
-    root_path: &Path,
-    auth_private_key_path: P,
-    add: bool,
-    target_username: &str,
-    permission: PermissionEnum,
-    target: Option<String>,
-) {
-    let auth_user = proton_cli::id_user(&auth_private_key_path)
-        .expect("Auth user not found");
-
-    proton_cli::set_permission(
-        &auth_user,
-        add,
-        &target_username,
-        permission.to_owned(),
-        target.to_owned()
-    ).expect("Error setting permission");
-
-    common::assert_repo_no_modified_files(&root_path);
-}
-
 #[test]
 #[allow(unused_variables)]
 // root reference must be kept to keep temp directory in scope, but is never used
@@ -51,7 +25,7 @@ fn works_with_administrate() {
         TestKey::GoodKeyPub);
 
     // Try to add permission to user
-    try_set_permission(
+    setup::try_set_permission(
         &root.path(),
         &root_private_key_path,
         true,
@@ -60,7 +34,7 @@ fn works_with_administrate() {
         None);
 
     // Now try to remove the permission
-    try_set_permission(
+    setup::try_set_permission(
         &root.path(),
         &root_private_key_path,
         false,
@@ -89,7 +63,7 @@ fn works_with_editseq() {
     setup::try_make_sequence(&root_private_key_path, "test_seq", "Dissonance.ogg");
 
     // Try to add permission to user
-    try_set_permission(
+    setup::try_set_permission(
         &root.path(), 
         &root_private_key_path,
         true,
@@ -98,7 +72,7 @@ fn works_with_editseq() {
         Some("test_seq".to_string()));
 
     // Now try removing the permission
-    try_set_permission(
+    setup::try_set_permission(
         &root.path(), 
         &root_private_key_path,
         false,
@@ -126,7 +100,7 @@ fn works_with_editseqsec() {
     setup::try_make_sequence(&root_private_key_path.as_path(), "test_seq", "Dissonance.ogg");
 
     // Try to add permission to user
-    try_set_permission(
+    setup::try_set_permission(
         &root.path(), 
         &root_private_key_path,
         true,
@@ -135,7 +109,7 @@ fn works_with_editseqsec() {
         Some("test_seq,1".to_string()));
 
     // Now try removing the permission
-    try_set_permission(
+    setup::try_set_permission(
         &root.path(), 
         &root_private_key_path,
         false,
@@ -159,7 +133,7 @@ fn fails_removing_root_admin() {
         "b.pub",
         TestKey::GoodKeyPub);
     
-    try_set_permission(
+    setup::try_set_permission(
         &root.path(),
         &root_private_key_path,
         true,
@@ -168,7 +142,7 @@ fn fails_removing_root_admin() {
         None);
 
     // Now have that new user take away root's Administrate permission
-    try_set_permission(
+    setup::try_set_permission(
         &root.path(),
         &admin2_private_key_path,
         false,
@@ -195,7 +169,7 @@ fn fails_with_bad_target_editseq() {
     setup::try_make_sequence(&root_private_key_path, "test_seq", "Dissonance.ogg");
 
     // Try to add permission to user
-    try_set_permission(
+    setup::try_set_permission(
         &root.path(), 
         &root_private_key_path,
         true,
@@ -223,7 +197,7 @@ fn fails_with_bad_target_editseqsec() {
     setup::try_make_sequence(&root_private_key_path, "test_seq", "Dissonance.ogg");
 
     // Try to add permission to user
-    try_set_permission(
+    setup::try_set_permission(
         &root.path(), 
         &root_private_key_path,
         true,
@@ -245,7 +219,7 @@ fn fails_with_bad_path_to_private_key() {
         "a.pub",
         TestKey::GoodKeyPub);
 
-    try_set_permission(
+    setup::try_set_permission(
         &root.path(),
         &root_private_key_path,
         true,
@@ -268,7 +242,7 @@ fn fails_with_unused_private_key() {
         "a.pub",
         TestKey::GoodKeyPub);
 
-    try_set_permission(
+    setup::try_set_permission(
         &root.path(),
         &root_private_key_path,
         true,
@@ -283,7 +257,7 @@ fn fails_with_nonexistent_username() {
     let root = setup::setup_init_cd();
     let root_private_key_path = common::make_key_file(root.path(), "root.pem", TestKey::RootKeyPem);
 
-    try_set_permission(
+    setup::try_set_permission(
         &root.path(),
         &root_private_key_path,
         true,
@@ -308,7 +282,7 @@ fn fails_with_unauthorized_authority() {
         TestKey::GoodKeyPub);
     let private_key_path = common::make_key_file(root.path(), "a.pem", TestKey::GoodKeyPem);
 
-    try_set_permission(
+    setup::try_set_permission(
         &root.path(),
         &private_key_path,
         true,

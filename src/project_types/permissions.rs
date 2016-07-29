@@ -56,6 +56,7 @@ impl Permission {
                     let target_str = target.to_owned().unwrap();
                     let targets: Vec<&str> = target_str.split(",").collect();
                     if targets.len() != 2 {
+                        println!("EditSeqSec target must be of the form \"name,section\"");
                         false
                     } else {
                         let seq_name = targets[0];
@@ -67,9 +68,16 @@ impl Permission {
                         let project = try!(utils::read_protonfile(None::<&Path>));
                         match project.find_sequence_by_name(&seq_name) {
                             Some(seq) => {
-                                section_num > 0 && section_num <= seq.num_sections
+                                let in_range = section_num > 0 && section_num <= seq.num_sections;
+                                if !in_range {
+                                    println!("EditSeqSec target must be of the form \"name,section\"");
+                                }
+                                in_range
                             },
-                            None => false,
+                            None => {
+                                println!("EditSeqSec target must be of the form \"name,section\"");
+                                false
+                            },
                         }
 
                     }
@@ -83,5 +91,4 @@ impl Permission {
             Err(Error::InvalidPermissionTarget)
         }
     }
-
 }

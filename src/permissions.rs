@@ -6,15 +6,8 @@ use git2::Signature;
 use error::Error;
 use project_types::{User, Permission, PermissionEnum};
 use utils;
+use user;
 
-
-pub fn get_permissions() -> Vec<&'static str> {
-    vec![
-        "Administrate",
-        "EditSeq",
-        "EditSeqSec"
-    ]
-}
 
 pub fn set_permission(
     auth_user: &User,
@@ -56,6 +49,9 @@ pub fn set_permission(
         auth_user.name, change_type, perm, target_username);
 
     utils::commit_all(None::<&Path>, &signature, &msg)
-
 }
 
+pub fn get_permissions<P: AsRef<Path>> (user_key_path: P
+) -> Result<Vec<Permission>, Error> {
+    user::id_user(&user_key_path).map(|user| user.permissions)
+}
