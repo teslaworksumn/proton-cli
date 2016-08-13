@@ -26,6 +26,7 @@ impl Sequence {
         num_channels: u32
     ) -> Result<Sequence, Error> {
         // Defaults
+        // TODO: put constraint (>25ms)
         let frame_dur_ms = frame_duration_ms.unwrap_or(50);
         if frame_dur_ms < 25 {
             return Err(Error::InvalidFrameDuration(frame_dur_ms));
@@ -70,6 +71,27 @@ impl Sequence {
     //     Err(Error::TodoErr)
     // }
 
+    /// Get the path to this specific section, starting with the sequence directory
+    /// E.g. sequence/sequence_section1.json
+    /// Assumes the current directory is the project directory
+    /// Returns as string
+    fn get_section_path(
+        &self,
+        directory_name: &str,
+        seq_name: &str,
+        index: u32
+    ) -> String {
+
+        let mut filename = String::new();
+        filename.push_str(&seq_name);
+        filename.push_str("_section");
+        filename.push_str(&index.to_string());
+
+        let mut section_path = PathBuf::from(&directory_name);
+        section_path.push(&filename);
+        
+        section_path.to_str().expect("Path is invalid unicode").to_owned()
+    }
 
 }
 

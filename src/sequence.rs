@@ -10,6 +10,7 @@ use error::Error;
 use project_types::{PermissionEnum, Sequence};
 use dao::{ChannelDao, DataDao, FixtureDao, LayoutDao, PermissionDao, ProjectDao, SequenceDao, UserDao};
 use utils;
+use project_types::Sequence;
 
 /// Creates a new sequence 
 pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, FD: FixtureDao, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
@@ -249,6 +250,16 @@ pub fn delete_sequence<P: AsRef<Path>, PD: PermissionDao, UD: UserDao, SD: Seque
 /// Retrieves the given sequence
 pub fn get_sequence<SD: SequenceDao>(seq_dao: &SD, seqid: u32) -> Result<Sequence, Error> {
     seq_dao.get_sequence(seqid)
+}
+
+/// Resections an existing sequence with the given name
+/// Returns a new sequence with the changes
+pub fn resection_sequence<P: AsRef<Path>>(
+    admin_key_path: P,
+    name: &str,
+    num_sections: u32
+) -> Result<Sequence, Error> {
+    Err(Error::TodoErr)
 }
 
 /// Check that the music file is a valid format
