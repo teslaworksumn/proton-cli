@@ -6,7 +6,7 @@ use std::env;
 use rustc_serialize::json;
 use git2::{self, Repository, Signature};
 
-use project_types::{User, Project, Permission, PermissionEnum};
+use project_types::{User, Project, Permission, PermissionEnum, SequenceSection};
 use error::Error;
 use user;
 
@@ -126,7 +126,6 @@ pub fn create_empty_directory<P: AsRef<Path>>(dir_path: P) -> Result<(), Error> 
 }
 
 /// Reads a Project from a Protonfile.
-/// Wraps any errors in proton_cli::Error
 /// Assumes Protonfile.json resides in the current directory
 /// unless a path to the Protonfile is given.
 pub fn read_protonfile<P: AsRef<Path>>(pf_path: Option<P>) -> Result<Project, Error> {
@@ -145,6 +144,12 @@ pub fn write_protonfile<P: AsRef<Path>>(project: &Project, pf_path: Option<P>) -
     File::create(&protonfile_path)
         .and_then(|mut protonfile| write!(protonfile, "{}\n", pretty_json))
         .map_err(Error::Io)
+}
+
+/// Reads and decodes a SequenceSection from a file
+pub fn read_sequence_section<P: AsRef<Path>>(seq_sec_path: P) -> Result<SequenceSection, Error> {
+    let sequence_section = try!(file_as_string(&seq_sec_path));
+    json::decode(&sequence_section).map_err(Error::JsonDecode)
 }
 
 /// Reads a file as a string.

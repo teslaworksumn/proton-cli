@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use self::tempdir::TempDir;
 
 use proton_cli;
-use proton_cli::project_types::PermissionEnum;
+use proton_cli::project_types::{PermissionEnum, Sequence};
 
 use super::rsa_keys::{self, TestKey};
 
@@ -57,7 +57,11 @@ pub fn try_new_user(
 }
 
 /// Attempts to make a new sequence with the given name and music file
-pub fn try_make_sequence(admin_key_path: &Path, name: &str, music_file: &str) {
+pub fn try_make_sequence(
+    admin_key_path: &Path,
+    name: &str,
+    music_file: &str
+) -> Sequence {
     let music_file_path = super::get_music_file_path(music_file);
 
     let _ = proton_cli::new_sequence(&admin_key_path, &name, &music_file_path.as_path())
@@ -70,11 +74,15 @@ pub fn try_make_sequence(admin_key_path: &Path, name: &str, music_file: &str) {
 
     assert!(found_sequence.is_some());
     let seq = found_sequence.unwrap();
+
     assert!(seq.num_sections == 1);
     let mut seq_dir_path = PathBuf::from(&seq.directory_name);
+    
     assert!(seq_dir_path.exists());
     seq_dir_path.push(&seq.music_file_name);
     assert!(seq_dir_path.exists());
+
+    seq.to_owned()
 }
 
 /// Tries to modify a user's permission

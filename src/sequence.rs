@@ -9,6 +9,7 @@ use regex::Regex;
 
 use error::Error;
 use utils;
+use project_types::Sequence;
 
 
 /// Creates a new user for the project in the current directory.
@@ -77,6 +78,8 @@ pub fn new_sequence<P: AsRef<Path>>(
         .map(|_| ())
 }
 
+/// Removes the sequence with the given name from the project
+/// and deletes its files
 pub fn remove_sequence<P: AsRef<Path>>(admin_key_path: P, name: &str) -> Result<(), Error> {
     
     // Check that the admin has sufficient privileges
@@ -113,6 +116,16 @@ pub fn remove_sequence<P: AsRef<Path>>(admin_key_path: P, name: &str) -> Result<
         .map(|_| ())
 }
 
+/// Resections an existing sequence with the given name
+/// Returns a new sequence with the changes
+pub fn resection_sequence<P: AsRef<Path>>(
+    admin_key_path: P,
+    name: &str,
+    num_sections: u32
+) -> Result<Sequence, Error> {
+    Err(Error::TodoErr)
+}
+
 /// Check that the music file is a valid format
 /// Full list of supported formats can be found at
 /// http://www.rust-sfml.org/doc/rsfml/audio/struct.Music.html
@@ -136,7 +149,7 @@ fn validate_file_type<P: AsRef<Path>>(music_file_path: P) -> Result<(), Error> {
 }
 
 /// Makes sure the name has only valid characters in it
-/// A valid character is upper and lower alpha, numbers, and underscores
+/// A valid character is upper and lower alpha, numbers, and underscores`
 fn validate_seq_name(name: &str) -> Result<(), Error> {
 
     let seq_name_regex = Regex::new("^[0-9A-Za-z_]+$").expect("Regex failed to compile");
