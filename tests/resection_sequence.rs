@@ -128,6 +128,15 @@ fn fails_with_nonexistent_sequence_name() {
 }
 
 #[test]
+#[should_panic(expected = "InvalidSequenceName")]
+fn fails_with_invalid_sequence_name() {
+    let (user_key_path, _) = setup_resection(TestKey::GoodKeyPem, false);
+    let invalid_name = &"Not a valid seq name! ;)";
+    let _ = proton_cli::resection_sequence(&user_key_path.as_path(), invalid_name, 2)
+        .expect("Error resectioning sequence");
+}
+
+#[test]
 #[should_panic(expected = "Error resectioning sequence(Io")]
 fn fails_if_section_file_deleted_after_creation() {
     // Create sequence, then delete sequence/sequence_sec1
