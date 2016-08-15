@@ -30,5 +30,4 @@ impl Permission {
     pub fn add_permission<T: PermissionDao>(dao: &T, perm: Permission) -> Result<(), Error> {
         Err(Error::TodoErr)
     }
-
 }

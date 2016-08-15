@@ -53,7 +53,14 @@ impl Sequence {
             layout_id: layout_id
         };
 
+<<<<<<< b9e4e9fa70f12b5cc061c9635ac3194e96c2c1a6
         Ok(sequence)
+=======
+        // Section sequence
+        let resectioned_sequence = try!(sequence.resection(num_sects));
+
+        Ok(resectioned_sequence)
+>>>>>>> Added test for seq sec editor added on perm change. Implemented; passing
     }
 
     // pub fn data_as_json(&self) -> Result<json::Json, Error> {        
