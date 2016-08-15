@@ -89,7 +89,7 @@ fn works_with_editseqsec() {
     let root_private_key_path = common::make_key_file(root.path(), "root.pem", TestKey::RootKeyPem);
 
     // Create user
-    setup::try_new_user(
+    let user = setup::try_new_user(
         root_private_key_path.as_path(),
         root.path(),
         "Test User",
@@ -107,6 +107,15 @@ fn works_with_editseqsec() {
         "Test User",
         PermissionEnum::EditSeqSec,
         Some("test_seq,1".to_string()));
+
+    // Make sure sequence editor was updated
+    let project = proton_cli::utils::read_protonfile(None::<&Path>)
+        .expect("Error reading project from file");
+    let sequence = project.find_sequence_by_name(&"test_seq")
+        .expect("Error reading sequence from project");
+    let section_1 = sequence.get_section(1)
+        .expect("Error getting sequence section");
+    assert_eq!(&section_1.editor, &Some(user));
 
     // Now try removing the permission
     setup::try_set_permission(

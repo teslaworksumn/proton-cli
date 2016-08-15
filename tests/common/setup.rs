@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use self::tempdir::TempDir;
 
 use proton_cli;
-use proton_cli::project_types::{PermissionEnum, Sequence};
+use proton_cli::project_types::{PermissionEnum, Sequence, User};
 
 use super::rsa_keys::{self, TestKey};
 
@@ -44,7 +44,7 @@ pub fn try_new_user(
     user_name: &str,
     key_name: &str,
     key: TestKey
-) {
+) -> User {
 
     let user_key_path = super::make_key_file(&root_path, &key_name, key);
 
@@ -54,6 +54,9 @@ pub fn try_new_user(
     super::assert_user_added(user_key_path.as_path(), &user_name);
 
     super::assert_repo_no_modified_files(&root_path);
+
+    let project = proton_cli::utils::read_protonfile(None::<&Path>).expect("Error reading project");
+    project.find_user_by_name(&user_name).unwrap().to_owned()
 }
 
 /// Attempts to make a new sequence with the given name and music file

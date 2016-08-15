@@ -53,33 +53,20 @@ impl Permission {
                 if target.is_none() {
                     false
                 } else {
-                    let target_str = target.to_owned().unwrap();
-                    let targets: Vec<&str> = target_str.split(",").collect();
-                    if targets.len() != 2 {
-                        println!("EditSeqSec target must be of the form \"name,section\"");
-                        false
-                    } else {
-                        let seq_name = targets[0];
-                        let section_num_str = targets[1];
-                        let section_num = match section_num_str.parse::<u32>() {
-                            Ok(n) => n,
-                            Err(_) => return Err(Error::InvalidPermissionTarget), 
-                        };
-                        let project = try!(utils::read_protonfile(None::<&Path>));
-                        match project.find_sequence_by_name(&seq_name) {
-                            Some(seq) => {
-                                let in_range = section_num > 0 && section_num <= seq.num_sections;
-                                if !in_range {
-                                    println!("EditSeqSec target must be of the form \"name,section\"");
-                                }
-                                in_range
-                            },
-                            None => {
+                    let (seq_name, section_num) = try!(Permission::parse_seq_sec_target(target));
+                    let project = try!(utils::read_protonfile(None::<&Path>));
+                    match project.find_sequence_by_name(&seq_name) {
+                        Some(seq) => {
+                            let in_range = section_num > 0 && section_num <= seq.num_sections;
+                            if !in_range {
                                 println!("EditSeqSec target must be of the form \"name,section\"");
-                                false
-                            },
-                        }
-
+                            }
+                            in_range
+                        },
+                        None => {
+                            println!("EditSeqSec target must be of the form \"name,section\"");
+                            false
+                        },
                     }
                 }
             },
@@ -90,5 +77,25 @@ impl Permission {
         } else {
             Err(Error::InvalidPermissionTarget)
         }
+    }
+
+    /// Does the grunt work of transforming a sequence section target
+    /// of the form seq_name,sec_num into a tuple of those values,
+    /// with sec_num casted
+    pub fn parse_seq_sec_target(
+        target: &Option<String>
+    ) -> Result<(String, u32), Error> {
+        let target_str = target.to_owned().expect("Error unwrapping target");
+        let targets: Vec<&str> = target_str.split(",").collect();
+        if targets.len() != 2 {
+            return Err(Error::InvalidPermissionTarget);
+        }
+        let seq_name = targets[0];
+        let section_num_str = targets[1];
+        let section_num = match section_num_str.parse::<u32>() {
+            Ok(n) => n,
+            Err(_) => return Err(Error::InvalidPermissionTarget),
+        };
+        Ok((seq_name.to_owned(), section_num))
     }
 }

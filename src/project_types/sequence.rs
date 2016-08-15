@@ -45,7 +45,7 @@ impl Sequence {
         };
 
         // Section sequence
-        let resectioned_sequence = try!(sequence.resection());
+        let resectioned_sequence = try!(sequence.resection(num_sects));
 
         Ok(resectioned_sequence)
     }
@@ -61,9 +61,10 @@ impl Sequence {
     }
 
     /// Resection a sequence
-    pub fn resection(&self) -> Result<Sequence, Error> {
+    pub fn resection(&self, num_sections: u32) -> Result<Sequence, Error> {
         let mut sequence = self.clone();
-        if sequence.num_sections == 1 {
+        sequence.num_sections = num_sections;
+        if num_sections == 1 {
             let section_path = sequence.get_section_path(
                 &sequence.directory_name,
                 &sequence.name,

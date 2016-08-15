@@ -154,20 +154,32 @@ impl Project {
         add: bool
     ) -> Result<(), Error> {
     
-        for mut u in &mut self.users {
-            if u.name == name {
-                if add {
-                    u.add_permission(perm);
-                } else {
-                    u.remove_permission(perm);
+        for i in 0..self.users.len() {
+            if self.users[i].name == name {
+                let mut editor = None::<User>;
+                {
+                    let u = &mut self.users[i];
+                    if add {
+                        u.add_permission(perm.clone());
+                        editor = Some(u.to_owned());
+                    } else {
+                        u.remove_permission(perm.clone());
+                    }
                 }
-
+                // Set sequence section's Editor field if necessary
+                if &perm.which == &PermissionEnum::EditSeqSec {
+                    let (seq_name, seq_sec_num) = try!(Permission::parse_seq_sec_target(&perm.target));
+                    let sequence = self.find_sequence_by_name(&seq_name)
+                        .expect("Error finding sequence");
+                    let mut seq_sec = try!(sequence.get_section(seq_sec_num));
+                    seq_sec.editor = editor;
+                    try!(seq_sec.write_to_file());
+                }
                 return Ok(());
             }
         }
 
         Err(Error::UserNotFound)
     }
-
 }
 
