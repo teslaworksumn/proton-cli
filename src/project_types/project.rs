@@ -17,7 +17,6 @@ impl Project {
     pub fn add_sequence(&self, seqid: u32) -> Result<Project, Error> {
 
         // Check if seqid exists?? Assume it is checked earlier for now
-
         let mut new_project = self.clone();
         new_project.playlist.push(seqid);
         Ok(new_project)

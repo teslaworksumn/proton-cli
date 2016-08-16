@@ -53,30 +53,8 @@ impl Sequence {
             layout_id: layout_id
         };
 
-<<<<<<< b9e4e9fa70f12b5cc061c9635ac3194e96c2c1a6
         Ok(sequence)
-=======
-        // Section sequence
-        let resectioned_sequence = try!(sequence.resection(num_sects));
-
-        Ok(resectioned_sequence)
->>>>>>> Added test for seq sec editor added on perm change. Implemented; passing
     }
-
-    // pub fn data_as_json(&self) -> Result<json::Json, Error> {        
-    //     let json_str = try!(json::encode(&self.data).map_err(Error::JsonEncode));
-    //     // Unwrap should be safe here, since we just encoded successfully
-    //     Ok(json::Json::from_str(&json_str).unwrap())
-    // }
-
-    // pub fn update_data(&self, uid: u32, new_data: Vec<Vec<u16>>, secid: u32) -> Result<(), Error> {
-    //     // Only update data within the given section
-    //     // If sections overlap then this will overwrite the last update in the overlapping section
-    //     // It is up to the user to deal with overlapping sections appropriately
-
-    //     // Check if user has permission to update this sequence/section
-    //     Err(Error::TodoErr)
-    // }
 
     /// Get the path to this specific section, starting with the sequence directory
     /// E.g. sequence/sequence_section1.json
@@ -84,17 +62,15 @@ impl Sequence {
     /// Returns as string
     fn get_section_path(
         &self,
-        directory_name: &str,
-        seq_name: &str,
         index: u32
     ) -> String {
 
         let mut filename = String::new();
-        filename.push_str(&seq_name);
+        filename.push_str(&self.name);
         filename.push_str("_section");
         filename.push_str(&index.to_string());
 
-        let mut section_path = PathBuf::from(&directory_name);
+        let mut section_path = PathBuf::from(&self.directory_name);
         section_path.push(&filename);
         
         section_path.to_str().expect("Path is invalid unicode").to_owned()
