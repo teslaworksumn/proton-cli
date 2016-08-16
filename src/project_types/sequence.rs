@@ -95,6 +95,10 @@ impl Sequence {
         if self.num_sections == num_sections {
             return Ok(());
         }
+        // Cannot resection into 0 sections
+        if num_sections == 0 {
+            return Err(Error::InvalidSequenceSection(num_sections));
+        }
 
         let num_channels: u32 = 1; // TODO change when add layout
         let music_duration_ms = self.music_duration_sec as f32 * 1000_f32;
