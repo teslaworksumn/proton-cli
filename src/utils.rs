@@ -148,6 +148,10 @@ pub fn write_protonfile<P: AsRef<Path>>(project: &Project, pf_path: Option<P>) -
 
 /// Reads and decodes a SequenceSection from a file
 pub fn read_sequence_section<P: AsRef<Path>>(seq_sec_path: P) -> Result<SequenceSection, Error> {
+    if !seq_sec_path.as_ref().is_file() {
+        let seq_sec_path_str = seq_sec_path.as_ref().to_str().expect("Path is invalid unicode");
+        return Err(Error::SequenceSectionNotFound(seq_sec_path_str.to_owned()));
+    }
     let sequence_section = try!(file_as_string(&seq_sec_path));
     json::decode(&sequence_section).map_err(Error::JsonDecode)
 }

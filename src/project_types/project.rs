@@ -81,7 +81,7 @@ impl Project {
 
         if self.find_user_by_name(name).is_some() ||
            self.find_user_by_public_key(pub_key).is_some() {
-            Err(Error::DuplicateUser(pub_key.to_string(), name.to_string()))
+            Err(Error::DuplicateUser(pub_key.to_owned(), name.to_owned()))
         } else {
             let mut new_project = self.clone();
             new_project.users.push(user);
@@ -126,7 +126,7 @@ impl Project {
         for s in &self.sequences {
             if s.name == name
             || s.directory_name == directory_name {
-                return Err(Error::DuplicateSequence(name.to_string()));
+                return Err(Error::DuplicateSequence(name.to_owned()));
             }
         }
 
@@ -143,7 +143,21 @@ impl Project {
                 return Ok(new_project);
             }
         }
-        Err(Error::SequenceNotFound(name.to_string()))
+        Err(Error::SequenceNotFound(name.to_owned()))
+    }
+
+    pub fn resection_sequence(&self, name: &str, num_sections: u32) -> Result<Project, Error> {
+        let mut new_project = self.clone();
+        for i in 0..new_project.sequences.len() {
+            if new_project.sequences[i].name == name {
+                {
+                    let sequence = &mut new_project.sequences[i];
+                    try!(sequence.resection(num_sections));
+                }
+                return Ok(new_project);
+            }
+        }
+        Err(Error::SequenceNotFound(name.to_owned()))
     }
 
     /// Changes a user's permissions
@@ -182,4 +196,3 @@ impl Project {
         Err(Error::UserNotFound)
     }
 }
-

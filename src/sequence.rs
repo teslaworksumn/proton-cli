@@ -4,12 +4,13 @@ use std::path::{Path, PathBuf};
 use std::fs;
 
 use git2::Signature;
-use sfml::audio::Music;
 use regex::Regex;
+use sfml::audio::Music;
 
 use error::Error;
+use project_types::{Permission, PermissionEnum, Sequence};
+use user;
 use utils;
-use project_types::Sequence;
 
 
 /// Creates a new user for the project in the current directory.
@@ -123,7 +124,36 @@ pub fn resection_sequence<P: AsRef<Path>>(
     name: &str,
     num_sections: u32
 ) -> Result<Sequence, Error> {
-    Err(Error::TodoErr)
+    // Check that the admin has sufficient privileges
+    let admin_user = try!(user::id_user(admin_key_path));
+    let perm = try!(Permission::new(PermissionEnum::EditSeq, Some(name.to_owned())));
+    if !admin_user.has_permission(&perm) {
+        return Err(Error::UnauthorizedAction);
+    }
+
+    // Make sure the name is valid (needed since it will be used in a file path)
+    try!(validate_seq_name(name));
+
+    // Get project
+    let project = try!(utils::read_protonfile(None::<P>));
+
+    // Resection sequence
+    let new_project = try!(project.resection_sequence(name, num_sections));
+    try!(utils::write_protonfile(&new_project, None::<P>));
+
+    // Grab sequence for return
+    let sequence = new_project.find_sequence_by_name(name)
+        .expect("Sequence somehow removed during resection");
+
+    // Commit changes
+    let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
+    let msg = format!("Resectioning sequence '{}'", name);
+    let repo_path: Option<P> = None;
+
+    try!(utils::commit_all(repo_path, &signature, &msg)
+        .map(|_| ()));
+
+    Ok(sequence.to_owned())
 }
 
 /// Check that the music file is a valid format
