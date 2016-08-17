@@ -20,9 +20,10 @@ fn setup_resection(user_key: TestKey, has_perm: bool) -> (TempDir, PathBuf, Sequ
     let user_key_path = common::make_key_file(&root.path(), "usera.pem", user_key);
     let name = "SequenceA";
     let sequence = setup::try_make_sequence(&root_key_path.as_path(), &name, "test_1sec.ogg");
-    assert_eq!(sequence.num_sections, 1);
-    let mut seq_sec_1 = sequence.get_section(1).expect("Error retrieving sequence section");
-    seq_sec_1.data = sequence_sections::get_test_seq_sec(TestSeqSec::Good1of1);
+    assert_eq!(sequence.num_sections, 1);    
+    let _ = sequence.set_section_data(1, sequence_sections::get_test_seq_sec(TestSeqSec::Good1of1))
+        .expect("Error setting sequence data");
+    assert_section_correct(&sequence, 1, TestSeqSec::Good1of1);
 
     setup::try_new_user(
         &root_key_path.as_path(),
@@ -47,6 +48,7 @@ fn setup_resection(user_key: TestKey, has_perm: bool) -> (TempDir, PathBuf, Sequ
 /// Get a section from the sequence and make sure its data is the same as the test_section given
 fn assert_section_correct(sequence: &Sequence, section_idx: u32, test_section: TestSeqSec) {
     let section = sequence.get_section(section_idx).expect("Error retrieving sequence section");
+    println!("index {}: {:?}", section_idx, section.data);
     assert_eq!(section.data, sequence_sections::get_test_seq_sec(test_section));
 }
 

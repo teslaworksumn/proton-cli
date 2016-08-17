@@ -1,5 +1,7 @@
 use rustc_serialize::json;
 
+use git2::Signature;
+
 use error::Error;
 use project_types::Layout;
 
