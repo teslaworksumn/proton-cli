@@ -1,5 +1,7 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::cmp;
+
+use git2::Signature;
 
 use error::Error;
 use project_types::SequenceSection;
@@ -72,21 +74,50 @@ impl Sequence {
     /// Generate and return a sequence section with sane defaults
     /// Also writes it to file, so it can be read later
     fn create_default_section(
-        &mut self,
+        &self,
         num_channels: u32,
         num_frames: u32
-    ) -> Result<SequenceSection, Error> {        
-        let section_path = self.get_section_path(1);
+    ) -> Result<SequenceSection, Error> {
+        self.create_section(
+            1,
+            num_frames,
+            vec![vec![0; num_frames as usize]; num_channels as usize]
+        )
+    }
+
+    /// Creates a sequence section, writes it to a file, and returns it
+    fn create_section(
+        &self,
+        index: u32,
+        num_frames: u32,
+        data: Vec<Vec<u8>>
+    ) -> Result<SequenceSection, Error> {
+        let section_path = self.get_section_path(index);
         let section = SequenceSection {
             seq_name: self.name.to_string(),
-            index: 1,
+            index: index,
             path: section_path.clone(),
             num_frames: num_frames,
             editor: None,
-            data: vec![vec![0; num_frames as usize]; num_channels as usize],
+            data: data
         };
         let _ = try!(section.write_to_file());
         Ok(section)
+    }
+
+    /// Sets the data for a sequence section
+    /// Writes the changes and commits
+    pub fn set_section_data(&self, index: u32, data: Vec<Vec<u8>>) -> Result<(), Error> {
+        let mut seq_sec = try!(self.get_section(index));
+        seq_sec.data = data;
+        let _ = try!(seq_sec.write_to_file());
+
+        let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
+        let msg = format!("Setting section data for sequence '{}', section {}", self.name, index);
+        let repo_path: Option<&Path> = None;
+
+        utils::commit_all(repo_path, &signature, &msg)
+            .map(|_| ())
     }
 
     /// Resection a sequence
@@ -100,10 +131,12 @@ impl Sequence {
             return Err(Error::InvalidSequenceSection(num_sections));
         }
 
-        let num_channels: u32 = 1; // TODO change when add layout
+        let num_channels: u32 = 3; // TODO change when add layout
         let music_duration_ms = self.music_duration_sec as f32 * 1000_f32;
         let num_frames_f32: f32 = music_duration_ms as f32 / self.frame_duration_ms as f32;
         let num_frames = num_frames_f32.ceil() as u32;
+        let num_frames_per_section_f32 = num_frames_f32 / num_sections as f32;
+        let num_frames_per_section = num_frames_per_section_f32.ceil() as u32;
 
         // Turn into one section if not already, then split up
         let mut sections = try!(self.get_all_sections());
@@ -122,14 +155,32 @@ impl Sequence {
             accumulated
         }
         // Fold together all data vectors
-        let all_data = sections.iter().fold(vec![vec![]; num_channels as usize], combine_data);
-        if num_sections == 1 {
-            let _ = try!(self.create_default_section(num_channels, num_frames));
-            self.num_sections = num_sections;
-            Ok(())
-        } else {
-            Err(Error::TodoErr)
+        let all_data = sections.iter()
+            .fold(vec![vec![]; num_channels as usize], combine_data);
+        // Break single chunk into sections, one channel at a time
+        let mut sectioned_data = vec![vec![vec![]; num_channels as usize]; num_sections as usize];
+        for channel_idx in 0..all_data.len() {
+            let channel_data = &all_data[channel_idx];
+            let mut chunked_data = channel_data.chunks(num_frames_per_section as usize);
+            for section_idx in 0..num_sections {
+                let new_data = chunked_data.next()
+                    .expect("Miscalculation when chunking sequence section data");
+                sectioned_data[section_idx as usize][channel_idx as usize] = new_data.to_vec();
+            }
         }
+
+        // Create SequenceSections out of the chunks
+        for (sec_idx, sec_data) in sectioned_data.iter().enumerate() {
+            // This is safe, since there is always at least one channel
+            let sec_frames = sec_data[0].len();
+
+            let _ = self.create_section(
+                1 + sec_idx as u32,
+                sec_frames as u32,
+                sec_data.to_owned());
+        }
+
+        Ok(self.num_sections = num_sections)
     }
 
     /// Get the path to this specific section, starting with the sequence directory
