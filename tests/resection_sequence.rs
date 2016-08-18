@@ -4,7 +4,7 @@ extern crate git2;
 
 mod common;
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::fs;
 use tempdir::TempDir;
 
@@ -52,6 +52,15 @@ fn assert_section_correct(sequence: &Sequence, section_idx: u32, test_section: T
     assert_eq!(section.data, sequence_sections::get_test_seq_sec(test_section));
 }
 
+/// Gets the sequence named SequenceA, created in setup_resection
+fn get_sequence() -> Sequence {
+    let project = proton_cli::utils::read_protonfile(None::<&Path>)
+        .expect("Error reading protonfile");
+    project.find_sequence_by_name(&"SequenceA")
+        .expect("Sequence somehow removed during resection")
+        .to_owned()
+}
+
 #[test]
 #[allow(unused_variables)]
 // root reference must be kept to keep temp directory in scope, but is never used
@@ -60,37 +69,42 @@ fn works_with_valid_inputs() {
     let name = &sequence.name;
 
     // Try different resections
-    let seq_1_to_2 = proton_cli::resection_sequence(&user_key_path.as_path(), name, 2)
+    let _ = proton_cli::resection_sequence(&user_key_path.as_path(), name, 2)
         .expect("Error resectioning sequence");
+    let seq_1_to_2 = get_sequence();
     assert_eq!(seq_1_to_2.num_sections, 2);
     assert_section_correct(&seq_1_to_2, 1, TestSeqSec::Good1of2);
     assert_section_correct(&seq_1_to_2, 2, TestSeqSec::Good2of2);
     common::assert_repo_no_modified_files(&root.path());
 
-    let seq_2_to_3 = proton_cli::resection_sequence(&user_key_path.as_path(), name, 3)
+    let _ = proton_cli::resection_sequence(&user_key_path.as_path(), name, 3)
         .expect("Error resectioning sequence");
+    let seq_2_to_3 = get_sequence();
     assert_eq!(seq_2_to_3.num_sections, 3);
     assert_section_correct(&seq_2_to_3, 1, TestSeqSec::Good1of3);
     assert_section_correct(&seq_2_to_3, 2, TestSeqSec::Good2of3);
     assert_section_correct(&seq_2_to_3, 3, TestSeqSec::Good3of3);
     common::assert_repo_no_modified_files(&root.path());
 
-    let seq_3_to_1 = proton_cli::resection_sequence(&user_key_path.as_path(), name, 1)
+    let _ = proton_cli::resection_sequence(&user_key_path.as_path(), name, 1)
         .expect("Error resectioning sequence");
+    let seq_3_to_1 = get_sequence();
     assert_eq!(seq_3_to_1.num_sections, 1);
     assert_section_correct(&seq_3_to_1, 1, TestSeqSec::Good1of1);
     common::assert_repo_no_modified_files(&root.path());
 
-    let seq_1_to_3 = proton_cli::resection_sequence(&user_key_path.as_path(), name, 3)
+    let _ = proton_cli::resection_sequence(&user_key_path.as_path(), name, 3)
         .expect("Error resectioning sequence");
+    let seq_1_to_3 = get_sequence();
     assert_eq!(seq_1_to_3.num_sections, 3);
     assert_section_correct(&seq_1_to_3, 1, TestSeqSec::Good1of3);
     assert_section_correct(&seq_1_to_3, 2, TestSeqSec::Good2of3);
     assert_section_correct(&seq_1_to_3, 3, TestSeqSec::Good3of3);
     common::assert_repo_no_modified_files(&root.path());
 
-    let seq_3_to_2 = proton_cli::resection_sequence(&user_key_path.as_path(), name, 2)
+    let _ = proton_cli::resection_sequence(&user_key_path.as_path(), name, 2)
         .expect("Error resectioning sequence");
+    let seq_3_to_2 = get_sequence();
     assert_eq!(seq_3_to_2.num_sections, 2);
     assert_section_correct(&seq_3_to_2, 1, TestSeqSec::Good1of2);
     assert_section_correct(&seq_3_to_2, 2, TestSeqSec::Good2of2);
