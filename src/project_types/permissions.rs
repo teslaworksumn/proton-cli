@@ -88,6 +88,7 @@ impl Permission {
         let target_str = target.to_owned().expect("Error unwrapping target");
         let targets: Vec<&str> = target_str.split(",").collect();
         if targets.len() != 2 {
+            println!("EditSeqSec target must be of the form \"name,section\"");
             return Err(Error::InvalidPermissionTarget);
         }
         let seq_name = targets[0];
