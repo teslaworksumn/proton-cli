@@ -8,7 +8,7 @@ use regex::Regex;
 use sfml::audio::Music;
 
 use error::Error;
-use project_types::{Permission, PermissionEnum, Sequence};
+use project_types::{Permission, PermissionEnum};
 use user;
 use utils;
 
@@ -123,7 +123,7 @@ pub fn resection_sequence<P: AsRef<Path>>(
     admin_key_path: P,
     name: &str,
     num_sections: u32
-) -> Result<Sequence, Error> {
+) -> Result<(), Error> {
     // Check that the admin has sufficient privileges
     let admin_user = try!(user::id_user(admin_key_path));
     let perm = try!(Permission::new(PermissionEnum::EditSeq, Some(name.to_owned())));
@@ -141,19 +141,13 @@ pub fn resection_sequence<P: AsRef<Path>>(
     let new_project = try!(project.resection_sequence(name, num_sections));
     try!(utils::write_protonfile(&new_project, None::<P>));
 
-    // Grab sequence for return
-    let sequence = new_project.find_sequence_by_name(name)
-        .expect("Sequence somehow removed during resection");
-
     // Commit changes
     let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
     let msg = format!("Resectioning sequence '{}'", name);
     let repo_path: Option<P> = None;
 
-    try!(utils::commit_all(repo_path, &signature, &msg)
-        .map(|_| ()));
-
-    Ok(sequence.to_owned())
+    utils::commit_all(repo_path, &signature, &msg)
+        .map(|_| ())
 }
 
 /// Check that the music file is a valid format

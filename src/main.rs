@@ -22,6 +22,7 @@ Usage:
   ./proton remove-user <admin-key> <name>
   ./proton new-sequence <admin-key> <name> <music-file>
   ./proton remove-sequence <admin-key> <name>
+  ./proton resection-sequence <admin-key> <name> <num-sections>
   ./proton id-user <private-key>
   ./proton list-permissions <private-key>
   ./proton set-permission <admin-key> (add | remove) <name> <permission> [<target>]
@@ -42,6 +43,7 @@ struct Args {
 	arg_music_file: Option<String>,
 	arg_permission: Option<PermissionEnum>,
 	arg_target: Option<String>,
+	arg_num_sections: Option<u32>,
 }
 
 fn main() {
@@ -58,6 +60,7 @@ fn main() {
 		"id-user" => run_id_user,
 		"new-sequence" => run_new_sequence,
 		"remove-sequence" => run_remove_sequence,
+		"resection-sequence" => run_resection_sequence,
 		"list-permissions" => run_list_permissions,
 		"set-permission" => run_set_permission,
 		_ => panic!("Invalid first argument"),
@@ -117,6 +120,14 @@ fn run_remove_sequence(args: Args) -> Result<(), Error> {
 	let admin_key_path = Path::new(&admin_key);
 	let name = args.arg_name.unwrap();
 	proton_cli::remove_sequence(&admin_key_path, &name)
+}
+
+fn run_resection_sequence(args: Args) -> Result<(), Error> {
+	let admin_key = args.arg_admin_key.unwrap();
+	let admin_key_path = Path::new(&admin_key);
+	let name = args.arg_name.unwrap();
+	let num_sections = args.arg_num_sections.unwrap();
+	proton_cli::resection_sequence(&admin_key_path, &name, num_sections)
 }
 
 fn run_list_permissions(args: Args) -> Result<(), Error> {
