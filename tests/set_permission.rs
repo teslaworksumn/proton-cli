@@ -110,7 +110,7 @@ fn works_with_editseqsec() {
         "Test User",
         "EditSeqSec",
         Some("test_seq".to_owned()),
-        Some(1));
+        Some(0));
 
     // Now try removing the permission
     setup::try_set_permission(
@@ -120,7 +120,7 @@ fn works_with_editseqsec() {
         "Test User",
         "EditSeqSec",
         Some("test_seq".to_owned()),
-        Some(1));
+        Some(0));
 }
 
 #[test]

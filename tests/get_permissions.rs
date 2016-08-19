@@ -116,7 +116,7 @@ fn works_with_valid_key_all_permissions() {
         &name,
         "EditSeqSec",
         Some("ghjk".to_owned()),
-        Some(1));
+        Some(0));
 
     let permissions = proton_cli::get_permissions(&user_key_path)
         .expect("Error getting permissions");
@@ -124,7 +124,7 @@ fn works_with_valid_key_all_permissions() {
     assert_eq!(permissions.len(), 3);
     assert_eq!(permissions[0], Permission::Administrate);
     assert_eq!(permissions[1], Permission::EditSeq("asdf".to_owned()));
-    assert_eq!(permissions[2], Permission::EditSeqSec("ghjk".to_owned(), 1));
+    assert_eq!(permissions[2], Permission::EditSeqSec("ghjk".to_owned(), 0));
 }
 
 #[test]

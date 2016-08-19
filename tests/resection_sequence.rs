@@ -21,9 +21,9 @@ fn setup_resection(user_key: TestKey, has_perm: bool) -> (TempDir, PathBuf, Sequ
     let name = "SequenceA";
     let sequence = setup::try_make_sequence(&root_key_path.as_path(), &name, "test_1sec.ogg");
     assert_eq!(sequence.num_sections, 1);    
-    let _ = sequence.set_section_data(1, sequence_sections::get_test_seq_sec(TestSeqSec::Good1of1))
+    let _ = sequence.set_section_data(0, sequence_sections::get_test_seq_sec(TestSeqSec::Good1of1))
         .expect("Error setting sequence data");
-    assert_section_correct(&sequence, 1, TestSeqSec::Good1of1);
+    assert_section_correct(&sequence, 0, TestSeqSec::Good1of1);
 
     setup::try_new_user(
         &root_key_path.as_path(),
@@ -74,41 +74,41 @@ fn works_with_valid_inputs() {
         .expect("Error resectioning sequence");
     let seq_1_to_2 = get_sequence();
     assert_eq!(seq_1_to_2.num_sections, 2);
-    assert_section_correct(&seq_1_to_2, 1, TestSeqSec::Good1of2);
-    assert_section_correct(&seq_1_to_2, 2, TestSeqSec::Good2of2);
+    assert_section_correct(&seq_1_to_2, 0, TestSeqSec::Good1of2);
+    assert_section_correct(&seq_1_to_2, 1, TestSeqSec::Good2of2);
     common::assert_repo_no_modified_files(&root.path());
 
     let _ = proton_cli::resection_sequence(&user_key_path.as_path(), name, 3)
         .expect("Error resectioning sequence");
     let seq_2_to_3 = get_sequence();
     assert_eq!(seq_2_to_3.num_sections, 3);
-    assert_section_correct(&seq_2_to_3, 1, TestSeqSec::Good1of3);
-    assert_section_correct(&seq_2_to_3, 2, TestSeqSec::Good2of3);
-    assert_section_correct(&seq_2_to_3, 3, TestSeqSec::Good3of3);
+    assert_section_correct(&seq_2_to_3, 0, TestSeqSec::Good1of3);
+    assert_section_correct(&seq_2_to_3, 1, TestSeqSec::Good2of3);
+    assert_section_correct(&seq_2_to_3, 2, TestSeqSec::Good3of3);
     common::assert_repo_no_modified_files(&root.path());
 
     let _ = proton_cli::resection_sequence(&user_key_path.as_path(), name, 1)
         .expect("Error resectioning sequence");
     let seq_3_to_1 = get_sequence();
     assert_eq!(seq_3_to_1.num_sections, 1);
-    assert_section_correct(&seq_3_to_1, 1, TestSeqSec::Good1of1);
+    assert_section_correct(&seq_3_to_1, 0, TestSeqSec::Good1of1);
     common::assert_repo_no_modified_files(&root.path());
 
     let _ = proton_cli::resection_sequence(&user_key_path.as_path(), name, 3)
         .expect("Error resectioning sequence");
     let seq_1_to_3 = get_sequence();
     assert_eq!(seq_1_to_3.num_sections, 3);
-    assert_section_correct(&seq_1_to_3, 1, TestSeqSec::Good1of3);
-    assert_section_correct(&seq_1_to_3, 2, TestSeqSec::Good2of3);
-    assert_section_correct(&seq_1_to_3, 3, TestSeqSec::Good3of3);
+    assert_section_correct(&seq_1_to_3, 0, TestSeqSec::Good1of3);
+    assert_section_correct(&seq_1_to_3, 1, TestSeqSec::Good2of3);
+    assert_section_correct(&seq_1_to_3, 2, TestSeqSec::Good3of3);
     common::assert_repo_no_modified_files(&root.path());
 
     let _ = proton_cli::resection_sequence(&user_key_path.as_path(), name, 2)
         .expect("Error resectioning sequence");
     let seq_3_to_2 = get_sequence();
     assert_eq!(seq_3_to_2.num_sections, 2);
-    assert_section_correct(&seq_3_to_2, 1, TestSeqSec::Good1of2);
-    assert_section_correct(&seq_3_to_2, 2, TestSeqSec::Good2of2);
+    assert_section_correct(&seq_3_to_2, 0, TestSeqSec::Good1of2);
+    assert_section_correct(&seq_3_to_2, 1, TestSeqSec::Good2of2);
     common::assert_repo_no_modified_files(&root.path());
 }
 
@@ -118,10 +118,8 @@ fn works_with_valid_inputs() {
 #[should_panic(expected = "Error resectioning sequence: Ssl")]
 fn fails_with_bad_user_key() {
     let (root, user_key_path, sequence) = setup_resection(TestKey::GoodKey2Pub, true);
-    let _ = proton_cli::resection_sequence(
-        &user_key_path.as_path(),
-        &sequence.name,
-        2).expect("Error resectioning sequence");
+    let _ = proton_cli::resection_sequence(&user_key_path.as_path(), &sequence.name, 2)
+        .expect("Error resectioning sequence");
 }
 
 #[test]
@@ -131,10 +129,8 @@ fn fails_with_bad_user_key() {
 fn fails_with_nonexistent_user_key() {
     let (root, _, sequence) = setup_resection(TestKey::GoodKeyPem, true);
     let bad_key_path = PathBuf::from("nonexistent");
-    let _ = proton_cli::resection_sequence(
-        &bad_key_path.as_path(),
-        &sequence.name,
-        2).expect("Error resectioning sequence");
+    let _ = proton_cli::resection_sequence(&bad_key_path.as_path(), &sequence.name, 2)
+        .expect("Error resectioning sequence");
 }
 
 #[test]
@@ -143,10 +139,8 @@ fn fails_with_nonexistent_user_key() {
 #[should_panic(expected = "Error resectioning sequence: UnauthorizedAction")]
 fn fails_with_unprivileged_user_key() {
     let (root, user_key_path, sequence) = setup_resection(TestKey::GoodKeyPem, false);
-    let _ = proton_cli::resection_sequence(
-        &user_key_path.as_path(),
-        &sequence.name,
-        2).expect("Error resectioning sequence");
+    let _ = proton_cli::resection_sequence(&user_key_path.as_path(), &sequence.name, 2)
+        .expect("Error resectioning sequence");
 }
 
 #[test]
@@ -181,10 +175,8 @@ fn fails_if_section_file_deleted_after_creation() {
     let (root, user_key_path, sequence) = setup_resection(TestKey::GoodKeyPem, true);
     let section = sequence.get_section(1).expect("Error getting sequence section");
     let _ = fs::remove_file(&section.path).expect("Error removing seq sec file");
-    let _ = proton_cli::resection_sequence(
-        &user_key_path.as_path(),
-        &sequence.name,
-        2).expect("Error resectioning sequence");
+    let _ = proton_cli::resection_sequence(&user_key_path.as_path(), &sequence.name, 2)
+        .expect("Error resectioning sequence");
 }
 
 #[test]
@@ -193,8 +185,6 @@ fn fails_if_section_file_deleted_after_creation() {
 #[should_panic(expected = "Error resectioning sequence: InvalidSequenceSection")]
 fn fails_0_sections() {
     let (root, user_key_path, sequence) = setup_resection(TestKey::GoodKeyPem, true);
-    let _ = proton_cli::resection_sequence(
-        &user_key_path.as_path(),
-        &sequence.name,
-        0).expect("Error resectioning sequence");
+    let _ = proton_cli::resection_sequence(&user_key_path.as_path(), &sequence.name, 0)
+        .expect("Error resectioning sequence");
 }
