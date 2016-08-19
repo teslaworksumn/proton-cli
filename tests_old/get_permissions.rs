@@ -117,7 +117,7 @@ fn works_with_valid_key_all_permissions() {
         "EditSeqSec",
         Some("ghjk".to_owned()),
         Some(0));
-    
+
     let permissions = proton_cli::get_permissions(&user_key_path)
         .expect("Error getting permissions");
 
