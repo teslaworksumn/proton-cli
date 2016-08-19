@@ -11,7 +11,7 @@ use tempdir::TempDir;
 use common::setup;
 use common::rsa_keys::TestKey;
 use common::sequence_sections::{self, TestSeqSec};
-use proton_cli::project_types::{PermissionEnum, Sequence};
+use proton_cli::project_types::Sequence;
 
 
 fn setup_resection(user_key: TestKey, has_perm: bool) -> (TempDir, PathBuf, Sequence) {
@@ -38,8 +38,9 @@ fn setup_resection(user_key: TestKey, has_perm: bool) -> (TempDir, PathBuf, Sequ
             &root_key_path,
             true,
             "UserA",
-            PermissionEnum::EditSeq,
-            Some(name.to_owned()));
+            "EditSeq",
+            Some(name.to_owned()),
+            None::<u32>);
     }
 
     (root, user_key_path, sequence)
