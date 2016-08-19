@@ -152,7 +152,7 @@ fn fails_with_unprivileged_user_key() {
 #[test]
 #[allow(unused_variables)]
 // root reference must be kept to keep temp directory in scope, but is never used
-#[should_panic(expected = "Error resectioning sequence: InvalidPermissionTarget")]
+#[should_panic(expected = "Error resectioning sequence: SequenceNotFound")]
 fn fails_with_nonexistent_sequence_name() {
     let (root, user_key_path, _) = setup_resection(TestKey::GoodKeyPem, false);
     let bad_name = &"notasequencename";
@@ -163,7 +163,7 @@ fn fails_with_nonexistent_sequence_name() {
 #[test]
 #[allow(unused_variables)]
 // root reference must be kept to keep temp directory in scope, but is never used
-#[should_panic(expected = "Error resectioning sequence: InvalidPermissionTarget")]
+#[should_panic(expected = "Error resectioning sequence: SequenceNotFound")]
 fn fails_with_invalid_sequence_name() {
     let (root, user_key_path, _) = setup_resection(TestKey::GoodKeyPem, false);
     let invalid_name = &"Not a valid seq name! ;)";

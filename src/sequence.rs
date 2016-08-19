@@ -126,7 +126,7 @@ pub fn resection_sequence<P: AsRef<Path>>(
 ) -> Result<(), Error> {
     // Check that the admin has sufficient privileges
     let admin_user = try!(user::id_user(admin_key_path));
-    let perm = Permission::EditSeq(name.to_owned());
+    let perm = try!(Permission::new("EditSeq", Some(name.to_owned()), None::<u32>));
     if !admin_user.has_permission(&perm) {
         return Err(Error::UnauthorizedAction);
     }
