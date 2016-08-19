@@ -24,10 +24,31 @@ impl Permission {
 
         match perm_name.to_ascii_lowercase().as_ref() {
             "administrate" => Ok(Permission::Administrate),
-            "editseq" => Ok(Permission::EditSeq(target_sequence.unwrap())),
-            "editseqsec" => Ok(Permission::EditSeqSec(
-                target_sequence.unwrap(),
-                target_section.unwrap())),
+            "editseq" => {
+                let sequence_name = target_sequence.unwrap();
+                let project = try!(utils::read_protonfile(None::<&Path>));
+                if project.find_sequence_by_name(&sequence_name).is_none() {
+                    Err(Error::SequenceNotFound(sequence_name))
+                } else {
+                    Ok(Permission::EditSeq(sequence_name))
+                }
+            },
+            "editseqsec" => {
+                let sequence_name = target_sequence.unwrap();
+                let section_idx = target_section.unwrap();
+                let project = try!(utils::read_protonfile(None::<&Path>));
+                let sequence_opt = project.find_sequence_by_name(&sequence_name);
+                if sequence_opt.is_none() {
+                    Err(Error::SequenceNotFound(sequence_name))
+                } else {
+                    let sequence = sequence_opt.unwrap().to_owned();
+                    if !sequence.section_in_range(section_idx) {
+                        Err(Error::InvalidSequenceSection(section_idx))
+                    } else {
+                        Ok(Permission::EditSeqSec(sequence_name, section_idx))
+                    }
+                }
+            },
             _ => Err(Error::InvalidPermissionName(perm_name.to_owned()))
         }
     }

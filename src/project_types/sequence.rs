@@ -53,12 +53,17 @@ impl Sequence {
 
     /// Reads in a sequence section from its file
     pub fn get_section(&self, section: u32) -> Result<SequenceSection, Error> {
-        if section > 0 && section <= self.num_sections {
+        if self.section_in_range(section) {
             let section_path = self.get_section_path(section);
             utils::read_sequence_section(&section_path)
         } else {
             Err(Error::InvalidSequenceSection(section))
         }
+    }
+
+    /// Checks to see if the given section is valid/in range
+    pub fn section_in_range(&self, section: u32) -> bool {
+        section > 0 && section <= self.num_sections
     }
 
     /// Reads in all sequence sections from their files into a vec

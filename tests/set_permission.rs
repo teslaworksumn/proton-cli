@@ -6,7 +6,6 @@ use std::path::Path;
 
 use common::setup;
 use common::rsa_keys::TestKey;
-use proton_cli::project_types::PermissionEnum;
 
 
 #[test]
@@ -30,8 +29,9 @@ fn works_with_administrate() {
         &root_private_key_path,
         true,
         "Test User",
-        PermissionEnum::Administrate,
-        None);
+        "Administrate",
+        None::<String>,
+        None::<u32>);
 
     // Now try to remove the permission
     setup::try_set_permission(
@@ -39,8 +39,9 @@ fn works_with_administrate() {
         &root_private_key_path,
         false,
         "Test User",
-        PermissionEnum::Administrate,
-        None);
+        "Administrate",
+        None::<String>,
+        None::<u32>);
 
 }
 
@@ -68,8 +69,9 @@ fn works_with_editseq() {
         &root_private_key_path,
         true,
         "Test User",
-        PermissionEnum::EditSeq,
-        Some("test_seq".to_string()));
+        "EditSeq",
+        Some("test_seq".to_owned()),
+        None::<u32>);
 
     // Now try removing the permission
     setup::try_set_permission(
@@ -77,8 +79,9 @@ fn works_with_editseq() {
         &root_private_key_path,
         false,
         "Test User",
-        PermissionEnum::EditSeq,
-        Some("test_seq".to_string()));
+        "EditSeq",
+        Some("test_seq".to_owned()),
+        None::<u32>);
 }
 
 #[test]
@@ -105,17 +108,9 @@ fn works_with_editseqsec() {
         &root_private_key_path,
         true,
         "Test User",
-        PermissionEnum::EditSeqSec,
-        Some("test_seq,1".to_string()));
-
-    // Make sure sequence editor was updated
-    let project = proton_cli::utils::read_protonfile(None::<&Path>)
-        .expect("Error reading project from file");
-    let sequence = project.find_sequence_by_name(&"test_seq")
-        .expect("Error reading sequence from project");
-    let section_1 = sequence.get_section(1)
-        .expect("Error getting sequence section");
-    assert_eq!(&section_1.editor, &Some(user));
+        "EditSeqSec",
+        Some("test_seq".to_owned()),
+        Some(1));
 
     // Now try removing the permission
     setup::try_set_permission(
@@ -123,8 +118,9 @@ fn works_with_editseqsec() {
         &root_private_key_path,
         false,
         "Test User",
-        PermissionEnum::EditSeqSec,
-        Some("test_seq,1".to_string()));
+        "EditSeqSec",
+        Some("test_seq".to_owned()),
+        Some(1));
 }
 
 #[test]
@@ -147,8 +143,9 @@ fn fails_removing_root_admin() {
         &root_private_key_path,
         true,
         "Admin2",
-        PermissionEnum::Administrate,
-        None);
+        "Administrate",
+        None::<String>,
+        None::<u32>);
 
     // Now have that new user take away root's Administrate permission
     setup::try_set_permission(
@@ -156,12 +153,13 @@ fn fails_removing_root_admin() {
         &admin2_private_key_path,
         false,
         "root",
-        PermissionEnum::Administrate,
-        None);
+        "Administrate",
+        None::<String>,
+        None::<u32>);
 }
 
 #[test]
-#[should_panic(expected = "InvalidPermissionTarget")]
+#[should_panic(expected = "SequenceNotFound")]
 fn fails_with_bad_target_editseq() {
     let root = setup::setup_init_cd();
     let root_private_key_path = common::make_key_file(root.path(), "root.pem", TestKey::RootKeyPem);
@@ -183,13 +181,14 @@ fn fails_with_bad_target_editseq() {
         &root_private_key_path,
         true,
         "Test User",
-        PermissionEnum::EditSeq,
-        Some("nonexistent".to_string()));
+        "EditSeq",
+        Some("nonexistent".to_owned()),
+        None::<u32>);
 
 }
 
 #[test]
-#[should_panic(expected = "InvalidPermissionTarget")]
+#[should_panic(expected = "InvalidSequenceSection")]
 fn fails_with_bad_target_editseqsec() {
     let root = setup::setup_init_cd();
     let root_private_key_path = common::make_key_file(root.path(), "root.pem", TestKey::RootKeyPem);
@@ -211,8 +210,9 @@ fn fails_with_bad_target_editseqsec() {
         &root_private_key_path,
         true,
         "Test User",
-        PermissionEnum::EditSeqSec,
-        Some("section999".to_string()));
+        "EditSeqSec",
+        Some("test_seq".to_owned()),
+        Some(999));
 }
 
 #[test]
@@ -233,8 +233,9 @@ fn fails_with_bad_path_to_private_key() {
         &root_private_key_path,
         true,
         "Test User",
-        PermissionEnum::Administrate,
-        None);
+        "Administrate",
+        None::<String>,
+        None::<u32>);
 }
 
 #[test]
@@ -256,8 +257,9 @@ fn fails_with_unused_private_key() {
         &root_private_key_path,
         true,
         "Test User",
-        PermissionEnum::Administrate,
-        None);
+        "Administrate",
+        None::<String>,
+        None::<u32>);
 }
 
 #[test]
@@ -271,8 +273,9 @@ fn fails_with_nonexistent_username() {
         &root_private_key_path,
         true,
         "Test User",
-        PermissionEnum::Administrate,
-        None);
+        "Administrate",
+        None::<String>,
+        None::<u32>);
 
 }
 
@@ -296,6 +299,7 @@ fn fails_with_unauthorized_authority() {
         &private_key_path,
         true,
         "root",
-        PermissionEnum::Administrate,
-        None);
+        "Administrate",
+        None::<String>,
+        None::<u32>);
 }

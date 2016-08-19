@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use self::tempdir::TempDir;
 
 use proton_cli;
-use proton_cli::project_types::{PermissionEnum, Sequence, User};
+use proton_cli::project_types::{Sequence, User};
 
 use super::rsa_keys::{self, TestKey};
 
@@ -97,8 +97,9 @@ pub fn try_set_permission<P: AsRef<Path>>(
     auth_private_key_path: P,
     add: bool,
     target_username: &str,
-    permission: PermissionEnum,
-    target: Option<String>,
+    permission_name: &str,
+    target_sequence: Option<String>,
+    target_section: Option<u32>
 ) {
     let auth_user = proton_cli::id_user(&auth_private_key_path)
         .expect("Auth user not found");
@@ -107,8 +108,9 @@ pub fn try_set_permission<P: AsRef<Path>>(
         &auth_user,
         add,
         &target_username,
-        permission.to_owned(),
-        target.to_owned()
+        permission_name,
+        target_sequence,
+        target_section
     ).expect("Error setting permission");
 
     super::assert_repo_no_modified_files(&root_path);

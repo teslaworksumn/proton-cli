@@ -6,7 +6,7 @@ use std::path::Path;
 
 use common::setup;
 use common::rsa_keys::TestKey;
-use proton_cli::project_types::PermissionEnum;
+use proton_cli::project_types::Permission;
 
 
 #[test]
@@ -54,16 +54,15 @@ fn works_with_valid_key_one_permission() {
         &root_key_path,
         true,
         &name,
-        PermissionEnum::EditSeq,
-        Some("asdf".to_owned()));
+        "EditSeq",
+        Some("asdf".to_owned()),
+        None::<u32>);
     
     let permissions = proton_cli::get_permissions(&user_key_path)
         .expect("Error getting permissions");
 
     assert_eq!(permissions.len(), 1);
-    assert_eq!(&permissions[0].which, &PermissionEnum::EditSeq);
-    assert!(&permissions[0].target.is_some());
-    assert_eq!(permissions[0].target, Some("asdf".to_owned()));
+    assert_eq!(permissions[0], Permission::EditSeq("asdf".to_owned()));
 }
 
 #[test]
@@ -97,37 +96,35 @@ fn works_with_valid_key_all_permissions() {
         &root_key_path,
         true,
         &name,
-        PermissionEnum::Administrate,
-        None::<String>);
+        "Administrate",
+        None::<String>,
+        None::<u32>);
 
     setup::try_set_permission(
         &root.path(),
         &root_key_path,
         true,
         &name,
-        PermissionEnum::EditSeq,
-        Some("asdf".to_owned()));
+        "EditSeq",
+        Some("asdf".to_owned()),
+        None::<u32>);
 
     setup::try_set_permission(
         &root.path(),
         &root_key_path,
         true,
         &name,
-        PermissionEnum::EditSeqSec,
-        Some("ghjk,1".to_owned()));
+        "EditSeqSec",
+        Some("ghjk".to_owned()),
+        Some(1));
 
     let permissions = proton_cli::get_permissions(&user_key_path)
         .expect("Error getting permissions");
 
     assert_eq!(permissions.len(), 3);
-    assert_eq!(&permissions[0].which, &PermissionEnum::Administrate);
-    assert!(&permissions[0].target.is_none());
-    assert_eq!(&permissions[1].which, &PermissionEnum::EditSeq);
-    assert!(&permissions[1].target.is_some());
-    assert_eq!(permissions[1].target, Some("asdf".to_owned()));
-    assert_eq!(&permissions[2].which, &PermissionEnum::EditSeqSec);
-    assert!(&permissions[2].target.is_some());
-    assert_eq!(permissions[2].target, Some("ghjk,1".to_owned()));
+    assert_eq!(permissions[0], Permission::Administrate);
+    assert_eq!(permissions[1], Permission::EditSeq("asdf".to_owned()));
+    assert_eq!(permissions[2], Permission::EditSeqSec("ghjk".to_owned(), 1));
 }
 
 #[test]

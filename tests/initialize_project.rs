@@ -10,7 +10,7 @@ use std::path::Path;
 
 use git2::Repository;
 
-use proton_cli::project_types::{Project, User, Permission, PermissionEnum};
+use proton_cli::project_types::{Project, User, Permission};
 use proton_cli::initialize_project;
 use proton_cli::utils;
 
@@ -32,9 +32,7 @@ fn assert_admin_created<P: AsRef<Path>>(root: P, root_pub_key: &str) {
         .expect("Loading project from file failed");
     let mut admin_user = User::new("admin".as_ref(), &root_pub_key)
         .expect("Error creating admin user for comparison");
-    let admin_permission = Permission::new(PermissionEnum::Administrate, None::<String>)
-        .expect("Error creating default admin permission");
-    admin_user.add_permission(admin_permission);
+    admin_user.add_permission(Permission::Administrate);
     assert_eq!(project.users.len(), 1);
     assert_eq!(project.users[0], admin_user);
 }
