@@ -15,7 +15,6 @@ pub struct SequenceSection {
     pub index: u32,  // Starts at 1
     pub path: String,
     pub num_frames: u32,
-    pub editor: Option<User>,
     pub data: Vec<Vec<u8>>, // Row is channel, column is frame    
 }
 

@@ -103,7 +103,6 @@ impl Sequence {
             index: index,
             path: section_path.clone(),
             num_frames: num_frames,
-            editor: None,
             data: data
         };
         let _ = try!(section.write_to_file());
