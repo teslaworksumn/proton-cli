@@ -6,7 +6,6 @@ use std::path::PathBuf;
 use rustc_serialize::json;
 
 use error::Error;
-use project_types::User;
 
 
 #[derive(Clone, Debug, PartialEq, Eq, RustcEncodable, RustcDecodable)]

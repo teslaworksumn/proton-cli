@@ -63,14 +63,14 @@ impl Sequence {
 
     /// Checks to see if the given section is valid/in range
     pub fn section_in_range(&self, section: u32) -> bool {
-        section > 0 && section <= self.num_sections
+        section < self.num_sections
     }
 
     /// Reads in all sequence sections from their files into a vec
     fn get_all_sections(&self) -> Result<Vec<SequenceSection>, Error> {
         let mut sections = vec![];
         for i in 0..self.num_sections {
-            let section = try!(self.get_section(i + 1));
+            let section = try!(self.get_section(i));
             sections.push(section);
         }
         Ok(sections)
@@ -179,7 +179,7 @@ impl Sequence {
             let sec_frames = sec_data[0].len();
 
             let _ = self.create_section(
-                1 + sec_idx as u32,
+                sec_idx as u32,
                 sec_frames as u32,
                 sec_data.to_owned());
         }

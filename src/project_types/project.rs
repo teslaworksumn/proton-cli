@@ -170,15 +170,11 @@ impl Project {
     
         for i in 0..self.users.len() {
             if self.users[i].name == name {
-                let mut editor = None::<User>;
-                {
-                    let u = &mut self.users[i];
-                    if add {
-                        u.add_permission(perm.clone());
-                        editor = Some(u.to_owned());
-                    } else {
-                        u.remove_permission(perm.clone());
-                    }
+                let u = &mut self.users[i];
+                if add {
+                    u.add_permission(perm.clone());
+                } else {
+                    u.remove_permission(perm.clone());
                 }
                 return Ok(());
             }

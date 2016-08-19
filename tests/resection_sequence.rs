@@ -173,7 +173,7 @@ fn fails_if_section_file_deleted_after_creation() {
     // Create sequence, then delete sequence/sequence_sec1
     // Check vector of paths on sequence load, warn/remove dead paths
     let (root, user_key_path, sequence) = setup_resection(TestKey::GoodKeyPem, true);
-    let section = sequence.get_section(1).expect("Error getting sequence section");
+    let section = sequence.get_section(0).expect("Error getting sequence section");
     let _ = fs::remove_file(&section.path).expect("Error removing seq sec file");
     let _ = proton_cli::resection_sequence(&user_key_path.as_path(), &sequence.name, 2)
         .expect("Error resectioning sequence");
