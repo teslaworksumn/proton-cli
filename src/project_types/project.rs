@@ -1,5 +1,5 @@
 
-use project_types::{Sequence, User, Permission, PermissionEnum};
+use project_types::{Sequence, User, Permission};
 use error::Error;
 
 
@@ -17,7 +17,7 @@ impl Project {
     pub fn empty(root_pub_key: &str) -> Result<Project, Error> {
 
         let mut root = try!(User::new("root", &root_pub_key));
-        let root_permission = try!(Permission::new(PermissionEnum::Administrate, None::<String>));
+        let root_permission = Permission::Administrate;
         root.add_permission(root_permission);
 
         Ok(Project {
@@ -179,15 +179,6 @@ impl Project {
                     } else {
                         u.remove_permission(perm.clone());
                     }
-                }
-                // Set sequence section's Editor field if necessary
-                if &perm.which == &PermissionEnum::EditSeqSec {
-                    let (seq_name, seq_sec_num) = try!(Permission::parse_seq_sec_target(&perm.target));
-                    let sequence = self.find_sequence_by_name(&seq_name)
-                        .expect("Error finding sequence");
-                    let mut seq_sec = try!(sequence.get_section(seq_sec_num));
-                    seq_sec.editor = editor;
-                    try!(seq_sec.write_to_file());
                 }
                 return Ok(());
             }

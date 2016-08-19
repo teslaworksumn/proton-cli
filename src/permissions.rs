@@ -1,10 +1,11 @@
 
 use std::path::Path;
+use std::ascii::AsciiExt;
 
 use git2::Signature;
 
 use error::Error;
-use project_types::{User, Permission, PermissionEnum};
+use project_types::{User, Permission};
 use utils;
 use user;
 
@@ -13,8 +14,9 @@ pub fn set_permission(
     auth_user: &User,
     add: bool,
     target_username: &str,
-    permission: PermissionEnum,
-    target: Option<String>
+    permission_name: &str,
+    target_sequence: Option<String>,
+    target_section: Option<u32>
 ) -> Result<(), Error> {
 
     // Only admins (those with GrantPerm permission) can change permissions
@@ -23,12 +25,12 @@ pub fn set_permission(
     }
 
     // Make sure root isn't losing admin privileges
-    if target_username == "root" && !add && permission == PermissionEnum::Administrate {
+    if target_username == "root" && !add && permission_name.eq_ignore_ascii_case("Administrate") {
         return Err(Error::UnauthorizedAction);
     }
 
     // Validate and create permission
-    let perm = try!(Permission::new(permission, target));
+    let perm = try!(Permission::new(permission_name, target_sequence, target_section));
 
     // Get project that will be modified
     let mut project = try!(utils::read_protonfile(None::<&Path>));

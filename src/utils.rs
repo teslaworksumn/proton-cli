@@ -6,7 +6,7 @@ use std::env;
 use rustc_serialize::json;
 use git2::{self, Repository, Signature};
 
-use project_types::{User, Project, Permission, PermissionEnum, SequenceSection};
+use project_types::{User, Project, Permission, SequenceSection};
 use error::Error;
 use user;
 
@@ -16,8 +16,7 @@ use user;
 /// Returns this user if found and has permission, else error
 pub fn validate_admin<P: AsRef<Path>>(admin_key_path: P) -> Result<User, Error> {
     let admin_user = try!(user::id_user(admin_key_path));
-    let perm = try!(Permission::new(PermissionEnum::Administrate, None::<String>));
-    if !admin_user.has_permission(&perm) {
+    if !admin_user.has_permission(&Permission::Administrate) {
         return Err(Error::UnauthorizedAction);
     }
     Ok(admin_user)

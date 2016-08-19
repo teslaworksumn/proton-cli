@@ -9,7 +9,6 @@ use rustc_serialize::json;
 use docopt::Docopt;
 
 use proton_cli::error::Error;
-use proton_cli::project_types::PermissionEnum;
 use proton_cli::utils;
 
 
@@ -25,7 +24,9 @@ Usage:
   ./proton resection-sequence <admin-key> <name> <num-sections>
   ./proton id-user <private-key>
   ./proton list-permissions <private-key>
-  ./proton set-permission <admin-key> (add | remove) <name> <permission> [<target>]
+  ./proton set-permission <admin-key> (add | remove) <name> Administrate
+  ./proton set-permission <admin-key> (add | remove) <name> EditSeq <target-sequence>
+  ./proton set-permission <admin-key> (add | remove) <name> EditSeqSec <target-section>
   ./proton (-h | --help)
 
 Options:
@@ -41,8 +42,8 @@ struct Args {
 	arg_admin_key: Option<String>,
 	arg_name: Option<String>,
 	arg_music_file: Option<String>,
-	arg_permission: Option<PermissionEnum>,
-	arg_target: Option<String>,
+	arg_target_sequence: Option<String>,
+	arg_target_section: Option<u32>,
 	arg_num_sections: Option<u32>,
 }
 
@@ -142,8 +143,15 @@ fn run_set_permission(args: Args) -> Result<(), Error> {
 
 	let added = env::args().nth(3).unwrap() == "add";
 	let username = args.arg_name.unwrap();
-	let permission = args.arg_permission.unwrap();
-	let target = args.arg_target;
+	let permission_name = env::args().nth(5).unwrap();
+	let target_sequence = args.arg_target_sequence;
+	let target_section = args.arg_target_section;
 
-	proton_cli::set_permission(&auth_user, added, &username, permission, target)
+	proton_cli::set_permission(
+		&auth_user,
+		added,
+		&username,
+		&permission_name,
+		target_sequence,
+		target_section)
 }

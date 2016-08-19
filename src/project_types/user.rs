@@ -3,7 +3,7 @@ use std::io::Cursor;
 use openssl::crypto::rsa::RSA as openssl_RSA;
 
 use error::Error;
-use project_types::{Permission, PermissionEnum};
+use project_types::Permission;
 
 
 #[derive(Clone, Debug, Eq, RustcEncodable, RustcDecodable)]
@@ -75,7 +75,7 @@ impl User {
     /// Determines whether the user has the Administrate permission
     pub fn is_admin(&self) -> bool {
         for p in &self.permissions {
-            if p.which == PermissionEnum::Administrate {
+            if p == &Permission::Administrate {
                 return true;
             }
         }
