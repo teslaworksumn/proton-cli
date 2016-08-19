@@ -163,8 +163,7 @@ impl Sequence {
             .fold(vec![vec![]; num_channels as usize], combine_data);
         // Break single chunk into sections, one channel at a time
         let mut sectioned_data = vec![vec![vec![]; num_channels as usize]; num_sections as usize];
-        for channel_idx in 0..all_data.len() {
-            let channel_data = &all_data[channel_idx];
+        for (channel_idx, channel_data) in all_data.iter().enumerate() {
             let mut chunked_data = channel_data.chunks(num_frames_per_section as usize);
             for section_idx in 0..num_sections {
                 let new_data = chunked_data.next()
