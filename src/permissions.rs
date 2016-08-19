@@ -1,5 +1,6 @@
 
 use std::path::Path;
+use std::ascii::AsciiExt;
 
 use error::Error;
 use project_types::Permission;
