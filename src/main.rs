@@ -17,7 +17,6 @@ const USAGE: &'static str = "
 Command-line interface for Proton
 
 Usage:
-<<<<<<< 918d5b197409d9d9fd822ff669aa95fd8ed4df1b
   ./proton new-project <name> <layout-id>
   ./proton new-user <admin-key> <name>
   ./proton remove-user <admin-key> <uid>
@@ -37,19 +36,7 @@ Usage:
   ./proton set-permission <admin-key> (add | remove) <uid> Administrate
   ./proton set-permission <admin-key> (add | remove) <uid> EditSequence <target-sequence>
   ./proton set-permission <admin-key> (add | remove) <uid> EditSection <target-sequence> <target-section>
-=======
-  ./proton init <folder> <root-public-key>
-  ./proton new-user <admin-key> <name> <public-key>
-  ./proton remove-user <admin-key> <name>
-  ./proton new-sequence <admin-key> <name> <music-file>
-  ./proton remove-sequence <admin-key> <name>
-  ./proton resection-sequence <admin-key> <name> <num-sections>
-  ./proton id-user <private-key>
-  ./proton list-permissions <private-key>
-  ./proton set-permission <admin-key> (add | remove) <name> Administrate
-  ./proton set-permission <admin-key> (add | remove) <name> EditSeq <target-sequence>
   ./proton set-permission <admin-key> (add | remove) <name> EditSeqSec <target-section>
->>>>>>> Converted main code to new permissions api
   ./proton (-h | --help)
 
 Options:
