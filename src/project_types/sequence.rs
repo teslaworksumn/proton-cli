@@ -72,12 +72,7 @@ impl Sequence {
 
     /// Reads in all sequence sections from their files into a vec
     fn get_all_sections(&self) -> Result<Vec<SequenceSection>, Error> {
-        let mut sections = vec![];
-        for i in 0..self.num_sections {
-            let section = try!(self.get_section(i));
-            sections.push(section);
-        }
-        Ok(sections)
+        (0..self.num_sections).map(|i| self.get_section(i)).collect()
     }
 
     /// Generate and return a sequence section with sane defaults
