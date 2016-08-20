@@ -28,7 +28,6 @@ impl Sequence {
         num_channels: u32
     ) -> Result<Sequence, Error> {
         // Defaults
-        // TODO: put constraint (>25ms)
         let frame_dur_ms = frame_duration_ms.unwrap_or(50);
         if frame_dur_ms < 25 {
             return Err(Error::InvalidFrameDuration(frame_dur_ms));
@@ -43,7 +42,7 @@ impl Sequence {
 
         // Get layout id
         let layout_id = layout.layout_id;
-
+        
         // Create sequence
         let sequence = Sequence {
             seqid: seqid,
