@@ -26,7 +26,7 @@ Usage:
   ./proton list-permissions <private-key>
   ./proton set-permission <admin-key> (add | remove) <name> Administrate
   ./proton set-permission <admin-key> (add | remove) <name> EditSeq <target-sequence>
-  ./proton set-permission <admin-key> (add | remove) <name> EditSeqSec <target-section>
+  ./proton set-permission <admin-key> (add | remove) <name> EditSeqSec <target-sequence> <target-section>
   ./proton (-h | --help)
 
 Options:

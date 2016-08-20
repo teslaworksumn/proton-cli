@@ -10,7 +10,9 @@ Command line interface to manipulate ProtonLights projects.
 - `remove-sequence <admin-key> <name>`: Removes a sequence and deletes its files
 - `id-user <private-key>`: Identify user by ssh key (public key in repo)
 - `list-permissions <private-key>`: Get list of user's permissions
-- `set-permission <admin-key> (add | remove) <name> <permission> [<target>]`: Change user permissions
+- `set-permission <admin-key> (add | remove) <name> Administrate`: Set admin permission
+- `set-permission <admin-key> (add | remove) <name> EditSeq <target-sequence>`: Set permission to edit a sequence
+- `set-permission <admin-key> (add | remove) <name> EditSeqSec <target-sequence> <target-section>`: Set permission to edit a sequence section
 - `resection-sequence <admin-key> <name> <num-sections>`: (Re-)Section a sequence
 
 Permissions include:
