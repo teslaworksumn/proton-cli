@@ -30,10 +30,14 @@ impl Sequence {
         num_sections: Option<u32>
     ) -> Result<Sequence, Error> {
         // Defaults
-        // TODO: put constraint (>25ms)
         let frame_dur_ms = frame_duration_ms.unwrap_or(50);
-        // TODO: put constraint (!= 0)
+        if frame_dur_ms < 25 {
+            return Err(Error::InvalidFrameDuration(frame_dur_ms));
+        }
         let num_sects = num_sections.unwrap_or(1);
+        if num_sects < 1 {
+            return Err(Error::InvalidNumSequenceSections(num_sects));
+        }
 
         // Create sequence
         let mut sequence = Sequence {
