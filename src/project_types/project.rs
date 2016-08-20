@@ -102,13 +102,11 @@ impl Project {
         ));
 
         // Check if duplicate
-        match self.sequences
+        let duplicate_sequence = self.sequences
             .iter()
-            .find(|seq| seq.name == name || seq.directory_name == directory_name) {
-                Some(_) => {
-                    return Err(Error::DuplicateSequence(name.to_owned()));
-                },
-                None => ()
+            .find(|seq| seq.name == name || seq.directory_name == directory_name);
+        if duplicate_sequence.is_some() {
+            return Err(Error::DuplicateSequence(name.to_owned()));
         }
 
         let mut new_project = self.clone();
@@ -130,12 +128,8 @@ impl Project {
     pub fn resection_sequence(&self, name: &str, num_sections: u32) -> Result<Project, Error> {
         let mut new_project = self.clone();
         match new_project.sequences.iter_mut().find(|seq| seq.name == name) {
-            None => {
-                return Err(Error::SequenceNotFound(name.to_owned()));
-            },
-            Some(sequence) => {
-                try!(sequence.resection(num_sections));
-            }
+            None => return Err(Error::SequenceNotFound(name.to_owned())),
+            Some(sequence) => try!(sequence.resection(num_sections)),
         }
         Ok(new_project)
     }
