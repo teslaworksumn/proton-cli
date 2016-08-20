@@ -43,7 +43,6 @@ impl Permission {
                 } else {
                     let sequence = sequence_opt.unwrap().to_owned();
                     if !sequence.section_in_range(section_idx) {
-                        println!("EditSeqSec target section not in range");
                         Err(Error::InvalidSequenceSection(section_idx))
                     } else {
                         Ok(Permission::EditSeqSec(sequence_name, section_idx))
