@@ -4,9 +4,8 @@ use std::cmp;
 use git2::Signature;
 
 use error::Error;
-use project_types::SequenceSection;
 use utils;
-
+use project_types::{SequenceSection, Fixture};
 
 #[derive(Clone, Debug, PartialEq, Eq, RustcEncodable, RustcDecodable)]
 pub struct Sequence {
@@ -15,7 +14,8 @@ pub struct Sequence {
     pub music_file_name: String,
     pub music_duration_sec: u32,
     pub frame_duration_ms: u32,
-    pub num_sections: u32,
+    pub editor: Option<User>,
+    pub fixtures: Vec<Fixture>,
 }
 
 impl Sequence {

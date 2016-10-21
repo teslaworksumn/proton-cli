@@ -8,8 +8,8 @@ use utils;
 #[derive(Clone, Debug, Eq, PartialEq, RustcEncodable, RustcDecodable)]
 pub enum Permission {
     Administrate,
-    EditSeq(String),
-    EditSeqSec(String, u32),
+    EditSeq,
+    EditFixture,
 }
 
 impl Permission {
