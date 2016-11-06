@@ -110,6 +110,4 @@ impl ChannelDao for ChannelDaoPostgres {
             rotation: (rotation_a, rotation_b, rotation_c)
         })
     }
-
-
 }

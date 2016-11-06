@@ -22,7 +22,6 @@ impl Permission {
     ) -> Result<Permission, Error> {
         // Make sure user exists
         // Check seqid and secid existence based on perm
-
         Err(Error::TodoErr)
     }
 
@@ -30,4 +29,10 @@ impl Permission {
     pub fn add_permission<T: PermissionDao>(dao: &T, perm: Permission) -> Result<(), Error> {
         Err(Error::TodoErr)
     }
+
+    /// Add a user permission
+    pub fn add_permission<T: PermissionDao>(dao: &T, perm: Permission) -> Result<(), Error> {
+        Err(Error::TodoErr)
+    }
+
 }

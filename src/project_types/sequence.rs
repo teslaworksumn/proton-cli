@@ -56,26 +56,4 @@ impl Sequence {
 
         Ok(sequence)
     }
-
-    /// Get the path to this specific section, starting with the sequence directory
-    /// E.g. sequence/sequence_section1.json
-    /// Assumes the current directory is the project directory
-    /// Returns as string
-    fn get_section_path(
-        &self,
-        index: u32
-    ) -> String {
-
-        let mut filename = String::new();
-        filename.push_str(&self.name);
-        filename.push_str("_section");
-        filename.push_str(&index.to_string());
-
-        let mut section_path = PathBuf::from(&self.directory_name);
-        section_path.push(&filename);
-        
-        section_path.to_str().expect("Path is invalid unicode").to_owned()
-    }
-
 }
-

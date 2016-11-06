@@ -69,5 +69,4 @@ impl UserDao for UserDaoPostgres {
             x => Err(Error::InvalidNumResults(x)),
         }
     }
-
 }

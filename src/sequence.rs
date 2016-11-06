@@ -251,37 +251,17 @@ pub fn get_sequence<SD: SequenceDao>(seq_dao: &SD, seqid: u32) -> Result<Sequenc
     seq_dao.get_sequence(seqid)
 }
 
-/// Resections an existing sequence with the given name
-/// Returns a new sequence with the changes
-pub fn resection_sequence<P: AsRef<Path>>(
+// Deletes sequence from storage
+pub fn delete_sequence<P: AsRef<Path>, D: SequenceDao> (
+    dao: D,
     admin_key_path: P,
-    name: &str,
-    num_sections: u32
+    seqid: u32
 ) -> Result<(), Error> {
-    // Check that the admin has sufficient privileges
-    let admin_user = try!(user::id_user(admin_key_path));
-    let perm = try!(Permission::new("EditSeq", Some(name.to_owned()), None::<u32>));
-    if !admin_user.has_permission(&perm) {
-        return Err(Error::UnauthorizedAction);
-    }
 
-    // Make sure the name is valid (needed since it will be used in a file path)
-    try!(validate_seq_name(name));
-
-    // Get project
-    let project = try!(utils::read_protonfile(None::<P>));
-
-    // Resection sequence
-    let new_project = try!(project.resection_sequence(name, num_sections));
-    try!(utils::write_protonfile(&new_project, None::<P>));
-
-    // Commit changes
-    let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
-    let msg = format!("Resectioning sequence '{}'", name);
-    let repo_path: Option<P> = None;
-
-    utils::commit_all(repo_path, &signature, &msg)
-        .map(|_| ())
+    // Check admin permission
+    // Check that sequence exists
+    // Try to delete sequence
+    Err(Error::TodoErr)
 }
 
 /// Check that the music file is a valid format

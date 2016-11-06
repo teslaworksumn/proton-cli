@@ -33,4 +33,3 @@ pub use self::daos_postgres::ProjectDaoPostgres;
 pub use self::daos_postgres::SectionDaoPostgres;
 pub use self::daos_postgres::SequenceDaoPostgres;
 pub use self::daos_postgres::UserDaoPostgres;
-

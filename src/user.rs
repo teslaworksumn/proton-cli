@@ -28,6 +28,7 @@ pub fn new_user<P: AsRef<Path>, UD: UserDao, PD: PermissionDao>(
     name: &str
 ) -> Result<String, Error> {
 
+    Err(Error::TodoErr)
     // See if admin has permission to add user
     let valid_permissions = vec![PermissionEnum::Administrate];
     let _ = try!(utils::check_valid_permission(
