@@ -6,20 +6,28 @@ use std::env;
 use rustc_serialize::json;
 use git2::{self, Repository, Signature};
 
-use project_types::{User, Project, Permission, SequenceSection};
+use project_types::{User, Project, Permission};
 use error::Error;
 use user;
 
+
+/// Lookup a user's uid based on the given private key
+/// Return error if not found
+pub fn get_uid_from_key<P: AsRef<Path>>(key_path: P) -> Result<u32, Error> {
+    Err(Error::TodoErr)
+}
 
 /// Checks if the user with a private key at the given path has
 /// the Administrate permission
 /// Returns this user if found and has permission, else error
 pub fn validate_admin<P: AsRef<Path>>(admin_key_path: P) -> Result<User, Error> {
-    let admin_user = try!(user::id_user(admin_key_path));
-    if !admin_user.has_permission(&Permission::Administrate) {
-        return Err(Error::UnauthorizedAction);
-    }
-    Ok(admin_user)
+    
+    Err(Error::TodoErr)
+    // let admin_user = try!(user::id_user(admin_key_path));
+    // if !admin_user.has_permission(&Permission::Administrate) {
+    //     return Err(Error::UnauthorizedAction);
+    // }
+    // Ok(admin_user)
 }
 
 /// Returns the last part of the path, the file name, if no problems arise
@@ -143,16 +151,6 @@ pub fn write_protonfile<P: AsRef<Path>>(project: &Project, pf_path: Option<P>) -
     File::create(&protonfile_path)
         .and_then(|mut protonfile| write!(protonfile, "{}\n", pretty_json))
         .map_err(Error::Io)
-}
-
-/// Reads and decodes a SequenceSection from a file
-pub fn read_sequence_section<P: AsRef<Path>>(seq_sec_path: P) -> Result<SequenceSection, Error> {
-    if !seq_sec_path.as_ref().is_file() {
-        let seq_sec_path_str = seq_sec_path.as_ref().to_str().expect("Path is invalid unicode");
-        return Err(Error::SequenceSectionNotFound(seq_sec_path_str.to_owned()));
-    }
-    let sequence_section = try!(file_as_string(&seq_sec_path));
-    json::decode(&sequence_section).map_err(Error::JsonDecode)
 }
 
 /// Reads a file as a string.

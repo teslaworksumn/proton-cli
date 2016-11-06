@@ -10,6 +10,7 @@ use docopt::Docopt;
 
 use proton_cli::error::Error;
 use proton_cli::utils;
+use proton_cli::dao;
 
 
 const USAGE: &'static str = "
@@ -18,15 +19,16 @@ Command-line interface for Proton
 Usage:
   ./proton init <folder> <root-public-key>
   ./proton new-user <admin-key> <name> <public-key>
-  ./proton remove-user <admin-key> <name>
+  ./proton remove-user <admin-key> <uid>
   ./proton new-sequence <admin-key> <name> <music-file>
-  ./proton remove-sequence <admin-key> <name>
-  ./proton resection-sequence <admin-key> <name> <num-sections>
+  ./proton remove-sequence <admin-key> <seqid>
+  ./proton delete-sequence <admin-key> <seqid>
+  ./proton new-section <admin-key> <t_start> <t_end> <seqid> <fixid>..
   ./proton id-user <private-key>
   ./proton list-permissions <private-key>
-  ./proton set-permission <admin-key> (add | remove) <name> Administrate
-  ./proton set-permission <admin-key> (add | remove) <name> EditSeq <target-sequence>
-  ./proton set-permission <admin-key> (add | remove) <name> EditSeqSec <target-sequence> <target-section>
+  ./proton set-permission <admin-key> (add | remove) <uid> Administrate
+  ./proton set-permission <admin-key> (add | remove) <uid> EditSequence <target-sequence>
+  ./proton set-permission <admin-key> (add | remove) <uid> EditSection <target-sequence> <target-section>
   ./proton (-h | --help)
 
 Options:
@@ -41,10 +43,14 @@ struct Args {
 	arg_private_key: Option<String>,
 	arg_admin_key: Option<String>,
 	arg_name: Option<String>,
+	arg_uid: Option<u32>,
+	arg_seqid: Option<u32>,
+	arg_fixid: Option<u32>,
 	arg_music_file: Option<String>,
-	arg_target_sequence: Option<String>,
+	arg_t_start: Option<u32>,
+	arg_t_end: Option<u32>,
+	arg_target_sequence: Option<u32>,
 	arg_target_section: Option<u32>,
-	arg_num_sections: Option<u32>,
 }
 
 fn main() {
@@ -61,7 +67,8 @@ fn main() {
 		"id-user" => run_id_user,
 		"new-sequence" => run_new_sequence,
 		"remove-sequence" => run_remove_sequence,
-		"resection-sequence" => run_resection_sequence,
+		"delete-sequence" => run_delete_sequence,
+		"new-section" => run_new_section,
 		"list-permissions" => run_list_permissions,
 		"set-permission" => run_set_permission,
 		_ => panic!("Invalid first argument"),
@@ -96,15 +103,19 @@ fn run_new_user(args: Args) -> Result<(), Error> {
 
 fn run_id_user(args: Args) -> Result<(), Error> {
 	let private_key = args.arg_private_key.unwrap();
-	let user = try!(proton_cli::id_user(&private_key));
-	Ok(println!("{:?}", user))
+	let uid = try!(utils::get_uid_from_key(&private_key));
+	Ok(println!("{:?}", uid))
 }
 
 fn run_remove_user(args: Args) -> Result<(), Error> {
 	let admin_key = args.arg_admin_key.unwrap();
 	let admin_key_path = Path::new(&admin_key);
-	let name = args.arg_name.unwrap();
-	proton_cli::remove_user(&admin_key_path, &name)
+	let uid = args.arg_uid.unwrap();
+	proton_cli::remove_user(&admin_key_path, uid)
+}
+
+fn run_new_section(args: Args) -> Result<(), Error> {
+	Err(Error::TodoErr)
 }
 
 fn run_new_sequence(args: Args) -> Result<(), Error> {
@@ -113,44 +124,45 @@ fn run_new_sequence(args: Args) -> Result<(), Error> {
 	let name = args.arg_name.unwrap();
 	let music_file = args.arg_music_file.unwrap();
 	let music_file_path = Path::new(&music_file);
-	proton_cli::new_sequence(&admin_key_path, &name, &music_file_path)
+	proton_cli::new_sequence(&admin_key_path, &name, &music_file_path, None::<u32>)
 }
 
 fn run_remove_sequence(args: Args) -> Result<(), Error> {
 	let admin_key = args.arg_admin_key.unwrap();
 	let admin_key_path = Path::new(&admin_key);
-	let name = args.arg_name.unwrap();
-	proton_cli::remove_sequence(&admin_key_path, &name)
+	let seqid = args.arg_seqid.unwrap();
+	proton_cli::remove_sequence(&admin_key_path, seqid)
 }
 
-fn run_resection_sequence(args: Args) -> Result<(), Error> {
+fn run_delete_sequence(args: Args) -> Result<(), Error> {
 	let admin_key = args.arg_admin_key.unwrap();
 	let admin_key_path = Path::new(&admin_key);
-	let name = args.arg_name.unwrap();
-	let num_sections = args.arg_num_sections.unwrap();
-	proton_cli::resection_sequence(&admin_key_path, &name, num_sections)
+	let seqid = args.arg_seqid.unwrap();
+	let sequence_dao = dao::SequenceDaoPostgres{};
+	proton_cli::delete_sequence(sequence_dao, &admin_key_path, seqid)
 }
 
 fn run_list_permissions(args: Args) -> Result<(), Error> {
 	let private_key = args.arg_private_key;
-	proton_cli::get_permissions(&private_key.unwrap())
+	let perm_dao = dao::PermissionDaoPostgres{};
+	let user_dao = dao::UserDaoPostgres{};
+	proton_cli::get_permissions(perm_dao, user_dao, &private_key.unwrap())
 		.map(|p| println!("{}", json::as_pretty_json(&p)))
 }
 
 fn run_set_permission(args: Args) -> Result<(), Error> {
 	let admin_key = args.arg_admin_key.unwrap();
-	let auth_user = try!(proton_cli::id_user(&admin_key));
-
+	let admin_key_path = Path::new(&admin_key);
 	let added = env::args().nth(3).unwrap() == "add";
-	let username = args.arg_name.unwrap();
+	let uid = args.arg_uid.unwrap();
 	let permission_name = env::args().nth(5).unwrap();
 	let target_sequence = args.arg_target_sequence;
 	let target_section = args.arg_target_section;
 
 	proton_cli::set_permission(
-		&auth_user,
+		&admin_key_path,
 		added,
-		&username,
+		uid,
 		&permission_name,
 		target_sequence,
 		target_section)

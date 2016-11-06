@@ -25,7 +25,7 @@ pub enum Error {
     MusicFileNotFound(String),
     UnsupportedFileType(String),
     UserNotFound,
-    SequenceNotFound(String),
+    SequenceNotFound(u32),
     SequenceSectionNotFound(String),
     UnauthorizedAction,
     TodoErr,
