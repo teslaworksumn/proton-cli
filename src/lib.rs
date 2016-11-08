@@ -4,16 +4,17 @@ extern crate sfml;
 extern crate regex;
 extern crate openssl;
 
-pub mod utils;
 mod init;
-mod user;
-mod sequence;
-pub mod project_types;
-pub mod error;
 mod permissions;
+mod sequence;
+mod user;
+pub mod dao;
+pub mod error;
+pub mod project_types;
+pub mod utils;
 
 // Re-exports
 pub use init::*;
-pub use user::*;
-pub use sequence::*;
 pub use permissions::*;
+pub use sequence::*;
+pub use user::*;

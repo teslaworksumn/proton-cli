@@ -33,7 +33,7 @@ pub fn initialize_project<P: AsRef<Path>>(path: P, admin_pub_key: &str) -> Resul
 ///
 /// Impure.
 fn make_protonfile(root: &Path, admin_pub_key: &str) -> Result<(), Error> {
-    let project = try!(Project::empty(&admin_pub_key));
+    let project = try!(Project::empty(&admin_pub_key, None));
     utils::write_protonfile(&project, Some(root))
 }
 

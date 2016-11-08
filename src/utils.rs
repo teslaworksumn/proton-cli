@@ -6,21 +6,28 @@ use std::env;
 use rustc_serialize::json;
 use git2::{self, Repository, Signature};
 
-use project_types::{User, Project, Permission, PermissionEnum};
+use project_types::{User, Project, Permission};
 use error::Error;
 use user;
 
+
+/// Lookup a user's uid based on the given private key
+/// Return error if not found
+pub fn get_uid_from_key<P: AsRef<Path>>(key_path: P) -> Result<u32, Error> {
+    Err(Error::TodoErr)
+}
 
 /// Checks if the user with a private key at the given path has
 /// the Administrate permission
 /// Returns this user if found and has permission, else error
 pub fn validate_admin<P: AsRef<Path>>(admin_key_path: P) -> Result<User, Error> {
-    let admin_user = try!(user::id_user(admin_key_path));
-    let perm = try!(Permission::new(PermissionEnum::Administrate, None::<String>));
-    if !admin_user.has_permission(&perm) {
-        return Err(Error::UnauthorizedAction);
-    }
-    Ok(admin_user)
+    
+    Err(Error::TodoErr)
+    // let admin_user = try!(user::id_user(admin_key_path));
+    // if !admin_user.has_permission(&Permission::Administrate) {
+    //     return Err(Error::UnauthorizedAction);
+    // }
+    // Ok(admin_user)
 }
 
 /// Returns the last part of the path, the file name, if no problems arise
@@ -126,7 +133,6 @@ pub fn create_empty_directory<P: AsRef<Path>>(dir_path: P) -> Result<(), Error> 
 }
 
 /// Reads a Project from a Protonfile.
-/// Wraps any errors in proton_cli::Error
 /// Assumes Protonfile.json resides in the current directory
 /// unless a path to the Protonfile is given.
 pub fn read_protonfile<P: AsRef<Path>>(pf_path: Option<P>) -> Result<Project, Error> {

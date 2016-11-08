@@ -1,5 +1,5 @@
 
-use project_types::{Sequence, User, Permission, PermissionEnum};
+use project_types::{Sequence, User, Permission};
 use error::Error;
 
 
@@ -8,166 +8,80 @@ use error::Error;
 #[derive(Clone, Debug, PartialEq, Eq, RustcEncodable, RustcDecodable)]
 pub struct Project {
     pub name: String,
-    pub users: Vec<User>,
-    pub sequences: Vec<Sequence>,
+    pub playlist: Vec<u32>,
+    pub layout_id: u32,
 }
 
 impl Project {
-    /// Creates an empty project with the given root user
-    pub fn empty(root_pub_key: &str) -> Result<Project, Error> {
 
-        let mut root = try!(User::new("root", &root_pub_key));
-        let root_permission = try!(Permission::new(PermissionEnum::Administrate, None::<String>));
-        root.add_permission(root_permission);
-
-        Ok(Project {
-            name: "New Project".to_owned(),
-            users: vec![root],
-            sequences: Vec::new(),
-        })
+    pub fn empty(name: &str, layout_id: Option<u32>) -> Result<Project, Error> {
+        // Check that layout_id is valid if given
+        // Validate name characters??
+        Err(Error::TodoErr)
     }
 
-    /// Finds a sequence by its name
+    /// Finds a sequence by its id
     /// Returns the sequence if found, else None
-    pub fn find_sequence_by_name(&self, name: &str) -> Option<&Sequence> {
-        for s in &self.sequences {
-            if s.name == name {
-                return Some(s);
-            }
-        }
-
-        None::<&Sequence>
+    pub fn find_sequence_by_seqid(&self, seqid: u32) -> Option<&Sequence> {
+        None
     }
 
-    /// Finds a user with the given public key
+    /// Finds a user with the given id
     /// Returns the user if found, else None
-    fn find_user_by_public_key(&self, pub_key: &str) -> Option<&User> {
-        for u in &self.users {
-            if u.public_key == pub_key {
-                return Some(u);
-            }
-        }
-        None::<&User>
+    fn find_user_by_uid(&self, uid: u32) -> Option<&User> {
+        None
     }
 
-    /// Finds a user with the given name
-    /// Returns the user if found, else None
-    // TODO: make private?
-    pub fn find_user_by_name(&self, name: &str) -> Option<&User> {
-        for u in &self.users {
-            if u.name == name {
-                return Some(u);
-            }
-        }
-        None::<&User>
-    }
-
-    /// Finds a user in the users vector
-    /// Returns true if found, else false
-    pub fn user_exists(&self, user: &User) -> bool {
-        for u in &self.users {
-            if user == u {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /// Adds a user to the project
-    /// Returns a new project with the user added
-    pub fn add_user(&self, name: &str, pub_key: &str) -> Result<Project, Error> {
-        
+    /// Adds a user to the users table
+    pub fn add_user(&self, name: &str, pub_key: &str) -> Result<(), Error> {
         let user = try!(User::new(name, pub_key));
-
-        if self.find_user_by_name(name).is_some() ||
-           self.find_user_by_public_key(pub_key).is_some() {
-            Err(Error::DuplicateUser(pub_key.to_string(), name.to_string()))
-        } else {
-            let mut new_project = self.clone();
-            new_project.users.push(user);
-            Ok(new_project)
-        }
+        // Insert into users table
+        Err(Error::TodoErr)
     }
 
-    /// Removes a user from the project
-    /// Returns a new project with the user removed
-    pub fn remove_user(&self, name: &str) -> Result<Project, Error> {
-        let mut new_project = self.clone();
-        for i in 0..new_project.users.len() {
-            if new_project.users[i].name == name {
-                new_project.users.remove(i);
-                return Ok(new_project);
-            }
-        }
-
-        Err(Error::UserNotFound)
+    /// Removes a user from the users table
+    pub fn remove_user(&self, uid: u32) -> Result<Project, Error> {
+        // Update table, drop row where uid = uid
+        // Return different error if UserNotFound
+        Err(Error::TodoErr)
     }
 
     /// Adds a sequence to the project
-    /// Returns a new project with the sequence added
     pub fn add_sequence(
         &self,
+        uid: u32,
         name: &str,
-        directory_name: &str,
         music_file_name: &str,
         music_duration_sec: u32,
+        frame_duration_ms: Option<u32>
     ) -> Result<Project, Error> {
-    
+
         let sequence = try!(Sequence::new(
+            uid,
             name,
-            directory_name,
             music_file_name,
             music_duration_sec,
-            None,
-            None,
+            frame_duration_ms,
+            self.layout_id
         ));
 
-        // Check if duplicate
-        for s in &self.sequences {
-            if s.name == name
-            || s.directory_name == directory_name {
-                return Err(Error::DuplicateSequence(name.to_string()));
-            }
-        }
+        // Check if duplicate name (part of error returned by Sequence::new)
 
+        // Add sequence to playlist
         let mut new_project = self.clone();
-        new_project.sequences.push(sequence);
+        new_project.playlist.push(sequence.seqid);
         Ok(new_project)
     }
 
-    pub fn remove_sequence(&self, name: &str) -> Result<Project, Error> {
+    // Removes sequence from project playlist if it exists, error if not found
+    pub fn remove_sequence(&self, seqid: u32) -> Result<Project, Error> {
         let mut new_project = self.clone();
-        for i in 0..new_project.sequences.len() {
-            if new_project.sequences[i].name == name {
-                new_project.sequences.remove(i);
+        for (i, seq) in self.playlist.iter().enumerate() {
+            if *seq == seqid {
+                new_project.playlist.remove(i);
                 return Ok(new_project);
             }
         }
-        Err(Error::SequenceNotFound(name.to_string()))
+        Err(Error::SequenceNotFound(seqid))
     }
-
-    /// Changes a user's permissions
-    pub fn set_user_permission(
-        &mut self,
-        name: &str,
-        perm: Permission,
-        add: bool
-    ) -> Result<(), Error> {
-    
-        for mut u in &mut self.users {
-            if u.name == name {
-                if add {
-                    u.add_permission(perm);
-                } else {
-                    u.remove_permission(perm);
-                }
-
-                return Ok(());
-            }
-        }
-
-        Err(Error::UserNotFound)
-    }
-
 }
-

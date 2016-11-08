@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use self::tempdir::TempDir;
 
 use proton_cli;
-use proton_cli::project_types::PermissionEnum;
+use proton_cli::project_types::{Sequence, User};
 
 use super::rsa_keys::{self, TestKey};
 
@@ -44,7 +44,7 @@ pub fn try_new_user(
     user_name: &str,
     key_name: &str,
     key: TestKey
-) {
+) -> User {
 
     let user_key_path = super::make_key_file(&root_path, &key_name, key);
 
@@ -54,10 +54,17 @@ pub fn try_new_user(
     super::assert_user_added(user_key_path.as_path(), &user_name);
 
     super::assert_repo_no_modified_files(&root_path);
+
+    let project = proton_cli::utils::read_protonfile(None::<&Path>).expect("Error reading project");
+    project.find_user_by_name(&user_name).unwrap().to_owned()
 }
 
 /// Attempts to make a new sequence with the given name and music file
-pub fn try_make_sequence(admin_key_path: &Path, name: &str, music_file: &str) {
+pub fn try_make_sequence(
+    admin_key_path: &Path,
+    name: &str,
+    music_file: &str
+) -> Sequence {
     let music_file_path = super::get_music_file_path(music_file);
 
     let _ = proton_cli::new_sequence(&admin_key_path, &name, &music_file_path.as_path())
@@ -70,11 +77,15 @@ pub fn try_make_sequence(admin_key_path: &Path, name: &str, music_file: &str) {
 
     assert!(found_sequence.is_some());
     let seq = found_sequence.unwrap();
+
     assert!(seq.num_sections == 1);
     let mut seq_dir_path = PathBuf::from(&seq.directory_name);
+    
     assert!(seq_dir_path.exists());
     seq_dir_path.push(&seq.music_file_name);
     assert!(seq_dir_path.exists());
+
+    seq.to_owned()
 }
 
 /// Tries to modify a user's permission
@@ -86,8 +97,9 @@ pub fn try_set_permission<P: AsRef<Path>>(
     auth_private_key_path: P,
     add: bool,
     target_username: &str,
-    permission: PermissionEnum,
-    target: Option<String>,
+    permission_name: &str,
+    target_sequence: Option<String>,
+    target_section: Option<u32>
 ) {
     let auth_user = proton_cli::id_user(&auth_private_key_path)
         .expect("Auth user not found");
@@ -96,8 +108,9 @@ pub fn try_set_permission<P: AsRef<Path>>(
         &auth_user,
         add,
         &target_username,
-        permission.to_owned(),
-        target.to_owned()
+        permission_name,
+        target_sequence,
+        target_section
     ).expect("Error setting permission");
 
     super::assert_repo_no_modified_files(&root_path);

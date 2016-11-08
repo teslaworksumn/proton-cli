@@ -1,94 +1,43 @@
-
 use std::path::Path;
+use std::ascii::AsciiExt;
 
 use error::Error;
+use dao::PermissionDao;
 use utils;
 
 
-#[derive(Clone, Debug, Eq, PartialEq, RustcEncodable, RustcDecodable)]
+#[derive(Debug, RustcDecodable, RustcEncodable)]
 pub enum PermissionEnum {
     Administrate,
-    EditSeq,
-    EditSeqSec,
+    EditSequence,
+    EditSection,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, RustcEncodable, RustcDecodable)]
+#[derive(Debug, RustcDecodable, RustcEncodable)]
 pub struct Permission {
-    pub which: PermissionEnum,
-    pub target: Option<String>,
+    pub uid: u32,
+    pub seqid: u32,
+    pub secid: u32,
+    pub permission: PermissionEnum,
 }
 
 impl Permission {
-    /// Creates a new Permission, joining a permission type with a target
-    /// Returns an error if the target is invalid
-    pub fn new(which_enum: PermissionEnum, t: Option<String>) -> Result<Permission, Error> {
-        // Make sure the target is valid for the given permission type
-        try!(Permission::validate_permission(&which_enum, &t));
+    /// Creates a new Permission
+    pub fn new(
+        uid: u32,
+        seqid: Option<u32>,
+        secid: Option<u32>,
+        perm: PermissionEnum
+    ) -> Result<Permission, Error> {
+        // Make sure user exists
+        // Check seqid and secid existence based on perm
 
-        // Create permission if valid
-        Ok(Permission {
-            which: which_enum,
-            target: t,
-        })
+        Err(Error::TodoErr)
     }
 
-    /// Validates the target for the given permission type
-    /// Returns error if invalid target
-    fn validate_permission(permission: &PermissionEnum, target: &Option<String>) -> Result<(), Error> {
-        
-        let valid = match permission {
-            &PermissionEnum::Administrate => {
-                target == &None::<String>
-            },
-            &PermissionEnum::EditSeq => {
-                if target.is_none() {
-                    false
-                } else {
-                    let seq_name = target.to_owned().unwrap();
-                    let project = try!(utils::read_protonfile(None::<&Path>));
-                    project.find_sequence_by_name(&seq_name).is_some()
-                }
-            },
-            &PermissionEnum::EditSeqSec => {
-                if target.is_none() {
-                    false
-                } else {
-                    let target_str = target.to_owned().unwrap();
-                    let targets: Vec<&str> = target_str.split(",").collect();
-                    if targets.len() != 2 {
-                        println!("EditSeqSec target must be of the form \"name,section\"");
-                        false
-                    } else {
-                        let seq_name = targets[0];
-                        let section_num_str = targets[1];
-                        let section_num = match section_num_str.parse::<u32>() {
-                            Ok(n) => n,
-                            Err(_) => return Err(Error::InvalidPermissionTarget), 
-                        };
-                        let project = try!(utils::read_protonfile(None::<&Path>));
-                        match project.find_sequence_by_name(&seq_name) {
-                            Some(seq) => {
-                                let in_range = section_num > 0 && section_num <= seq.num_sections;
-                                if !in_range {
-                                    println!("EditSeqSec target must be of the form \"name,section\"");
-                                }
-                                in_range
-                            },
-                            None => {
-                                println!("EditSeqSec target must be of the form \"name,section\"");
-                                false
-                            },
-                        }
-
-                    }
-                }
-            },
-        };
-
-        if valid {
-            Ok(())
-        } else {
-            Err(Error::InvalidPermissionTarget)
-        }
+    /// Add a user permission
+    pub fn add_permission<T: PermissionDao>(dao: &T, perm: Permission) -> Result<(), Error> {
+        Err(Error::TodoErr)
     }
+
 }

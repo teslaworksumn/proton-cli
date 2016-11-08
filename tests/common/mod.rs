@@ -6,6 +6,7 @@ extern crate proton_cli;
 extern crate git2;
 
 pub mod rsa_keys;
+pub mod sequence_sections;
 pub mod setup;
 
 use std::env;
@@ -27,16 +28,27 @@ pub fn make_key_file<P: AsRef<Path>>(
     test_key: rsa_keys::TestKey
 ) -> PathBuf {
 
-    let mut key_path = PathBuf::new();
-    key_path.push(root_dir);
-    key_path.push(file_name);
-
     let file_content = rsa_keys::get_test_key(test_key);
-    File::create(&key_path)
-        .and_then(|mut file| write!(file, "{}\n", file_content))
-        .expect("Error creating key file");
+    write_to_file(root_dir, file_name, &file_content)
+}
 
-    key_path
+/// Write a string to a file, replacing it's current contents if it exists
+/// Returns the path to the file
+fn write_to_file<P: AsRef<Path>>(
+    root_dir: P,
+    file_name: &str,
+    content: &str
+) -> PathBuf {
+
+    let mut file_path = PathBuf::new();
+    file_path.push(root_dir);
+    file_path.push(file_name);
+
+    File::create(&file_path)
+        .and_then(|mut file| write!(file, "{}\n", content))
+        .expect("Error writing to file");
+
+    file_path
 }
 
 /// Returns the path to a music file in /.../cli/tests/music/
