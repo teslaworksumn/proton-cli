@@ -30,12 +30,20 @@ impl UserDao for UserDaoPostgres {
     /// acts like the user's password, and should be protected.
     /// 
     /// Impure.
+<<<<<<< 99e34338688be2450265627ffc0580741b3436c2
     fn get_user_id(&self, public_key: &str) -> Result<u32, Error> {
         let public_string = public_key.trim_matches('\n');
         let query = "SELECT uid FROM users WHERE public_key = $1";
         let results = try!(
             self.conn.query(query, &[&public_string])
             .map_err(Error::Postgres));
+=======
+    fn id_user<P: AsRef<Path>>(&self, public_key_path: P) -> Result<u32, Error> {
+        Err(Error::TodoErr)
+    //     let test_data: &[u8] = b"Testing to find private/public key pair";
+        
+    //     let mut private_key_file = try!(File::open(&private_key_path).map_err(Error::Io));
+>>>>>>> Postgres connection working in channel dao
         
         match results.len() {
             0 => Err(Error::AdminNotFound),

@@ -227,14 +227,14 @@ dependencies = [
 
 [[package]]
 name = "postgres"
-version = "0.12.0"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "bufstream 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "fallible-iterator 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "hex 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "phf 0.7.15 (registry+https://github.com/rust-lang/crates.io-index)",
+ "phf 0.7.19 (registry+https://github.com/rust-lang/crates.io-index)",
  "postgres-protocol 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
