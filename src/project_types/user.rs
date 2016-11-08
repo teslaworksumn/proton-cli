@@ -10,8 +10,8 @@ use project_types::Permission;
 
 #[derive(Clone, Debug, Eq, RustcEncodable, RustcDecodable)]
 pub struct User {
-    pub name: String,
     pub uid: u32,
+    pub name: String,
     pub public_key: String,
 }
 

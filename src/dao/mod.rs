@@ -27,3 +27,7 @@ pub use self::section_dao_postgres::SectionDaoPostgres;
 pub use self::sequence_dao_postgres::SequenceDaoPostgres;
 pub use self::user_dao_postgres::UserDaoPostgres;
 
+// Utilities
+pub mod postgres_util;
+
+pub use self::postgres_util as PostgresUtil;

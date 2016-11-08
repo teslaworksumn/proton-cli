@@ -29,6 +29,7 @@ Usage:
   ./proton set-permission <admin-key> (add | remove) <uid> Administrate
   ./proton set-permission <admin-key> (add | remove) <uid> EditSequence <target-sequence>
   ./proton set-permission <admin-key> (add | remove) <uid> EditSection <target-sequence> <target-section>
+  ./proton test <seqid>
   ./proton (-h | --help)
 
 Options:
@@ -71,6 +72,7 @@ fn main() {
 		"new-section" => run_new_section,
 		"list-permissions" => run_list_permissions,
 		"set-permission" => run_set_permission,
+		"test" => run_test,
 		_ => panic!("Invalid first argument"),
 	};
 
@@ -80,6 +82,12 @@ fn main() {
 		Err(e) => println!("{:?}", e.to_string()),
 	};
 
+}
+
+fn run_test(args: Args) -> Result<(), Error> {
+	let chanid = args.arg_seqid.unwrap();
+	let chan_dao = try!(dao::ChannelDaoPostgres::new());
+	Ok(())
 }
 
 fn run_init(args: Args) -> Result<(), Error> {

@@ -17,7 +17,7 @@ impl UserDao for UserDaoPostgres {
     /// acts like the user's password, and should be protected.
     /// 
     /// Impure.
-    fn id_user<P: AsRef<Path>>(&self, private_key_path: P) -> Result<u32, Error> {
+    fn id_user<P: AsRef<Path>>(&self, public_key_path: P) -> Result<u32, Error> {
         Err(Error::TodoErr)
     //     let test_data: &[u8] = b"Testing to find private/public key pair";
         

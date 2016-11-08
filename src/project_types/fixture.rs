@@ -9,4 +9,3 @@ pub struct Fixture {
     pub channels: Vec<u32>,
 }
 
-

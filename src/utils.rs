@@ -78,7 +78,6 @@ pub fn commit_all<P: AsRef<Path>>(
     )
         .and_then(|_| index.write())
         .map_err(Error::Git)
-
 }
 
 /// Stages a file and commits it
@@ -109,8 +108,7 @@ pub fn commit_file<P: AsRef<Path>>(
         &[&parent]
     )
         .map_err(Error::Git)
-        .map(|_| ())
-    
+        .map(|_| ())    
 }
 
 /// Creates a folder. The folder must not exist or must be empty.
@@ -184,5 +182,4 @@ fn get_repo_from_path<P: AsRef<Path>>(path_opt: Option<P>) -> Result<Repository,
 
     Repository::open(repo_path.as_path())
         .map_err(Error::Git)
-
 }

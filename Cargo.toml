@@ -15,7 +15,7 @@ sfml = "0.11.2"
 git2 = "0.4.2"
 rustc-serialize = "0.3.18"
 regex = "0.1.71"
-postgres = "0.12.0"
+postgres = "0.13"
 
 [dev-dependencies]
 tempdir = "0.3.4"

@@ -3,6 +3,7 @@ extern crate openssl;
 use std::{io, error, fmt};
 use git2;
 use rustc_serialize::json;
+use postgres::error::ConnectError;
 
 #[derive(Debug)]
 pub enum Error {
@@ -11,6 +12,7 @@ pub enum Error {
     JsonDecode(json::DecoderError),
     Ssl(openssl::ssl::error::SslError),
     Rsfml(String),
+    Postgres(ConnectError),
     FolderNotEmpty(String, usize),
     InvalidPublicKey(String),
     InvalidFileName,
@@ -39,6 +41,7 @@ impl error::Error for Error {
             Error::JsonDecode(_) => "Json decoding error occurred",
             Error::Ssl(_) => "SSL error occured",
             Error::Rsfml(_) => "Rsfml error occured",
+            Error::Postgres(_) => "Postgres error occured",
             Error::FolderNotEmpty(_, _) => "Root folder was not empty",
             Error::InvalidPublicKey(_) => "Invalid public key",
             Error::InvalidFileName => "Invalid file name",
@@ -67,6 +70,7 @@ impl error::Error for Error {
            Error::JsonDecode(ref err) => Some(err),
            Error::Ssl(ref err) => Some(err),
            Error::Rsfml(_) => None,
+           Error::Postgres(ref err) => Some(err),
            Error::FolderNotEmpty(_, _) => None,
            Error::InvalidPublicKey(_) => None,
            Error::InvalidFileName => None,
@@ -102,6 +106,8 @@ impl fmt::Display for Error {
                 "SSL error occured: {}", error::Error::description(err)),
             Error::Rsfml(ref description) => write!(f, 
                 "Rsfml error: {}", description),
+            Error::Postgres(ref err) => write!(f, 
+                "Postgress error occured: {}", err),
             Error::FolderNotEmpty(ref root, count) => write!(f,
                 "{} was not empty: {} files exist", root, count),
             Error::InvalidPublicKey(ref key) => write!(f, 

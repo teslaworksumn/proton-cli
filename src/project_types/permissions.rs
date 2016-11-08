@@ -15,6 +15,7 @@ pub enum PermissionEnum {
 
 #[derive(Debug, RustcDecodable, RustcEncodable)]
 pub struct Permission {
+    pub permid: u32,
     pub uid: u32,
     pub seqid: u32,
     pub secid: u32,

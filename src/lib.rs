@@ -1,8 +1,9 @@
 extern crate git2;
+extern crate openssl;
+extern crate postgres;
+extern crate regex;
 extern crate rustc_serialize;
 extern crate sfml;
-extern crate regex;
-extern crate openssl;
 
 mod init;
 mod permissions;

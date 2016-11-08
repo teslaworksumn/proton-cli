@@ -5,6 +5,9 @@ use project_types::{Channel, Fixture, Layout, Permission, Project, Section, Sequ
 use dao;
 
 pub trait ChannelDao {
+    /// Add a channel to the database
+    fn add_channel(&self, channel: Channel) -> Result<(), Error>;
+    /// Fetch a Channel with the given channel id
     fn get_channel(&self, chanid: u32) -> Result<Channel, Error>;
 }
 
@@ -31,6 +34,6 @@ pub trait SequenceDao {
 
 pub trait UserDao {
     fn get_user(&self, uid: u32) -> Result<User, Error>;
-    fn id_user<P: AsRef<Path>>(&self, private_key_path: P) -> Result<u32, Error>;
+    fn id_user<P: AsRef<Path>>(&self, public_key_path: P) -> Result<u32, Error>;
 }
 
