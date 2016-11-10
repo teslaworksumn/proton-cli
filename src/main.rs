@@ -10,7 +10,8 @@ use docopt::Docopt;
 
 use proton_cli::error::Error;
 use proton_cli::utils;
-use proton_cli::dao;
+use proton_cli::dao::{self, PermissionDaoPostgres, UserDao};
+use proton_cli::project_types::Permission;
 
 
 const USAGE: &'static str = "
@@ -24,8 +25,8 @@ Usage:
   ./proton remove-sequence <admin-key> <seqid>
   ./proton delete-sequence <admin-key> <seqid>
   ./proton new-section <admin-key> <t_start> <t_end> <seqid> <fixid>..
-  ./proton id-user <private-key>
-  ./proton list-permissions <private-key>
+  ./proton get-user-id <public-key>
+  ./proton list-permissions <uid>
   ./proton set-permission <admin-key> (add | remove) <uid> Administrate
   ./proton set-permission <admin-key> (add | remove) <uid> EditSequence <target-sequence>
   ./proton set-permission <admin-key> (add | remove) <uid> EditSection <target-sequence> <target-section>
@@ -65,7 +66,7 @@ fn main() {
 		"init" => run_init,
 		"new-user" => run_new_user,
 		"remove-user" => run_remove_user,
-		"id-user" => run_id_user,
+		"get_user_id" => run_get_user_id,
 		"new-sequence" => run_new_sequence,
 		"remove-sequence" => run_remove_sequence,
 		"delete-sequence" => run_delete_sequence,
@@ -109,9 +110,11 @@ fn run_new_user(args: Args) -> Result<(), Error> {
 	proton_cli::new_user(&admin_key_path, &public_key_path, &name)
 }
 
-fn run_id_user(args: Args) -> Result<(), Error> {
-	let private_key = args.arg_private_key.unwrap();
-	let uid = try!(utils::get_uid_from_key(&private_key));
+fn run_get_user_id(args: Args) -> Result<(), Error> {
+	let public_key = args.arg_public_key.unwrap();
+	let public_key_path = Path::new(&public_key);
+	let user_dao = try!(dao::UserDaoPostgres::new());
+	let uid = try!(user_dao.get_user_id(&public_key_path));
 	Ok(println!("{:?}", uid))
 }
 
@@ -151,11 +154,12 @@ fn run_delete_sequence(args: Args) -> Result<(), Error> {
 }
 
 fn run_list_permissions(args: Args) -> Result<(), Error> {
-	let private_key = args.arg_private_key;
+	let uid = args.arg_uid.unwrap();
 	let perm_dao = try!(dao::PermissionDaoPostgres::new());
-	let user_dao = try!(dao::UserDaoPostgres::new());
-	proton_cli::get_permissions(perm_dao, user_dao, &private_key.unwrap())
-		.map(|p| println!("{}", json::as_pretty_json(&p)))
+	let permissions = try!(
+		proton_cli::get_permissions::<String, dao::PermissionDaoPostgres>(perm_dao, uid));
+	println!("{}", json::as_pretty_json(&permissions));
+	Ok(())
 }
 
 fn run_set_permission(args: Args) -> Result<(), Error> {

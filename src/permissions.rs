@@ -11,13 +11,8 @@ use user;
 use dao::{PermissionDao, UserDao};
 
 
-pub fn get_permissions<P: AsRef<Path>, PD: PermissionDao, UD: UserDao> (
-    pdao: PD,
-    udao: UD,
-    user_key_path: P
+pub fn get_permissions<P: AsRef<Path>, PD: PermissionDao> (pdao: PD, uid: u32
 ) -> Result<Vec<Permission>, Error> {
-
-    let uid = try!(udao.id_user(&user_key_path));
     pdao.get_all_permissions(uid)
 }
 

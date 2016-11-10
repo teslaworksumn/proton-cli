@@ -34,6 +34,6 @@ pub trait SequenceDao {
 
 pub trait UserDao {
     fn get_user(&self, uid: u32) -> Result<User, Error>;
-    fn id_user<P: AsRef<Path>>(&self, public_key_path: P) -> Result<u32, Error>;
+    fn get_user_id<P: AsRef<Path>>(&self, public_key_path: P) -> Result<u32, Error>;
 }
 
