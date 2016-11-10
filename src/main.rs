@@ -31,10 +31,7 @@ Usage:
   ./proton new-layout <layout-file>
   ./proton new-section <admin-key> <t_start> <t_end> <seqid> <fixid>..
   ./proton get-user-id <public-key>
-<<<<<<< a68730c0ac681293865300fdfdd8f3083ac7a952
   ./proton get-layout-id <proj-name>
-=======
->>>>>>> Updated names, public instead of private key, uid for list-permissions
   ./proton list-permissions <uid>
   ./proton set-permission <admin-key> (add | remove) <uid> Administrate
   ./proton set-permission <admin-key> (add | remove) <uid> EditSequence <target-sequence>
@@ -75,6 +72,11 @@ enum ProtonReturn {
 	Sequence(Sequence),
 	SequenceId(u32),
 	Uid(u32),
+}
+
+enum ProtonReturn {
+	NoReturn,
+	PublicKey(String),
 }
 
 fn main() {
