@@ -8,6 +8,8 @@ use git2::{Oid, Repository, Signature};
 use utils;
 use error::Error;
 use project_types::Project;
+use dao::UserDao;
+
 
 /// Initializes a new project at root. The root must either not exist, or must
 /// be an empty directory. This will
@@ -17,15 +19,23 @@ use project_types::Project;
 /// 3. Initialize a git repository and commit the protonfile.
 ///
 /// Impure.
-pub fn initialize_project<P: AsRef<Path>>(path: P, admin_pub_key: &str) -> Result<(), Error> {
-    let root = path.as_ref();
+pub fn initialize_project<P: AsRef<Path>, UD: UserDao>(
+    user_dao: UD,
+    root_path: P,
+    name: &str
+) -> Result<String, Error> {
+
+    let root = root_path.as_ref();
+    let (root_pub_key, root_private_key) = try!(utils::create_pub_priv_keys());
     let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
 
+    user_dao.add_initial_user(&root_private_key);
+
     utils::create_empty_directory(root)
-        .and_then(|_| make_protonfile(root, &admin_pub_key))
+        .and_then(|_| make_protonfile(root, &root_pub_key))
         .and_then(|_| make_repository(root))
         .and_then(|repo| initial_commit(&repo, &signature))
-        .map(|_| ())
+        .map(|_| root_pub_key)
 }
 
 /// Writes a new Protonfile to the root.

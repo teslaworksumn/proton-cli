@@ -11,6 +11,11 @@ use error::Error;
 use user;
 
 
+/// Creates a new public/private key pair
+pub fn create_pub_priv_keys() -> Result<(String, String), Error> {
+    Err(Error::TodoErr)
+}
+
 /// Lookup a user's uid based on the given private key
 /// Return error if not found
 pub fn get_uid_from_key<P: AsRef<Path>>(key_path: P) -> Result<u32, Error> {

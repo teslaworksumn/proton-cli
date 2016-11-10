@@ -10,16 +10,15 @@ use docopt::Docopt;
 
 use proton_cli::error::Error;
 use proton_cli::utils;
-use proton_cli::dao::{self, PermissionDaoPostgres, UserDao};
-use proton_cli::project_types::Permission;
+use proton_cli::dao::{self, UserDao};
 
 
 const USAGE: &'static str = "
 Command-line interface for Proton
 
 Usage:
-  ./proton init <folder> <root-public-key>
-  ./proton new-user <admin-key> <name> <public-key>
+  ./proton init <folder>
+  ./proton new-user <admin-key> <name>
   ./proton remove-user <admin-key> <uid>
   ./proton new-sequence <admin-key> <name> <music-file>
   ./proton remove-sequence <admin-key> <seqid>
@@ -55,6 +54,11 @@ struct Args {
 	arg_target_section: Option<u32>,
 }
 
+enum ProtonReturn {
+	NoReturn,
+	PublicKey(String),
+}
+
 fn main() {
 	let args: Args = Docopt::new(USAGE)
 		.and_then(|d| d.decode())
@@ -62,7 +66,7 @@ fn main() {
 
 	// Below unwrap()'s are safe within Docopt's usage rules
 
-	let command: fn(Args) -> Result<(), Error> = match env::args().nth(1).unwrap().as_ref() {
+	let command: fn(Args) -> Result<ProtonReturn, Error> = match env::args().nth(1).unwrap().as_ref() {
 		"init" => run_init,
 		"new-user" => run_new_user,
 		"remove-user" => run_remove_user,
@@ -79,90 +83,98 @@ fn main() {
 
 	let result = command(args);
 	match result {
-		Ok(_) => println!("Worked!"),
+		Ok(ret) => match ret {
+			ProtonReturn::NoReturn => println!("Worked!"),
+			ProtonReturn::PublicKey(s) => println!("{}", s),
+		},
 		Err(e) => println!("{:?}", e.to_string()),
 	};
 
 }
 
-fn run_test(args: Args) -> Result<(), Error> {
+fn run_test(args: Args) -> Result<ProtonReturn, Error> {
 	let chanid = args.arg_seqid.unwrap();
 	let chan_dao = try!(dao::ChannelDaoPostgres::new());
-	Ok(())
+	Ok(ProtonReturn::NoReturn)
 }
 
-fn run_init(args: Args) -> Result<(), Error> {
+fn run_init(args: Args) -> Result<ProtonReturn, Error> {
+	let name = args.arg_name.unwrap();
 	let root = args.arg_folder.unwrap();
 	let root_path = Path::new(&root);
-
-	let root_pub_key_path = args.arg_root_public_key.unwrap();
-	let root_pub_key = try!(utils::file_as_string(&root_pub_key_path));
-	
-	proton_cli::initialize_project(&root_path, &root_pub_key)
+	let user_dao = try!(dao::UserDaoPostgres::new());
+	let root_pub_key = try!(proton_cli::initialize_project(user_dao, &root_path, &name));
+	Ok(ProtonReturn::PublicKey(root_pub_key))
 }
 
-fn run_new_user(args: Args) -> Result<(), Error> {
+fn run_new_user(args: Args) -> Result<ProtonReturn, Error> {
 	let admin_key = args.arg_admin_key.unwrap();
 	let admin_key_path = Path::new(&admin_key);
 	let public_key = args.arg_public_key.unwrap();
 	let public_key_path = Path::new(&public_key);
 	let name = args.arg_name.unwrap();
-	proton_cli::new_user(&admin_key_path, &public_key_path, &name)
+	try!(proton_cli::new_user(&admin_key_path, &public_key_path, &name));
+	Ok(ProtonReturn::NoReturn)
 }
 
-fn run_get_user_id(args: Args) -> Result<(), Error> {
+fn run_get_user_id(args: Args) -> Result<ProtonReturn, Error> {
 	let public_key = args.arg_public_key.unwrap();
 	let public_key_path = Path::new(&public_key);
 	let user_dao = try!(dao::UserDaoPostgres::new());
 	let uid = try!(user_dao.get_user_id(&public_key_path));
-	Ok(println!("{:?}", uid))
+	println!("{:?}", uid);
+	Ok(ProtonReturn::NoReturn)
 }
 
-fn run_remove_user(args: Args) -> Result<(), Error> {
+fn run_remove_user(args: Args) -> Result<ProtonReturn, Error> {
 	let admin_key = args.arg_admin_key.unwrap();
 	let admin_key_path = Path::new(&admin_key);
 	let uid = args.arg_uid.unwrap();
-	proton_cli::remove_user(&admin_key_path, uid)
+	try!(proton_cli::remove_user(&admin_key_path, uid));
+	Ok(ProtonReturn::NoReturn)
 }
 
-fn run_new_section(args: Args) -> Result<(), Error> {
+fn run_new_section(args: Args) -> Result<ProtonReturn, Error> {
 	Err(Error::TodoErr)
 }
 
-fn run_new_sequence(args: Args) -> Result<(), Error> {
+fn run_new_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let admin_key = args.arg_admin_key.unwrap();
 	let admin_key_path = Path::new(&admin_key);
 	let name = args.arg_name.unwrap();
 	let music_file = args.arg_music_file.unwrap();
 	let music_file_path = Path::new(&music_file);
-	proton_cli::new_sequence(&admin_key_path, &name, &music_file_path, None::<u32>)
+	try!(proton_cli::new_sequence(&admin_key_path, &name, &music_file_path, None::<u32>));
+	Ok(ProtonReturn::NoReturn)
 }
 
-fn run_remove_sequence(args: Args) -> Result<(), Error> {
+fn run_remove_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let admin_key = args.arg_admin_key.unwrap();
 	let admin_key_path = Path::new(&admin_key);
 	let seqid = args.arg_seqid.unwrap();
-	proton_cli::remove_sequence(&admin_key_path, seqid)
+	try!(proton_cli::remove_sequence(&admin_key_path, seqid));
+	Ok(ProtonReturn::NoReturn)
 }
 
-fn run_delete_sequence(args: Args) -> Result<(), Error> {
+fn run_delete_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let admin_key = args.arg_admin_key.unwrap();
 	let admin_key_path = Path::new(&admin_key);
 	let seqid = args.arg_seqid.unwrap();
 	let sequence_dao = try!(dao::SequenceDaoPostgres::new());
-	proton_cli::delete_sequence(sequence_dao, &admin_key_path, seqid)
+	try!(proton_cli::delete_sequence(sequence_dao, &admin_key_path, seqid));
+	Ok(ProtonReturn::NoReturn)
 }
 
-fn run_list_permissions(args: Args) -> Result<(), Error> {
+fn run_list_permissions(args: Args) -> Result<ProtonReturn, Error> {
 	let uid = args.arg_uid.unwrap();
 	let perm_dao = try!(dao::PermissionDaoPostgres::new());
 	let permissions = try!(
 		proton_cli::get_permissions::<String, dao::PermissionDaoPostgres>(perm_dao, uid));
 	println!("{}", json::as_pretty_json(&permissions));
-	Ok(())
+	Ok(ProtonReturn::NoReturn)
 }
 
-fn run_set_permission(args: Args) -> Result<(), Error> {
+fn run_set_permission(args: Args) -> Result<ProtonReturn, Error> {
 	let admin_key = args.arg_admin_key.unwrap();
 	let admin_key_path = Path::new(&admin_key);
 	let added = env::args().nth(3).unwrap() == "add";
@@ -171,11 +183,12 @@ fn run_set_permission(args: Args) -> Result<(), Error> {
 	let target_sequence = args.arg_target_sequence;
 	let target_section = args.arg_target_section;
 
-	proton_cli::set_permission(
+	try!(proton_cli::set_permission(
 		&admin_key_path,
 		added,
 		uid,
 		&permission_name,
 		target_sequence,
-		target_section)
+		target_section));
+	Ok(ProtonReturn::NoReturn)
 }

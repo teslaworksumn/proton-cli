@@ -7,6 +7,10 @@ use error::Error;
 
 impl UserDao for UserDaoPostgres {
 
+    fn add_initial_user(&self, private_key: &str) -> Result<(), Error> {
+        Err(Error::TodoErr)
+    }
+
     fn get_user(&self, uid: u32) -> Result<User, Error> {
         Err(Error::TodoErr)
     }
