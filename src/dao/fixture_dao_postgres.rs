@@ -1,3 +1,5 @@
+use postgres::Connection;
+
 use project_types::Fixture;
 use error::Error;
 use dao::{FixtureDao, FixtureDaoPostgres};
