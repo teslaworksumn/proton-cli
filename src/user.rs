@@ -7,22 +7,23 @@ use openssl::crypto::hash::Type as openssl_HashType;
 
 use git2::Signature;
 
+use dao::UserDao;
 use error::Error;
 use project_types::User;
 use utils;
 
 /// Creates a new user for the project in the current directory.
-/// Assumes the current directory contains a Protonfile.json file.
-///
-/// 1. Read the new user's public key from the file path given
-/// 2. Add the user's name and public key to the protonfile
+/// Generates a public/private key pair for the new user
+/// and returns the public key.
 ///
 /// Impure.
-pub fn new_user<P: AsRef<Path>>(
+pub fn new_user<P: AsRef<Path>, UD: UserDao>(
+    user_dao: UD,
     admin_key_path: P,
-    public_key_path: P,
     name: &str
-) -> Result<(), Error> {
+) -> Result<String, Error> {
+
+    let (root_pub_key, root_private_key) = try!(utils::create_pub_priv_keys());
 
     Err(Error::TodoErr)
     // See if admin has permission to add user

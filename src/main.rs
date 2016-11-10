@@ -41,7 +41,6 @@ struct Args {
 	arg_folder: Option<String>,
 	arg_root_public_key: Option<String>,
 	arg_public_key: Option<String>,
-	arg_private_key: Option<String>,
 	arg_admin_key: Option<String>,
 	arg_name: Option<String>,
 	arg_uid: Option<u32>,
@@ -110,11 +109,10 @@ fn run_init(args: Args) -> Result<ProtonReturn, Error> {
 fn run_new_user(args: Args) -> Result<ProtonReturn, Error> {
 	let admin_key = args.arg_admin_key.unwrap();
 	let admin_key_path = Path::new(&admin_key);
-	let public_key = args.arg_public_key.unwrap();
-	let public_key_path = Path::new(&public_key);
 	let name = args.arg_name.unwrap();
-	try!(proton_cli::new_user(&admin_key_path, &public_key_path, &name));
-	Ok(ProtonReturn::NoReturn)
+	let user_dao = try!(dao::UserDaoPostgres::new());
+	let public_key = try!(proton_cli::new_user(user_dao, &admin_key_path, &name));
+	Ok(ProtonReturn::PublicKey(public_key))
 }
 
 fn run_get_user_id(args: Args) -> Result<ProtonReturn, Error> {
