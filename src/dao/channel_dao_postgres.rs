@@ -1,22 +1,7 @@
-use postgres::{Connection, TlsMode};
-
-use dao::{ChannelDao, PostgresUtil};
+use dao::{ChannelDao, ChannelDaoPostgres};
 use error::Error;
 use project_types::Channel;
 
-pub struct ChannelDaoPostgres {
-    conn: Connection
-}
-
-
-impl ChannelDaoPostgres {
-    pub fn new() -> Result<ChannelDaoPostgres, Error> {
-        let conn = try!(PostgresUtil::get_connection());
-        Ok(ChannelDaoPostgres {
-            conn: conn
-        })
-    }
-}
 
 impl ChannelDao for ChannelDaoPostgres {
     /// Fetch a Channel with the given channel id

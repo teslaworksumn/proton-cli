@@ -146,14 +146,14 @@ fn run_delete_sequence(args: Args) -> Result<(), Error> {
 	let admin_key = args.arg_admin_key.unwrap();
 	let admin_key_path = Path::new(&admin_key);
 	let seqid = args.arg_seqid.unwrap();
-	let sequence_dao = dao::SequenceDaoPostgres{};
+	let sequence_dao = try!(dao::SequenceDaoPostgres::new());
 	proton_cli::delete_sequence(sequence_dao, &admin_key_path, seqid)
 }
 
 fn run_list_permissions(args: Args) -> Result<(), Error> {
 	let private_key = args.arg_private_key;
-	let perm_dao = dao::PermissionDaoPostgres{};
-	let user_dao = dao::UserDaoPostgres{};
+	let perm_dao = try!(dao::PermissionDaoPostgres::new());
+	let user_dao = try!(dao::UserDaoPostgres::new());
 	proton_cli::get_permissions(perm_dao, user_dao, &private_key.unwrap())
 		.map(|p| println!("{}", json::as_pretty_json(&p)))
 }

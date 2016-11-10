@@ -1,10 +1,9 @@
 use std::path::Path;
 
 use project_types::User;
-use dao::UserDao;
+use dao::{UserDao, UserDaoPostgres};
 use error::Error;
 
-pub struct UserDaoPostgres{}
 
 impl UserDao for UserDaoPostgres {
 

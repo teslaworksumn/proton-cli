@@ -1,8 +1,7 @@
 use project_types::Permission;
-use dao::PermissionDao;
+use dao::{PermissionDao, PermissionDaoPostgres};
 use error::Error;
 
-pub struct PermissionDaoPostgres{}
 
 impl PermissionDao for PermissionDaoPostgres {
 
