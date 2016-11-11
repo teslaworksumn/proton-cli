@@ -308,7 +308,7 @@ ALTER SEQUENCE sequences_seqid_seq OWNED BY sequences.seqid;
 CREATE TABLE users (
     uid integer NOT NULL,
     name character varying(64) NOT NULL,
-    public_key character varying(512) NOT NULL
+    public_key character varying(1720) NOT NULL
 );
 
 
@@ -486,7 +486,7 @@ COPY users (uid, name, public_key) FROM stdin;
 -- Name: users_uid_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('users_uid_seq', 1, false);
+SELECT pg_catalog.setval('users_uid_seq', 6, true);
 
 
 --
@@ -538,6 +538,14 @@ ALTER TABLE ONLY sequences
 
 
 --
+-- Name: unique_name; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY users
+    ADD CONSTRAINT unique_name UNIQUE (name);
+
+
+--
 -- Name: users_name_public_key_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -561,6 +569,146 @@ REVOKE ALL ON SCHEMA public FROM PUBLIC;
 REVOKE ALL ON SCHEMA public FROM postgres;
 GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO PUBLIC;
+
+
+--
+-- Name: channels; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE channels FROM PUBLIC;
+REVOKE ALL ON TABLE channels FROM postgres;
+GRANT ALL ON TABLE channels TO postgres;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE channels TO proton;
+
+
+--
+-- Name: channels_chanid_seq; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE channels_chanid_seq FROM PUBLIC;
+REVOKE ALL ON SEQUENCE channels_chanid_seq FROM postgres;
+GRANT ALL ON SEQUENCE channels_chanid_seq TO postgres;
+GRANT USAGE ON SEQUENCE channels_chanid_seq TO proton;
+
+
+--
+-- Name: fixtures; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE fixtures FROM PUBLIC;
+REVOKE ALL ON TABLE fixtures FROM postgres;
+GRANT ALL ON TABLE fixtures TO postgres;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE fixtures TO proton;
+
+
+--
+-- Name: fixtures_fixid_seq; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE fixtures_fixid_seq FROM PUBLIC;
+REVOKE ALL ON SEQUENCE fixtures_fixid_seq FROM postgres;
+GRANT ALL ON SEQUENCE fixtures_fixid_seq TO postgres;
+GRANT USAGE ON SEQUENCE fixtures_fixid_seq TO proton;
+
+
+--
+-- Name: layouts; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE layouts FROM PUBLIC;
+REVOKE ALL ON TABLE layouts FROM postgres;
+GRANT ALL ON TABLE layouts TO postgres;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE layouts TO proton;
+
+
+--
+-- Name: layouts_layoutid_seq; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE layouts_layoutid_seq FROM PUBLIC;
+REVOKE ALL ON SEQUENCE layouts_layoutid_seq FROM postgres;
+GRANT ALL ON SEQUENCE layouts_layoutid_seq TO postgres;
+GRANT USAGE ON SEQUENCE layouts_layoutid_seq TO proton;
+
+
+--
+-- Name: permissions; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE permissions FROM PUBLIC;
+REVOKE ALL ON TABLE permissions FROM postgres;
+GRANT ALL ON TABLE permissions TO postgres;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE permissions TO proton;
+
+
+--
+-- Name: permissions_permid_seq; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE permissions_permid_seq FROM PUBLIC;
+REVOKE ALL ON SEQUENCE permissions_permid_seq FROM postgres;
+GRANT ALL ON SEQUENCE permissions_permid_seq TO postgres;
+GRANT USAGE ON SEQUENCE permissions_permid_seq TO proton;
+
+
+--
+-- Name: sections; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE sections FROM PUBLIC;
+REVOKE ALL ON TABLE sections FROM postgres;
+GRANT ALL ON TABLE sections TO postgres;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE sections TO proton;
+
+
+--
+-- Name: sections_secid_seq; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE sections_secid_seq FROM PUBLIC;
+REVOKE ALL ON SEQUENCE sections_secid_seq FROM postgres;
+GRANT ALL ON SEQUENCE sections_secid_seq TO postgres;
+GRANT USAGE ON SEQUENCE sections_secid_seq TO proton;
+
+
+--
+-- Name: sequences; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE sequences FROM PUBLIC;
+REVOKE ALL ON TABLE sequences FROM postgres;
+GRANT ALL ON TABLE sequences TO postgres;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE sequences TO proton;
+
+
+--
+-- Name: sequences_seqid_seq; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE sequences_seqid_seq FROM PUBLIC;
+REVOKE ALL ON SEQUENCE sequences_seqid_seq FROM postgres;
+GRANT ALL ON SEQUENCE sequences_seqid_seq TO postgres;
+GRANT USAGE ON SEQUENCE sequences_seqid_seq TO proton;
+
+
+--
+-- Name: users; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE users FROM PUBLIC;
+REVOKE ALL ON TABLE users FROM postgres;
+GRANT ALL ON TABLE users TO postgres;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE users TO proton;
+
+
+--
+-- Name: users_uid_seq; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE users_uid_seq FROM PUBLIC;
+REVOKE ALL ON SEQUENCE users_uid_seq FROM postgres;
+GRANT ALL ON SEQUENCE users_uid_seq TO postgres;
+GRANT USAGE ON SEQUENCE users_uid_seq TO proton;
 
 
 --
