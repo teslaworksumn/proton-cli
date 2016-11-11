@@ -10,7 +10,6 @@ impl UserDao for UserDaoPostgres {
 
     fn add_initial_user(&self, private_key: &str) -> Result<(), Error> {
         let query = "INSERT INTO users (name, public_key) VALUES ($1, $2)";
-        println!("{}", private_key.len());
         let rows_modified = try!(
             self.conn.execute(query, &[&"root".to_owned(), &private_key.to_owned()])
             .map_err(Error::Postgres));

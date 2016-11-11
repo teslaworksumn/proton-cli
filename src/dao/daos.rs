@@ -16,6 +16,7 @@ pub trait FixtureDao {
 }
 
 pub trait LayoutDao {
+    fn get_default_layout(&self) -> Result<Layout, Error>;
     fn get_layout(&self, layoutid: u32) -> Result<Layout, Error>;
 }
 

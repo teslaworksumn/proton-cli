@@ -8,7 +8,7 @@ use git2::{Oid, Repository, Signature};
 use utils;
 use error::Error;
 use project_types::Project;
-use dao::UserDao;
+use dao::{LayoutDao, UserDao};
 
 
 /// Initializes a new project at root. The root must either not exist, or must
@@ -19,8 +19,9 @@ use dao::UserDao;
 /// 3. Initialize a git repository and commit the protonfile.
 ///
 /// Impure.
-pub fn initialize_project<P: AsRef<Path>, UD: UserDao>(
+pub fn initialize_project<P: AsRef<Path>, UD: UserDao, LD: LayoutDao>(
     user_dao: UD,
+    layout_dao: LD,
     root_path: P,
     name: &str
 ) -> Result<String, Error> {
@@ -30,7 +31,7 @@ pub fn initialize_project<P: AsRef<Path>, UD: UserDao>(
     let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
 
     utils::create_empty_directory(root)
-        .and_then(|_| make_protonfile(root, &root_pub_key))
+        .and_then(|_| make_protonfile(layout_dao, root, &root_pub_key))
         .and_then(|_| make_repository(root))
         .and_then(|repo| initial_commit(&repo, &signature))
         .and_then(|_| user_dao.add_initial_user(&root_private_key))
@@ -41,8 +42,13 @@ pub fn initialize_project<P: AsRef<Path>, UD: UserDao>(
 /// It only contains one user, the admin
 ///
 /// Impure.
-fn make_protonfile(root: &Path, admin_pub_key: &str) -> Result<(), Error> {
-    let project = try!(Project::empty(&admin_pub_key, None));
+fn make_protonfile<LD: LayoutDao>(
+    layout_dao: LD,
+    root: &Path,
+    admin_pub_key: &str
+) -> Result<(), Error> {
+
+    let project = try!(Project::empty(layout_dao, &admin_pub_key, None));
     utils::write_protonfile(&project, Some(root))
 }
 
