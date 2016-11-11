@@ -1,6 +1,6 @@
+use postgres::types::ToSql;
 use std::path::Path;
 
-use project_types::User;
 use dao::{UserDao, UserDaoPostgres};
 use error::Error;
 use project_types::User;
