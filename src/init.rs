@@ -29,13 +29,12 @@ pub fn initialize_project<P: AsRef<Path>, UD: UserDao>(
     let (root_pub_key, root_private_key) = try!(utils::create_pub_priv_keys());
     let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
 
-    user_dao.add_initial_user(&root_private_key);
-
     utils::create_empty_directory(root)
         .and_then(|_| make_protonfile(root, &root_pub_key))
         .and_then(|_| make_repository(root))
         .and_then(|repo| initial_commit(&repo, &signature))
-        .map(|_| root_pub_key)
+        .and_then(|_| user_dao.add_initial_user(&root_private_key))
+        .and_then(|_| Ok(root_pub_key))
 }
 
 /// Writes a new Protonfile to the root.

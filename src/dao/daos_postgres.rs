@@ -1,4 +1,5 @@
 use postgres::{Connection, TlsMode};
+use postgres::types::ToSql;
 
 use error::Error;
 use project_types::Channel;
@@ -7,7 +8,7 @@ use project_types::Channel;
 const postgres_conn_str: &'static str = "postgresql://proton:1234qwermnbv@localhost/proton_cli";
 
 pub struct DaoPostgres {
-    conn: Connection
+    pub conn: Connection
 }
 
 pub type ChannelDaoPostgres = DaoPostgres;
@@ -31,6 +32,6 @@ impl DaoPostgres {
 /// Gets a new connection to the postgresql database
 fn get_connection() -> Result<Connection, Error> {
     Connection::connect(postgres_conn_str, TlsMode::None)
-        .map_err(Error::Postgres)
+        .map_err(Error::PostgresConnection)
 }
 

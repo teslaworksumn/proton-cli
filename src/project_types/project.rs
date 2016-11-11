@@ -15,9 +15,14 @@ pub struct Project {
 impl Project {
 
     pub fn empty(name: &str, layout_id: Option<u32>) -> Result<Project, Error> {
+        let lid = layout_id.unwrap_or(0);
         // Check that layout_id is valid if given
         // Validate name characters??
-        Err(Error::TodoErr)
+        Ok(Project {
+            name: name.to_owned(),
+            playlist: vec![],
+            layout_id: lid
+        })
     }
 
     /// Finds a sequence by its id

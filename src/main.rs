@@ -98,9 +98,8 @@ fn run_test(args: Args) -> Result<ProtonReturn, Error> {
 }
 
 fn run_init(args: Args) -> Result<ProtonReturn, Error> {
-	let name = args.arg_name.unwrap();
-	let root = args.arg_folder.unwrap();
-	let root_path = Path::new(&root);
+	let name = args.arg_folder.unwrap();
+	let root_path = Path::new(&name);
 	let user_dao = try!(dao::UserDaoPostgres::new());
 	let root_pub_key = try!(proton_cli::initialize_project(user_dao, &root_path, &name));
 	Ok(ProtonReturn::PublicKey(root_pub_key))

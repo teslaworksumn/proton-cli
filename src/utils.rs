@@ -3,8 +3,11 @@ use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::env;
 
-use rustc_serialize::json;
+
 use git2::{self, Repository, Signature};
+use openssl::rsa;
+use openssl::pkey;
+use rustc_serialize::json;
 
 use project_types::{User, Project, Permission};
 use error::Error;
@@ -13,7 +16,13 @@ use user;
 
 /// Creates a new public/private key pair
 pub fn create_pub_priv_keys() -> Result<(String, String), Error> {
-    Err(Error::TodoErr)
+    let keys = try!(rsa::Rsa::generate(2048).map_err(Error::Ssl));
+    let pkey = try!(pkey::PKey::from_rsa(keys).map_err(Error::Ssl));
+    let private_key = try!(pkey.private_key_to_pem().map_err(Error::Ssl));
+    let public_key = try!(pkey.public_key_to_pem().map_err(Error::Ssl));
+    let private_key_str = String::from_utf8(private_key).expect("Generated private key not UTF-8");
+    let public_key_str = String::from_utf8(public_key).expect("Generated public key not UTF-8");
+    Ok((public_key_str, private_key_str))
 }
 
 /// Lookup a user's uid based on the given private key

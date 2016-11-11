@@ -1,18 +1,20 @@
 extern crate openssl;
 
-use std::{io, error, fmt};
 use git2;
+use openssl::error as openssl_err;
+use postgres::error as postgres_err;
 use rustc_serialize::json;
-use postgres::error::ConnectError;
+use std::{io, error, fmt};
 
 #[derive(Debug)]
 pub enum Error {
     Io(io::Error),
     Git(git2::Error),
     JsonDecode(json::DecoderError),
-    Ssl(openssl::ssl::error::SslError),
+    Ssl(openssl_err::ErrorStack),
     Rsfml(String),
-    Postgres(ConnectError),
+    Postgres(postgres_err::Error),
+    PostgresConnection(postgres_err::ConnectError),
     FolderNotEmpty(String, usize),
     InvalidPublicKey(String),
     InvalidFileName,
@@ -42,6 +44,7 @@ impl error::Error for Error {
             Error::Ssl(_) => "SSL error occured",
             Error::Rsfml(_) => "Rsfml error occured",
             Error::Postgres(_) => "Postgres error occured",
+            Error::PostgresConnection(_) => "Postgres connection error occured",
             Error::FolderNotEmpty(_, _) => "Root folder was not empty",
             Error::InvalidPublicKey(_) => "Invalid public key",
             Error::InvalidFileName => "Invalid file name",
@@ -71,6 +74,7 @@ impl error::Error for Error {
            Error::Ssl(ref err) => Some(err),
            Error::Rsfml(_) => None,
            Error::Postgres(ref err) => Some(err),
+           Error::PostgresConnection(ref err) => Some(err),
            Error::FolderNotEmpty(_, _) => None,
            Error::InvalidPublicKey(_) => None,
            Error::InvalidFileName => None,
@@ -108,6 +112,8 @@ impl fmt::Display for Error {
                 "Rsfml error: {}", description),
             Error::Postgres(ref err) => write!(f, 
                 "Postgress error occured: {}", err),
+            Error::PostgresConnection(ref err) => write!(f, 
+                "Postgress connection error occured: {}", err),
             Error::FolderNotEmpty(ref root, count) => write!(f,
                 "{} was not empty: {} files exist", root, count),
             Error::InvalidPublicKey(ref key) => write!(f, 

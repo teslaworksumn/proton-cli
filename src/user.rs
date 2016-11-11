@@ -2,8 +2,6 @@
 use std::path::Path;
 use std::fs::File;
 use std::io::Cursor;
-use openssl::crypto::rsa::RSA as openssl_RSA;
-use openssl::crypto::hash::Type as openssl_HashType;
 
 use git2::Signature;
 
