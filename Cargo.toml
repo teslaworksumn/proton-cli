@@ -15,7 +15,7 @@ sfml = "0.*"
 git2 = "0.*"
 rustc-serialize = "0.3.*"
 regex = "0.*"
-postgres = "0.13"
+postgres = "0.*"
 
 [dev-dependencies]
 tempdir = "0.*"

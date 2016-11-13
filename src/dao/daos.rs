@@ -21,6 +21,7 @@ pub trait LayoutDao {
 }
 
 pub trait PermissionDao {
+    fn add_initial_permission(&self, root_uid: u32) -> Result<(), Error>;
     fn get_all_permissions(&self, uid: u32) -> Result<Vec<Permission>, Error>;
     fn get_permission(&self, permid: u32) -> Result<Permission, Error>;
 }
@@ -34,8 +35,8 @@ pub trait SequenceDao {
 }
 
 pub trait UserDao {
-    fn add_initial_user(&self, private_key: &str, public_key: &str) -> Result<(), Error>;
+    fn add_initial_user(&self, private_key: &str, public_key: &str) -> Result<u32, Error>;
     fn get_user(&self, uid: u32) -> Result<User, Error>;
-    fn get_user_id<P: AsRef<Path>>(&self, public_key_path: P) -> Result<u32, Error>;
+    fn get_user_id(&self, public_key: &str) -> Result<u32, Error>;
 }
 

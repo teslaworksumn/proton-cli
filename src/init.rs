@@ -8,7 +8,7 @@ use git2::{Oid, Repository, Signature};
 use utils;
 use error::Error;
 use project_types::Project;
-use dao::{LayoutDao, UserDao};
+use dao::{LayoutDao, PermissionDao, UserDao};
 
 
 /// Initializes a new project at root. The root must either not exist, or must
@@ -19,9 +19,10 @@ use dao::{LayoutDao, UserDao};
 /// 3. Initialize a git repository and commit the protonfile.
 ///
 /// Impure.
-pub fn initialize_project<P: AsRef<Path>, UD: UserDao, LD: LayoutDao>(
+pub fn initialize_project<P: AsRef<Path>, UD: UserDao, LD: LayoutDao, PD: PermissionDao>(
     user_dao: UD,
     layout_dao: LD,
+    perm_dao: PD,
     root_path: P,
     name: &str
 ) -> Result<String, Error> {
@@ -35,6 +36,7 @@ pub fn initialize_project<P: AsRef<Path>, UD: UserDao, LD: LayoutDao>(
         .and_then(|_| make_repository(root))
         .and_then(|repo| initial_commit(&repo, &signature))
         .and_then(|_| user_dao.add_initial_user(&root_private_key, &root_pub_key))
+        .and_then(|root_uid| perm_dao.add_initial_permission(root_uid))
         .and_then(|_| Ok(root_pub_key))
 }
 

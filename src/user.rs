@@ -10,6 +10,17 @@ use error::Error;
 use project_types::User;
 use utils;
 
+
+pub fn get_user_id<P: AsRef<Path>, UD: UserDao>(
+    user_dao: UD,
+    public_key_path: P
+) -> Result<u32, Error> {
+    let public_key_str = try!(utils::file_as_string(public_key_path.as_ref()));
+    let uid = try!(user_dao.get_user_id(&public_key_str));
+    println!("{:?}", uid);
+    Ok(uid)
+}
+
 /// Creates a new user for the project in the current directory.
 /// Generates a public/private key pair for the new user
 /// and returns the public key.
@@ -25,9 +36,10 @@ pub fn new_user<P: AsRef<Path>, UD: UserDao, PD: PermissionDao>(
     let (root_pub_key, root_private_key) = try!(utils::create_pub_priv_keys());
 
     // See if admin has permission to add user
-    let admin_uid = try!(user_dao.get_user_id(admin_key_path.as_ref()));
-    let admin = try!(user_dao.get_user(admin_uid));
-    let admin_permissions = try!(perm_dao.get_all_permissions(admin_uid))
+    let admin_key = try!(utils::file_as_string(admin_key_path.as_ref()));
+    let admin_uid = try!(user_dao.get_user_id(&admin_key));
+    let admin_permissions = try!(perm_dao.get_all_permissions(admin_uid));
+    println!("admin_permissions: {:?}", admin_permissions);
 
     Err(Error::TodoErr)
 

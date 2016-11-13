@@ -10,7 +10,7 @@ use docopt::Docopt;
 
 use proton_cli::error::Error;
 use proton_cli::utils;
-use proton_cli::dao::{self, UserDao};
+use proton_cli::dao::{self, PermissionDao, UserDao};
 
 
 const USAGE: &'static str = "
@@ -102,7 +102,13 @@ fn run_init(args: Args) -> Result<ProtonReturn, Error> {
 	let root_path = Path::new(&name);
 	let user_dao = try!(dao::UserDaoPostgres::new());
 	let layout_dao = try!(dao::LayoutDaoPostgres::new());
-	let root_pub_key = try!(proton_cli::initialize_project(user_dao, layout_dao, &root_path, &name));
+	let perm_dao = try!(dao::PermissionDaoPostgres::new());
+	let root_pub_key = try!(proton_cli::initialize_project(
+		user_dao,
+		layout_dao,
+		perm_dao,
+		&root_path,
+		&name));
 	Ok(ProtonReturn::PublicKey(root_pub_key))
 }
 
@@ -111,7 +117,8 @@ fn run_new_user(args: Args) -> Result<ProtonReturn, Error> {
 	let admin_key_path = Path::new(&admin_key);
 	let name = args.arg_name.unwrap();
 	let user_dao = try!(dao::UserDaoPostgres::new());
-	let public_key = try!(proton_cli::new_user(user_dao, &admin_key_path, &name));
+	let perm_dao = try!(dao::PermissionDaoPostgres::new());
+	let public_key = try!(proton_cli::new_user(user_dao, perm_dao, &admin_key_path, &name));
 	Ok(ProtonReturn::PublicKey(public_key))
 }
 
@@ -119,7 +126,7 @@ fn run_get_user_id(args: Args) -> Result<ProtonReturn, Error> {
 	let public_key = args.arg_public_key.unwrap();
 	let public_key_path = Path::new(&public_key);
 	let user_dao = try!(dao::UserDaoPostgres::new());
-	let uid = try!(user_dao.get_user_id(&public_key_path));
+	let uid = try!(proton_cli::get_user_id(user_dao, &public_key_path));
 	println!("{:?}", uid);
 	Ok(ProtonReturn::NoReturn)
 }

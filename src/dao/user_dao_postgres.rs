@@ -9,7 +9,7 @@ use utils;
 
 impl UserDao for UserDaoPostgres {
 
-    fn add_initial_user(&self, private_key: &str, public_key: &str) -> Result<(), Error> {
+    fn add_initial_user(&self, private_key: &str, public_key: &str) -> Result<u32, Error> {
         let statement = "INSERT INTO users (name, private_key, public_key) VALUES ($1, $2, $3)";
         let private_string = private_key.trim_matches('\n');
         let public_string = public_key.trim_matches('\n');
@@ -18,7 +18,8 @@ impl UserDao for UserDaoPostgres {
                 statement,
                 &[&"root".to_owned(), &private_string, &public_string])
             .map_err(Error::Postgres));
-        Ok(())
+        let root_uid = try!(self.get_user_id(&public_string));
+        Ok(root_uid)
     }
 
     /// Identifies a user by their public SSH key by finding the
@@ -26,8 +27,7 @@ impl UserDao for UserDaoPostgres {
     /// acts like the user's password, and should be protected.
     /// 
     /// Impure.
-    fn get_user_id<P: AsRef<Path>>(&self, public_key_path: P) -> Result<u32, Error> {
-        let public_key = try!(utils::file_as_string(public_key_path.as_ref()));
+    fn get_user_id(&self, public_key: &str) -> Result<u32, Error> {
         let public_string = public_key.trim_matches('\n');
         let query = "SELECT uid FROM users WHERE public_key = $1";
         let results = try!(
