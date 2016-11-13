@@ -2,7 +2,6 @@ use error::Error;
 use dao::PermissionDao;
 use project_types::PermissionEnum;
 
-
 #[derive(Debug, RustcDecodable, RustcEncodable)]
 pub struct Permission {
     pub permid: u32,
