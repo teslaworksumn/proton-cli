@@ -21,12 +21,8 @@ impl UserDao for UserDaoPostgres {
         Ok(())
     }
 
-    fn get_user(&self, uid: u32) -> Result<User, Error> {
-        Err(Error::TodoErr)
-    }
-
     /// Identifies a user by their public SSH key by finding the
-    /// corresponding private key in the project. This public key
+    /// public key in the database. This public key
     /// acts like the user's password, and should be protected.
     /// 
     /// Impure.
@@ -42,7 +38,6 @@ impl UserDao for UserDaoPostgres {
             0 => Err(Error::AdminNotFound),
             1 => {
                 let row = results.get(0);
-                println!("row: {:?}", row);
                 let uid: i32 = row.get(0);
                 Ok(uid as u32)
             },
@@ -50,4 +45,26 @@ impl UserDao for UserDaoPostgres {
         }
     }
     
+    fn get_user(&self, uid: u32) -> Result<User, Error> {
+        let query = "SELECT name, public_key FROM users WHERE uid = $1";
+        let uid_i32 = uid as i32;
+        let results = try!(
+            self.conn.query(query, &[&uid_i32])
+            .map_err(Error::Postgres));
+        match results.len() {
+            0 => Err(Error::UserNotFound),
+            1 => {
+                let row = results.get(0);
+                let name: String = row.get(0);
+                let public_key: String = row.get(1);
+                Ok(User {
+                    uid: uid,
+                    name: name,
+                    public_key: public_key
+                })
+            },
+            x => Err(Error::InvalidNumResults(x)),
+        }
+    }
+
 }

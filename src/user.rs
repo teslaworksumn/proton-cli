@@ -5,7 +5,7 @@ use std::io::Cursor;
 
 use git2::Signature;
 
-use dao::UserDao;
+use dao::{PermissionDao, UserDao};
 use error::Error;
 use project_types::User;
 use utils;
@@ -15,8 +15,9 @@ use utils;
 /// and returns the public key.
 ///
 /// Impure.
-pub fn new_user<P: AsRef<Path>, UD: UserDao>(
+pub fn new_user<P: AsRef<Path>, UD: UserDao, PD: PermissionDao>(
     user_dao: UD,
+    perm_dao: PD,
     admin_key_path: P,
     name: &str
 ) -> Result<String, Error> {
@@ -25,9 +26,8 @@ pub fn new_user<P: AsRef<Path>, UD: UserDao>(
 
     // See if admin has permission to add user
     let admin_uid = try!(user_dao.get_user_id(admin_key_path.as_ref()));
-    println!("uid: {}", admin_uid);
     let admin = try!(user_dao.get_user(admin_uid));
-    println!("admin: {:?}", admin);
+    let admin_permissions = try!(perm_dao.get_all_permissions(admin_uid))
 
     Err(Error::TodoErr)
 
