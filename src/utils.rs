@@ -25,12 +25,6 @@ pub fn create_pub_priv_keys() -> Result<(String, String), Error> {
     Ok((public_key_str, private_key_str))
 }
 
-/// Lookup a user's uid based on the given private key
-/// Return error if not found
-pub fn get_uid_from_key<P: AsRef<Path>>(key_path: P) -> Result<u32, Error> {
-    Err(Error::TodoErr)
-}
-
 /// Checks if the user with a private key at the given path has
 /// the Administrate permission
 /// Returns this user if found and has permission, else error

@@ -24,7 +24,7 @@ pub fn set_permission<P: AsRef<Path>> (
     target_sequence: Option<u32>,
     target_section: Option<u32>
 ) -> Result<(), Error> {
-    let admin_uid = try!(utils::get_uid_from_key(&admin_key_path));
+    //let admin_uid = try!(utils::get_uid_from_key(&admin_key_path));
 
     Err(Error::TodoErr)
     

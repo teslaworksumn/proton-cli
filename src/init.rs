@@ -31,10 +31,10 @@ pub fn initialize_project<P: AsRef<Path>, UD: UserDao, LD: LayoutDao>(
     let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
 
     utils::create_empty_directory(root)
-        .and_then(|_| make_protonfile(layout_dao, root, &root_pub_key))
+        .and_then(|_| make_protonfile(layout_dao, root, name))
         .and_then(|_| make_repository(root))
         .and_then(|repo| initial_commit(&repo, &signature))
-        .and_then(|_| user_dao.add_initial_user(&root_private_key))
+        .and_then(|_| user_dao.add_initial_user(&root_private_key, &root_pub_key))
         .and_then(|_| Ok(root_pub_key))
 }
 
@@ -45,10 +45,10 @@ pub fn initialize_project<P: AsRef<Path>, UD: UserDao, LD: LayoutDao>(
 fn make_protonfile<LD: LayoutDao>(
     layout_dao: LD,
     root: &Path,
-    admin_pub_key: &str
+    name: &str
 ) -> Result<(), Error> {
 
-    let project = try!(Project::empty(layout_dao, &admin_pub_key, None));
+    let project = try!(Project::empty(layout_dao, name, None));
     utils::write_protonfile(&project, Some(root))
 }
 

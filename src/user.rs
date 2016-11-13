@@ -23,8 +23,14 @@ pub fn new_user<P: AsRef<Path>, UD: UserDao>(
 
     let (root_pub_key, root_private_key) = try!(utils::create_pub_priv_keys());
 
-    Err(Error::TodoErr)
     // See if admin has permission to add user
+    let admin_uid = try!(user_dao.get_user_id(admin_key_path.as_ref()));
+    println!("uid: {}", admin_uid);
+    let admin = try!(user_dao.get_user(admin_uid));
+    println!("admin: {:?}", admin);
+
+    Err(Error::TodoErr)
+
     // Add user
     // Commit changes
 
