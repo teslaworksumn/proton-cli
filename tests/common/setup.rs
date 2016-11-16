@@ -45,9 +45,6 @@ pub fn try_new_user(
     key_name: &str,
     key: TestKey
 ) -> User {
-
-    let user_key_path = super::make_key_file(&root_path, &key_name, key);
-
     let _ = proton_cli::new_user(&admin_key_path, &user_key_path.as_path(), &user_name)
         .expect("Error creating new user");
 
