@@ -203,6 +203,36 @@ pub fn add_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, SD: Seq
     project_dao.update_project(new_project)
 }
 
+/// Adds the sequence with the given name to the project's playlist
+pub fn add_sequence<P: AsRef<Path>>(admin_key_path: P, seqid: u32) -> Result<(), Error> {
+    
+    // Check that the admin has sufficient privileges
+    let valid_permissions = vec![PermissionEnum::Administrate, PermissionEnum::EditSeq(seqid)];
+    let admin_uid = try!(utils::check_valid_permission(
+        &perm_dao,
+        &user_dao,
+        admin_key_path,
+        &valid_permissions));
+
+    // Check that seqid exists
+    return Err(Error::TodoErr);
+
+    // Add sequence to project's playlist
+    let project = try!(utils::read_protonfile(None::<P>));
+    let new_project = try!(project.add_sequence(seqid));
+
+    // Save project
+    try!(utils::write_protonfile(&new_project, None::<P>));
+
+    // Commit changes
+    let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
+    let msg = format!("Adding sequence '{}' to playlist", seqid);
+    let repo_path: Option<P> = None;
+
+    utils::commit_all(repo_path, &signature, &msg)
+        .map(|_| ())
+}
+
 /// Removes the sequence with the given name from the project
 /// and deletes its files
 pub fn remove_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, UD: UserDao>(
