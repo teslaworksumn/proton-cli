@@ -9,8 +9,7 @@ use rustc_serialize::json;
 use docopt::Docopt;
 
 use proton_cli::error::Error;
-use proton_cli::utils;
-use proton_cli::dao::{self, PermissionDao, UserDao};
+use proton_cli::dao;
 
 
 const USAGE: &'static str = "
@@ -29,7 +28,6 @@ Usage:
   ./proton set-permission <admin-key> (add | remove) <uid> Administrate
   ./proton set-permission <admin-key> (add | remove) <uid> EditSequence <target-sequence>
   ./proton set-permission <admin-key> (add | remove) <uid> EditSection <target-sequence> <target-section>
-  ./proton test <seqid>
   ./proton (-h | --help)
 
 Options:
@@ -56,6 +54,7 @@ struct Args {
 enum ProtonReturn {
 	NoReturn,
 	PublicKey(String),
+	Uid(u32),
 }
 
 fn main() {
@@ -76,7 +75,6 @@ fn main() {
 		"new-section" => run_new_section,
 		"list-permissions" => run_list_permissions,
 		"set-permission" => run_set_permission,
-		"test" => run_test,
 		_ => panic!("Invalid first argument"),
 	};
 
@@ -85,16 +83,11 @@ fn main() {
 		Ok(ret) => match ret {
 			ProtonReturn::NoReturn => println!("Worked!"),
 			ProtonReturn::PublicKey(s) => println!("{}", s),
+			ProtonReturn::Uid(uid) => println!("{}", uid),
 		},
 		Err(e) => println!("{:?}", e.to_string()),
 	};
 
-}
-
-fn run_test(args: Args) -> Result<ProtonReturn, Error> {
-	let chanid = args.arg_seqid.unwrap();
-	let chan_dao = try!(dao::ChannelDaoPostgres::new());
-	Ok(ProtonReturn::NoReturn)
 }
 
 fn run_init(args: Args) -> Result<ProtonReturn, Error> {
@@ -127,8 +120,7 @@ fn run_get_user_id(args: Args) -> Result<ProtonReturn, Error> {
 	let public_key_path = Path::new(&public_key);
 	let user_dao = try!(dao::UserDaoPostgres::new());
 	let uid = try!(proton_cli::get_user_id(user_dao, &public_key_path));
-	println!("{:?}", uid);
-	Ok(ProtonReturn::NoReturn)
+	Ok(ProtonReturn::Uid(uid))
 }
 
 fn run_remove_user(args: Args) -> Result<ProtonReturn, Error> {
