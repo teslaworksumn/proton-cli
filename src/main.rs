@@ -77,6 +77,7 @@ enum ProtonReturn {
 enum ProtonReturn {
 	NoReturn,
 	PublicKey(String),
+	Uid(u32),
 }
 
 fn main() {
@@ -104,7 +105,6 @@ fn main() {
 		"new-section" => run_new_section,
 		"list-permissions" => run_list_permissions,
 		"set-permission" => run_set_permission,
-		"test" => run_test,
 		_ => panic!("Invalid first argument"),
 	};
 
