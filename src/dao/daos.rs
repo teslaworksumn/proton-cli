@@ -36,6 +36,7 @@ pub trait SequenceDao {
 
 pub trait UserDao {
     fn add_initial_user(&self, private_key: &str, public_key: &str) -> Result<u32, Error>;
+    fn add_user(&self, name: &str, private_key: &str, public_key: &str) -> Result<u32, Error>;
     fn get_user(&self, uid: u32) -> Result<User, Error>;
     fn get_user_id(&self, public_key: &str) -> Result<u32, Error>;
 }

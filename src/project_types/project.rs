@@ -35,32 +35,6 @@ impl Project {
         })
     }
 
-    /// Finds a sequence by its id
-    /// Returns the sequence if found, else None
-    pub fn find_sequence_by_seqid(&self, seqid: u32) -> Option<&Sequence> {
-        None
-    }
-
-    /// Finds a user with the given id
-    /// Returns the user if found, else None
-    fn find_user_by_uid(&self, uid: u32) -> Option<&User> {
-        None
-    }
-
-    /// Adds a user to the users table
-    pub fn add_user(&self, name: &str, pub_key: &str) -> Result<(), Error> {
-        let user = try!(User::new(name, pub_key));
-        // Insert into users table
-        Err(Error::TodoErr)
-    }
-
-    /// Removes a user from the users table
-    pub fn remove_user(&self, uid: u32) -> Result<Project, Error> {
-        // Update table, drop row where uid = uid
-        // Return different error if UserNotFound
-        Err(Error::TodoErr)
-    }
-
     /// Adds a sequence to the project
     pub fn add_sequence(
         &self,

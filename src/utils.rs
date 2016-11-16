@@ -3,15 +3,14 @@ use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::env;
 
-
 use git2::{self, Repository, Signature};
 use openssl::rsa;
 use openssl::pkey;
 use rustc_serialize::json;
 
-use project_types::{User, Project, Permission};
+use dao::{PermissionDao, UserDao};
+use project_types::{Project, PermissionEnum};
 use error::Error;
-use user;
 
 
 /// Creates a new public/private key pair
@@ -25,17 +24,28 @@ pub fn create_pub_priv_keys() -> Result<(String, String), Error> {
     Ok((public_key_str, private_key_str))
 }
 
-/// Checks if the user with a private key at the given path has
-/// the Administrate permission
+/// Checks if the user with a public key at the given path has
+/// one of the given valid permissions
 /// Returns this user if found and has permission, else error
-pub fn validate_admin<P: AsRef<Path>>(admin_key_path: P) -> Result<User, Error> {
+pub fn check_valid_permission<P: AsRef<Path>, PD: PermissionDao, UD: UserDao>(
+    perm_dao: &PD,
+    user_dao: &UD,
+    public_key_path: P,
+    valid_permissions: &Vec<PermissionEnum>
+) -> Result<u32, Error> {
     
-    Err(Error::TodoErr)
-    // let admin_user = try!(user::id_user(admin_key_path));
-    // if !admin_user.has_permission(&Permission::Administrate) {
-    //     return Err(Error::UnauthorizedAction);
-    // }
-    // Ok(admin_user)
+    if valid_permissions.len() > 0 {
+        let public_key = try!(file_as_string(public_key_path));
+        let uid = try!(user_dao.get_user_id(&public_key));
+        let permissions = try!(perm_dao.get_all_permissions(uid));
+        for permission in permissions {
+            if valid_permissions.contains(&permission.permission) {
+                return Ok(uid);
+            }
+        }
+    }
+
+    Err(Error::UnauthorizedAction)
 }
 
 /// Returns the last part of the path, the file name, if no problems arise

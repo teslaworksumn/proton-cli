@@ -10,16 +10,21 @@ use utils;
 impl UserDao for UserDaoPostgres {
 
     fn add_initial_user(&self, private_key: &str, public_key: &str) -> Result<u32, Error> {
+        self.add_user("root", private_key, public_key)
+    }
+
+
+    fn add_user(&self, name: &str, private_key: &str, public_key: &str) -> Result<u32, Error> {
         let statement = "INSERT INTO users (name, private_key, public_key) VALUES ($1, $2, $3)";
         let private_string = private_key.trim_matches('\n');
         let public_string = public_key.trim_matches('\n');
         let rows_modified = try!(
             self.conn.execute(
                 statement,
-                &[&"root".to_owned(), &private_string, &public_string])
+                &[&name.to_owned(), &private_string, &public_string])
             .map_err(Error::Postgres));
-        let root_uid = try!(self.get_user_id(&public_string));
-        Ok(root_uid)
+        let uid = try!(self.get_user_id(&public_string));
+        Ok(uid)
     }
 
     /// Identifies a user by their public SSH key by finding the

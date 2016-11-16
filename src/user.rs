@@ -7,7 +7,7 @@ use git2::Signature;
 
 use dao::{PermissionDao, UserDao};
 use error::Error;
-use project_types::User;
+use project_types::{PermissionEnum, User};
 use utils;
 
 
@@ -17,7 +17,6 @@ pub fn get_user_id<P: AsRef<Path>, UD: UserDao>(
 ) -> Result<u32, Error> {
     let public_key_str = try!(utils::file_as_string(public_key_path.as_ref()));
     let uid = try!(user_dao.get_user_id(&public_key_str));
-    println!("{:?}", uid);
     Ok(uid)
 }
 
@@ -33,25 +32,30 @@ pub fn new_user<P: AsRef<Path>, UD: UserDao, PD: PermissionDao>(
     name: &str
 ) -> Result<String, Error> {
 
-    let (root_pub_key, root_private_key) = try!(utils::create_pub_priv_keys());
-
     // See if admin has permission to add user
-    let admin_key = try!(utils::file_as_string(admin_key_path.as_ref()));
-    let admin_uid = try!(user_dao.get_user_id(&admin_key));
-    let admin_permissions = try!(perm_dao.get_all_permissions(admin_uid));
-    println!("admin_permissions: {:?}", admin_permissions);
+    let valid_permissions = vec![PermissionEnum::Administrate];
+    let admin_uid = try!(utils::check_valid_permission(
+        &perm_dao,
+        &user_dao,
+        admin_key_path,
+        &valid_permissions));
 
-    Err(Error::TodoErr)
+    // Create keys
+    let (user_pub_key, user_private_key) = try!(utils::create_pub_priv_keys());
 
     // Add user
+    let new_uid = try!(user_dao.add_user(name, &user_private_key, &user_pub_key));
+
     // Commit changes
+    let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
+    let msg = format!("Adding {} as new user with uid {}", name, new_uid);
+    let pf_path = Path::new("Protonfile.json");
+    let repo_path: Option<P> = None;
 
-    // let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
-    // let msg = format!("Adding {} as new user", name);
-    // let pf_path = Path::new("Protonfile.json");
-    // let repo_path: Option<P> = None;
+    try!(utils::commit_file(&pf_path, repo_path, &signature, &msg));
 
-    // utils::commit_file(&pf_path, repo_path, &signature, &msg)
+    // Return public key
+    Ok(user_pub_key)
 }
 
 /// Removes a user from the project in the current directory

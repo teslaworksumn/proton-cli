@@ -1,7 +1,7 @@
 use error::Error;
 
 
-#[derive(Debug, RustcDecodable, RustcEncodable)]
+#[derive(Debug, PartialEq, RustcDecodable, RustcEncodable)]
 pub enum PermissionEnum {
     Administrate,
     EditSequence,

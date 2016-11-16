@@ -1,9 +1,4 @@
 
-use std::io::Cursor;
-use openssl::rsa;
-
-use error::Error;
-use project_types::Permission;
 
 // Note: DO NOT return a uid in any public function. They are used for authentication and are
 // for internal function calls only.
@@ -22,27 +17,3 @@ impl PartialEq for User {
     }
 }
 
-impl User {
-
-    /// Validates the public key, then creates a new User with that key and a unique id
-    pub fn new(name: &str, pub_key: &str) -> Result<User, Error> {
-        try!(User::validate_public_key(&pub_key));
-
-        // Make unique user id
-        let uid = 0;
-
-        Ok(User {
-            name: name.to_string(),
-            uid: uid,
-            public_key: pub_key.to_string(),
-        })
-    }
-
-    /// Checks if the given public key is valid
-    pub fn validate_public_key(pub_key: &str) -> Result<(), Error> {
-        rsa::Rsa::public_key_from_pem(pub_key.as_bytes())
-            .map(|_| ())
-            .map_err(|_| Error::InvalidPublicKey(pub_key.to_string()))
-    }
-
-}
