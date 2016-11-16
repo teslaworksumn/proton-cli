@@ -2,6 +2,7 @@ use std::fs::{self, File};
 use std::io::Read;
 use std::path::Path;
 
+use git2::{self, Repository, Signature};
 use openssl::rsa;
 use openssl::pkey;
 use rustc_serialize::json;
