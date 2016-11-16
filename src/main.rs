@@ -20,6 +20,7 @@ Usage:
   ./proton new-user <admin-key> <name>
   ./proton remove-user <admin-key> <uid>
   ./proton new-sequence <admin-key> <name> <music-file>
+  ./proton add-sequence <admin-key> <seqid>
   ./proton remove-sequence <admin-key> <seqid>
   ./proton delete-sequence <admin-key> <seqid>
   ./proton new-section <admin-key> <t_start> <t_end> <seqid> <fixid>..
@@ -70,6 +71,7 @@ fn main() {
 		"remove-user" => run_remove_user,
 		"get_user_id" => run_get_user_id,
 		"new-sequence" => run_new_sequence,
+		"add-sequence" => run_add_sequence,
 		"remove-sequence" => run_remove_sequence,
 		"delete-sequence" => run_delete_sequence,
 		"new-section" => run_new_section,
@@ -142,6 +144,14 @@ fn run_new_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let music_file = args.arg_music_file.unwrap();
 	let music_file_path = Path::new(&music_file);
 	try!(proton_cli::new_sequence(&admin_key_path, &name, &music_file_path, None::<u32>));
+	Ok(ProtonReturn::NoReturn)
+}
+
+fn run_add_sequence(args: Args) -> Result<ProtonReturn, Error> {
+	let admin_key = args.arg_admin_key.unwrap();
+	let admin_key_path = Path::new(&admin_key);
+	let seqid = args.arg_seqid.unwrap();
+	try!(proton_cli::add_sequence(&admin_key_path, seqid));
 	Ok(ProtonReturn::NoReturn)
 }
 

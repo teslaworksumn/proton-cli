@@ -35,28 +35,11 @@ impl Project {
         })
     }
 
-    /// Adds a sequence to the project
-    pub fn add_sequence(
-        &self,
-        uid: u32,
-        name: &str,
-        music_file_name: &str,
-        music_duration_sec: u32,
-        frame_duration_ms: Option<u32>
-    ) -> Result<Project, Error> {
+    /// Adds a sequence to the project's playlist
+    pub fn add_sequence(&self, seqid: u32) -> Result<Project, Error> {
 
-        let sequence = try!(Sequence::new(
-            uid,
-            name,
-            music_file_name,
-            music_duration_sec,
-            frame_duration_ms,
-            self.layout_id
-        ));
+        // Check if seqid exists?? Assume it is checked earlier for now
 
-        // Check if duplicate name (part of error returned by Sequence::new)
-
-        // Add sequence to playlist
         let mut new_project = self.clone();
         new_project.playlist.push(sequence.seqid);
         Ok(new_project)
