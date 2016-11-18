@@ -9,7 +9,7 @@ use rustc_serialize::json;
 use docopt::Docopt;
 
 use proton_cli::error::Error;
-use proton_cli::dao;
+use proton_cli::dao::{self, LayoutDao};
 
 
 const USAGE: &'static str = "
@@ -19,7 +19,7 @@ Usage:
   ./proton init <folder>
   ./proton new-user <admin-key> <name>
   ./proton remove-user <admin-key> <uid>
-  ./proton new-sequence <admin-key> <name> <music-file>
+  ./proton new-sequence <admin-key> <name> <music-file> [<layout_id>]
   ./proton add-sequence <admin-key> <seqid>
   ./proton remove-sequence <admin-key> <seqid>
   ./proton delete-sequence <admin-key> <seqid>
@@ -45,6 +45,7 @@ struct Args {
 	arg_uid: Option<u32>,
 	arg_seqid: Option<u32>,
 	arg_fixid: Option<u32>,
+	arg_layout_id: Option<u32>,
 	arg_music_file: Option<String>,
 	arg_t_start: Option<u32>,
 	arg_t_end: Option<u32>,
@@ -143,7 +144,30 @@ fn run_new_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let name = args.arg_name.unwrap();
 	let music_file = args.arg_music_file.unwrap();
 	let music_file_path = Path::new(&music_file);
-	try!(proton_cli::new_sequence(&admin_key_path, &name, &music_file_path, None::<u32>));
+	let layout_id = match args.arg_layout_id {
+		Some(lid) => lid,
+		None => {
+			let layout_dao = try!(dao::LayoutDaoPostgres::new());
+			let default_layout = try!(layout_dao.get_default_layout());
+			default_layout.layout_id
+		},
+	};
+	let fixture_dao = try!(dao::FixtureDaoPostgres::new());
+	let layout_dao = try!(dao::LayoutDaoPostgres::new());
+	let perm_dao = try!(dao::PermissionDaoPostgres::new());
+	let sequence_dao = try!(dao::SequenceDaoPostgres::new());
+	let user_dao = try!(dao::UserDaoPostgres::new());
+	try!(proton_cli::new_sequence(
+		&fixture_dao,
+		&layout_dao,
+		&perm_dao,
+		&user_dao,
+		&sequence_dao,
+		&admin_key_path,
+		&name,
+		&music_file_path,
+		None::<u32>,
+		layout_id));
 	Ok(ProtonReturn::NoReturn)
 }
 
@@ -151,7 +175,9 @@ fn run_add_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let admin_key = args.arg_admin_key.unwrap();
 	let admin_key_path = Path::new(&admin_key);
 	let seqid = args.arg_seqid.unwrap();
-	try!(proton_cli::add_sequence(&admin_key_path, seqid));
+	let perm_dao = try!(dao::PermissionDaoPostgres::new());
+	let user_dao = try!(dao::UserDaoPostgres::new());
+	try!(proton_cli::add_sequence(&perm_dao, &user_dao, &admin_key_path, seqid));
 	Ok(ProtonReturn::NoReturn)
 }
 
@@ -159,7 +185,9 @@ fn run_remove_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let admin_key = args.arg_admin_key.unwrap();
 	let admin_key_path = Path::new(&admin_key);
 	let seqid = args.arg_seqid.unwrap();
-	try!(proton_cli::remove_sequence(&admin_key_path, seqid));
+	let perm_dao = try!(dao::PermissionDaoPostgres::new());
+	let user_dao = try!(dao::UserDaoPostgres::new());
+	try!(proton_cli::remove_sequence(&perm_dao, &user_dao, &admin_key_path, seqid));
 	Ok(ProtonReturn::NoReturn)
 }
 
@@ -167,8 +195,15 @@ fn run_delete_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let admin_key = args.arg_admin_key.unwrap();
 	let admin_key_path = Path::new(&admin_key);
 	let seqid = args.arg_seqid.unwrap();
+	let user_dao = try!(dao::UserDaoPostgres::new());
+	let perm_dao = try!(dao::PermissionDaoPostgres::new());
 	let sequence_dao = try!(dao::SequenceDaoPostgres::new());
-	try!(proton_cli::delete_sequence(sequence_dao, &admin_key_path, seqid));
+	try!(proton_cli::delete_sequence(
+		&user_dao,
+		&perm_dao,
+		&sequence_dao,
+		&admin_key_path,
+		seqid));
 	Ok(ProtonReturn::NoReturn)
 }
 

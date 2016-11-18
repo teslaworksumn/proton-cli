@@ -12,7 +12,8 @@ pub trait ChannelDao {
 }
 
 pub trait FixtureDao {
-    fn get_fixture(&self, fixid: u32) -> Result<Fixture, Error>;
+    fn get_fixture(&self, fixid: u32) -> Result<Fixture, Error>;   
+    fn get_num_channels(&self, fixid: u32) -> Result<u32, Error>;
 }
 
 pub trait LayoutDao {
@@ -32,6 +33,7 @@ pub trait SectionDao {
 
 pub trait SequenceDao {
     fn get_sequence(&self, seqid: u32) -> Result<Sequence, Error>;
+    fn new_sequence(&self, sequence: &Sequence) -> Result<(), Error>;
 }
 
 pub trait UserDao {

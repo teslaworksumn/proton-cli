@@ -26,13 +26,16 @@ impl PermissionDao for PermissionDaoPostgres {
             let permid: i32 = row.get(0);
             let seqid: Option<i32> = row.get(1);
             let secid: Option<i32> = row.get(2);
+            let seq = seqid.map(|s| s as u32);
+            let sec = secid.map(|s| s as u32);
             let perm_string: String = row.get(3);
-            let perm_enum = try!(project_types::get_permission_enum(&perm_string));
+            let perm_enum = try!(
+                project_types::get_permission_enum(&perm_string, seq, sec));
             let permission = Permission {
                 permid: permid as u32,
                 uid: uid,
-                seqid: seqid.map(|s| s as u32),
-                secid: secid.map(|s| s as u32),
+                seqid: seq,
+                secid: sec,
                 permission: perm_enum
             };
             permissions.push(permission);

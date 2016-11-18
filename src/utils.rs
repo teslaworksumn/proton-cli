@@ -12,7 +12,6 @@ use dao::{PermissionDao, UserDao};
 use project_types::{Project, PermissionEnum};
 use error::Error;
 
-
 /// Creates a new public/private key pair
 pub fn create_pub_priv_keys() -> Result<(String, String), Error> {
     let keys = try!(rsa::Rsa::generate(2048).map_err(Error::Ssl));

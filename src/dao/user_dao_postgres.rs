@@ -13,7 +13,6 @@ impl UserDao for UserDaoPostgres {
         self.add_user("root", private_key, public_key)
     }
 
-
     fn add_user(&self, name: &str, private_key: &str, public_key: &str) -> Result<u32, Error> {
         let statement = "INSERT INTO users (name, private_key, public_key) VALUES ($1, $2, $3)";
         let private_string = private_key.trim_matches('\n');
