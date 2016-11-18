@@ -10,6 +10,7 @@ use docopt::Docopt;
 
 use proton_cli::error::Error;
 use proton_cli::dao::{self, LayoutDao};
+use proton_cli::project_types::Sequence;
 
 
 const USAGE: &'static str = "
@@ -23,6 +24,7 @@ Usage:
   ./proton add-sequence <admin-key> <seqid>
   ./proton remove-sequence <admin-key> <seqid>
   ./proton delete-sequence <admin-key> <seqid>
+  ./proton get-sequence <seqid>
   ./proton new-section <admin-key> <t_start> <t_end> <seqid> <fixid>..
   ./proton get-user-id <public-key>
   ./proton list-permissions <uid>
@@ -57,6 +59,7 @@ enum ProtonReturn {
 	NoReturn,
 	PublicKey(String),
 	Uid(u32),
+	Sequence(Sequence),
 }
 
 fn main() {
@@ -75,6 +78,7 @@ fn main() {
 		"add-sequence" => run_add_sequence,
 		"remove-sequence" => run_remove_sequence,
 		"delete-sequence" => run_delete_sequence,
+		"get-sequence" => run_get_sequence,
 		"new-section" => run_new_section,
 		"list-permissions" => run_list_permissions,
 		"set-permission" => run_set_permission,
@@ -87,10 +91,10 @@ fn main() {
 			ProtonReturn::NoReturn => println!("Worked!"),
 			ProtonReturn::PublicKey(s) => println!("{}", s),
 			ProtonReturn::Uid(uid) => println!("{}", uid),
+			ProtonReturn::Sequence(seq) => println!("{:?}", seq),
 		},
 		Err(e) => println!("{:?}", e.to_string()),
 	};
-
 }
 
 fn run_init(args: Args) -> Result<ProtonReturn, Error> {
@@ -205,6 +209,13 @@ fn run_delete_sequence(args: Args) -> Result<ProtonReturn, Error> {
 		&admin_key_path,
 		seqid));
 	Ok(ProtonReturn::NoReturn)
+}
+
+fn run_get_sequence(args: Args) -> Result<ProtonReturn, Error> {
+	let seqid = args.arg_seqid.unwrap();
+	let seq_dao = try!(dao::SequenceDaoPostgres::new());
+	let sequence = try!(proton_cli::get_sequence(&seq_dao, seqid));
+	Ok(ProtonReturn::Sequence(sequence))
 }
 
 fn run_list_permissions(args: Args) -> Result<ProtonReturn, Error> {
