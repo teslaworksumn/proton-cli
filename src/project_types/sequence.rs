@@ -63,12 +63,8 @@ impl Sequence {
         Ok(sequence)
     }
 
-    pub fn data_as_json(&self) -> Result<json::Json, Error> {
-        let psql_data = self.data.iter().map(
-            |row| row.iter().map(
-                |v| *v as i32).collect::<Vec<i32>>()).collect::<Vec<Vec<i32>>>();
-        
-        let json_str = try!(json::encode(&psql_data).map_err(Error::JsonEncode));
+    pub fn data_as_json(&self) -> Result<json::Json, Error> {        
+        let json_str = try!(json::encode(&self.data).map_err(Error::JsonEncode));
         // Unwrap should be safe here, since we just encoded successfully
         Ok(json::Json::from_str(&json_str).unwrap())
     }
