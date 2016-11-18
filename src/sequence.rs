@@ -286,7 +286,7 @@ pub fn get_sequence<SD: SequenceDao>(seq_dao: &SD, seqid: u32) -> Result<Sequenc
     seq_dao.get_sequence(seqid)
 }
 
-// Deletes sequence from storage
+/// Deletes sequence from storage
 pub fn delete_sequence<P: AsRef<Path>, PD: PermissionDao, UD: UserDao, SD: SequenceDao> (
     perm_dao: &PD,
     user_dao: &UD,
@@ -299,6 +299,11 @@ pub fn delete_sequence<P: AsRef<Path>, PD: PermissionDao, UD: UserDao, SD: Seque
     // Check that sequence exists
     // Try to delete sequence
     Err(Error::TodoErr)
+}
+
+/// Retrieves the given sequence
+pub fn get_sequence<SD: SequenceDao>(seq_dao: &SD, seqid: u32) -> Result<Sequence, Error> {
+    seq_dao.get_sequence(seqid)
 }
 
 /// Check that the music file is a valid format

@@ -78,6 +78,7 @@ enum ProtonReturn {
 	NoReturn,
 	PublicKey(String),
 	Uid(u32),
+	Sequence(Sequence),
 }
 
 fn main() {
