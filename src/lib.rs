@@ -6,6 +6,7 @@ extern crate rustc_serialize;
 extern crate sfml;
 
 mod init;
+mod layout;
 mod permissions;
 mod sequence;
 mod user;
@@ -16,6 +17,7 @@ pub mod utils;
 
 // Re-exports
 pub use init::*;
+pub use layout::*;
 pub use permissions::*;
 pub use sequence::*;
 pub use user::*;

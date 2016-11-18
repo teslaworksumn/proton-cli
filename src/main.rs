@@ -25,6 +25,7 @@ Usage:
   ./proton remove-sequence <admin-key> <seqid>
   ./proton delete-sequence <admin-key> <seqid>
   ./proton get-sequence <seqid>
+  ./proton new-layout <admin-key> <layout-file>
   ./proton new-section <admin-key> <t_start> <t_end> <seqid> <fixid>..
   ./proton get-user-id <public-key>
   ./proton list-permissions <uid>
@@ -48,6 +49,7 @@ struct Args {
 	arg_seqid: Option<u32>,
 	arg_fixid: Option<u32>,
 	arg_layout_id: Option<u32>,
+	arg_layout_file: Option<String>,
 	arg_music_file: Option<String>,
 	arg_t_start: Option<u32>,
 	arg_t_end: Option<u32>,
@@ -58,6 +60,7 @@ struct Args {
 enum ProtonReturn {
 	NoReturn,
 	PublicKey(String),
+	LayoutId(u32),
 	Uid(u32),
 	Sequence(Sequence),
 }
@@ -79,6 +82,7 @@ fn main() {
 		"remove-sequence" => run_remove_sequence,
 		"delete-sequence" => run_delete_sequence,
 		"get-sequence" => run_get_sequence,
+		"new-layout" => run_new_layout,
 		"new-section" => run_new_section,
 		"list-permissions" => run_list_permissions,
 		"set-permission" => run_set_permission,
@@ -90,8 +94,9 @@ fn main() {
 		Ok(ret) => match ret {
 			ProtonReturn::NoReturn => println!("Worked!"),
 			ProtonReturn::PublicKey(s) => println!("{}", s),
+			ProtonReturn::LayoutId(lid) => println!("{}", lid),
 			ProtonReturn::Uid(uid) => println!("{}", uid),
-			ProtonReturn::Sequence(seq) => println!("{:?}", seq),
+			ProtonReturn::Sequence(seq) => println!("{:?}", seq)
 		},
 		Err(e) => println!("{:?}", e.to_string()),
 	};
@@ -216,6 +221,23 @@ fn run_get_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let seq_dao = try!(dao::SequenceDaoPostgres::new());
 	let sequence = try!(proton_cli::get_sequence(&seq_dao, seqid));
 	Ok(ProtonReturn::Sequence(sequence))
+}
+
+fn run_new_layout(args: Args) -> Result<ProtonReturn, Error> {
+	let admin_key = args.arg_admin_key.unwrap();
+	let admin_key_path = Path::new(&admin_key);
+	let layout_file = args.arg_layout_file.unwrap();
+	let layout_file_path = Path::new(&layout_file);
+	let layout_dao = try!(dao::LayoutDaoPostgres::new());
+	let permission_dao = try!(dao::PermissionDaoPostgres::new());
+	let user_dao = try!(dao::UserDaoPostgres::new());
+	let layout_id = try!(proton_cli::new_layout(
+		&layout_dao,
+		&permission_dao,
+		&user_dao,
+		&admin_key_path,
+		&layout_file_path));
+	Ok(ProtonReturn::LayoutId(layout_id))
 }
 
 fn run_list_permissions(args: Args) -> Result<ProtonReturn, Error> {
