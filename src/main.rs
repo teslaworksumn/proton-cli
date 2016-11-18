@@ -77,6 +77,7 @@ enum ProtonReturn {
 enum ProtonReturn {
 	NoReturn,
 	PublicKey(String),
+	LayoutId(u32),
 	Uid(u32),
 	Sequence(Sequence),
 }
