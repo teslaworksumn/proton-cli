@@ -1,7 +1,9 @@
 use rustc_serialize::json;
 
 use git2::Signature;
+use rustc_serialize::json;
 
+use dao::{FixtureDao, LayoutDao};
 use error::Error;
 use project_types::Layout;
 

@@ -265,7 +265,9 @@ fn run_add_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let admin_key = args.arg_admin_key.unwrap();
 	let admin_key_path = Path::new(&admin_key);
 	let seqid = args.arg_seqid.unwrap();
-	try!(proton_cli::add_sequence(&admin_key_path, seqid));
+	let perm_dao = try!(dao::PermissionDaoPostgres::new());
+	let user_dao = try!(dao::UserDaoPostgres::new());
+	try!(proton_cli::add_sequence(&perm_dao, &user_dao, &admin_key_path, seqid));
 	Ok(ProtonReturn::NoReturn)
 }
 

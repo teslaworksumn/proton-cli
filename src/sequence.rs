@@ -204,13 +204,18 @@ pub fn add_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, SD: Seq
 }
 
 /// Adds the sequence with the given name to the project's playlist
-pub fn add_sequence<P: AsRef<Path>>(admin_key_path: P, seqid: u32) -> Result<(), Error> {
+pub fn add_sequence<P: AsRef<Path>, PD: PermissionDao, UD: UserDao>(
+    perm_dao: &PD,
+    user_dao: &UD,
+    admin_key_path: P,
+    seqid: u32
+) -> Result<(), Error> {
     
     // Check that the admin has sufficient privileges
-    let valid_permissions = vec![PermissionEnum::Administrate, PermissionEnum::EditSeq(seqid)];
+    let valid_permissions = vec![PermissionEnum::Administrate, PermissionEnum::EditSequence(seqid)];
     let admin_uid = try!(utils::check_valid_permission(
-        &perm_dao,
-        &user_dao,
+        perm_dao,
+        user_dao,
         admin_key_path,
         &valid_permissions));
 
@@ -282,8 +287,10 @@ pub fn get_sequence<SD: SequenceDao>(seq_dao: &SD, seqid: u32) -> Result<Sequenc
 }
 
 // Deletes sequence from storage
-pub fn delete_sequence<P: AsRef<Path>, D: SequenceDao> (
-    dao: D,
+pub fn delete_sequence<P: AsRef<Path>, PD: PermissionDao, UD: UserDao, SD: SequenceDao> (
+    perm_dao: &PD,
+    user_dao: &UD,
+    seq_dao: &SD,
     admin_key_path: P,
     seqid: u32
 ) -> Result<(), Error> {
