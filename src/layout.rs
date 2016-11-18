@@ -1,8 +1,9 @@
+use rustc_serialize::json;
 use std::path::Path;
 
 use dao::{LayoutDao, PermissionDao, UserDao};
 use error::Error;
-use project_types::{Layout, PermissionEnum};
+use project_types::{FileLayout, Layout, PermissionEnum};
 use utils;
 
 pub fn new_layout<P: AsRef<Path>, LD: LayoutDao, PD: PermissionDao, UD: UserDao>(
@@ -21,8 +22,13 @@ pub fn new_layout<P: AsRef<Path>, LD: LayoutDao, PD: PermissionDao, UD: UserDao>
         admin_key_path,
         &valid_permissions));
 
-    // Load layout from file (and validate)
-
+    // Load layout from file
+    let layout_json = try!(utils::file_as_string(layout_path.as_ref()));
+    let file_layout: FileLayout = try!(json::decode(&layout_json).map_err(Error::JsonDecode));
+    let (layout, fixtures, channels) = try!(file_layout.as_layout());
+    println!("layout: {:?}", layout);
+    println!("fixtures: {:?}", fixtures);
+    println!("channels: {:?}", channels);
     // Create new fixtures, which create new channels
 
     // Return layout id
