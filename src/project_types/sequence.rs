@@ -27,7 +27,8 @@ impl Sequence {
         music_duration_sec: u32,
         frame_duration_ms: Option<u32>,
         layout: &Layout,
-        num_channels: u32
+        num_channels: u32,
+        seq_data: Option<Vec<Vec<u16>>>
     ) -> Result<Sequence, Error> {
         // Defaults
         let frame_dur_ms = frame_duration_ms.unwrap_or(50);

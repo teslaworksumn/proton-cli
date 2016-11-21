@@ -158,7 +158,8 @@ pub fn new_sequence<P: AsRef<Path>, DD: DataDao, FD: FixtureDao, LD: LayoutDao, 
             music_duration_sec,
             frame_duration_ms,
             &layout,
-            num_channels
+            num_channels,
+            None::<Vec<Vec<u16>>>
         )
     );
 
