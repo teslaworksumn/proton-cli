@@ -21,6 +21,7 @@ Usage:
   ./proton new-user <admin-key> <name>
   ./proton remove-user <admin-key> <uid>
   ./proton new-sequence <admin-key> <name> <music-file> [<layout_id>]
+  ./proton new-vixen-sequence <admin-key> <name> <music-file> <frame-duration> <data-file> [<layout_id>]
   ./proton add-sequence <admin-key> <seqid>
   ./proton remove-sequence <admin-key> <seqid>
   ./proton delete-sequence <admin-key> <seqid>
@@ -51,10 +52,12 @@ struct Args {
 	arg_layout_id: Option<u32>,
 	arg_layout_file: Option<String>,
 	arg_music_file: Option<String>,
+	arg_data_file: Option<String>,
 	arg_t_start: Option<u32>,
 	arg_t_end: Option<u32>,
 	arg_target_sequence: Option<u32>,
 	arg_target_section: Option<u32>,
+	arg_frame_duration: Option<u32>,
 }
 
 enum ProtonReturn {
@@ -78,6 +81,7 @@ fn main() {
 		"remove-user" => run_remove_user,
 		"get_user_id" => run_get_user_id,
 		"new-sequence" => run_new_sequence,
+		"new-vixen-sequence" => run_new_vixen_sequence,
 		"add-sequence" => run_add_sequence,
 		"remove-sequence" => run_remove_sequence,
 		"delete-sequence" => run_delete_sequence,
@@ -145,6 +149,45 @@ fn run_remove_user(args: Args) -> Result<ProtonReturn, Error> {
 
 fn run_new_section(args: Args) -> Result<ProtonReturn, Error> {
 	Err(Error::TodoErr)
+}
+
+//./proton new-vixen-sequence <admin-key> <name> <music-file> <frame-duration> <data-file> [<layout_id>]
+
+fn run_new_vixen_sequence(args: Args) -> Result<ProtonReturn, Error> {
+	let admin_key = args.arg_admin_key.unwrap();
+	let admin_key_path = Path::new(&admin_key);
+	let name = args.arg_name.unwrap();
+	let music_file = args.arg_music_file.unwrap();
+	let music_file_path = Path::new(&music_file);
+	let frame_duration = args.arg_frame_duration.unwrap();
+	let data_file = args.arg_data_file.unwrap();
+	let data_file_path = Path::new(&data_file);
+	let layout_id = match args.arg_layout_id {
+		Some(lid) => lid,
+		None => {
+			let layout_dao = try!(dao::LayoutDaoPostgres::new());
+			let default_layout = try!(layout_dao.get_default_layout());
+			default_layout.layout_id
+		},
+	};
+	let fixture_dao = try!(dao::FixtureDaoPostgres::new());
+	let layout_dao = try!(dao::LayoutDaoPostgres::new());
+	let perm_dao = try!(dao::PermissionDaoPostgres::new());
+	let sequence_dao = try!(dao::SequenceDaoPostgres::new());
+	let user_dao = try!(dao::UserDaoPostgres::new());
+	try!(proton_cli::new_vixen_sequence(
+		&fixture_dao,
+		&layout_dao,
+		&perm_dao,
+		&user_dao,
+		&sequence_dao,
+		&admin_key_path,
+		&name,
+		&music_file_path,
+		frame_duration,
+		&data_file_path,
+		layout_id));
+	Ok(ProtonReturn::NoReturn)
 }
 
 fn run_new_sequence(args: Args) -> Result<ProtonReturn, Error> {
@@ -228,10 +271,14 @@ fn run_new_layout(args: Args) -> Result<ProtonReturn, Error> {
 	let admin_key_path = Path::new(&admin_key);
 	let layout_file = args.arg_layout_file.unwrap();
 	let layout_file_path = Path::new(&layout_file);
+	let channel_dao = try!(dao::ChannelDaoPostgres::new());
+	let fixture_dao = try!(dao::FixtureDaoPostgres::new());
 	let layout_dao = try!(dao::LayoutDaoPostgres::new());
 	let permission_dao = try!(dao::PermissionDaoPostgres::new());
 	let user_dao = try!(dao::UserDaoPostgres::new());
 	let layout_id = try!(proton_cli::new_layout(
+		&channel_dao,
+		&fixture_dao,
 		&layout_dao,
 		&permission_dao,
 		&user_dao,

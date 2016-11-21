@@ -30,7 +30,8 @@ impl Sequence {
         music_duration_sec: u32,
         frame_duration_ms: Option<u32>,
         layout: &Layout,
-        num_channels: u32
+        num_channels: u32,
+        seq_data: Option<Vec<Vec<u16>>>
     ) -> Result<Sequence, Error> {
         // Defaults
         let frame_dur_ms = frame_duration_ms.unwrap_or(50);
@@ -48,6 +49,8 @@ impl Sequence {
         // Get layout id
         let layout_id = layout.layout_id;
 
+        let data = seq_data.unwrap_or(vec![vec![0; num_frames as usize]; num_channels as usize]);
+
         // Create sequence
         let sequence = Sequence {
             seqid: seqid,
@@ -57,7 +60,7 @@ impl Sequence {
             frame_duration_ms: frame_dur_ms,
             num_frames: num_frames,
             layout_id: layout_id,
-            data: vec![vec![0; num_frames as usize]; num_channels as usize]
+            data: data
         };
 
         Ok(sequence)

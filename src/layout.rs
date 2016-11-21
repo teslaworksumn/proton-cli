@@ -1,12 +1,14 @@
 use rustc_serialize::json;
 use std::path::Path;
 
-use dao::{LayoutDao, PermissionDao, UserDao};
+use dao::{ChannelDao, FixtureDao, LayoutDao, PermissionDao, UserDao};
 use error::Error;
 use project_types::{FileLayout, Layout, PermissionEnum};
 use utils;
 
-pub fn new_layout<P: AsRef<Path>, LD: LayoutDao, PD: PermissionDao, UD: UserDao>(
+pub fn new_layout<P: AsRef<Path>, CD: ChannelDao, FD: FixtureDao, LD: LayoutDao, PD: PermissionDao, UD: UserDao>(
+    chan_dao: &CD,
+    fix_dao: &FD,
     layout_dao: &LD,
     perm_dao: &PD,
     user_dao: &UD,
@@ -25,14 +27,20 @@ pub fn new_layout<P: AsRef<Path>, LD: LayoutDao, PD: PermissionDao, UD: UserDao>
     // Load layout from file
     let layout_json = try!(utils::file_as_string(layout_path.as_ref()));
     let file_layout: FileLayout = try!(json::decode(&layout_json).map_err(Error::JsonDecode));
-    let (layout, fixtures, channels) = try!(file_layout.as_layout());
-    println!("layout: {:?}", layout);
-    println!("fixtures: {:?}", fixtures);
-    println!("channels: {:?}", channels);
-    // Create new fixtures, which create new channels
+    
+    // Make sure layout is valid
+    try!(file_layout.validate());
+
+    // Create new channels and fixtures from layout and add to storage
+    let (channels, fixtures) = try!(file_layout.create_new_parts(chan_dao, fix_dao));
+
+    // Create new layout from fixtures
+    let fix_ids = fixtures.iter()
+        .map(|fixture| fixture.fixid)
+        .collect::<Vec<u32>>();
+    let layout = try!(layout_dao.new_layout(&file_layout.layoutName, fix_ids));
 
     // Return layout id
-
-    Err(Error::TodoErr)
+    Ok(layout.layout_id)
 }
 

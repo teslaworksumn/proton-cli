@@ -12,6 +12,23 @@ use dao::{PermissionDao, UserDao};
 use project_types::{Project, PermissionEnum};
 use error::Error;
 
+/// Converts a JSON 2d sequence array into a Vec<Vec<u16>>
+pub fn sequence_json_to_vec(seq: json::Json) -> Vec<Vec<u16>> {
+    seq
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|row| {
+            row
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|v| {
+                    v.as_i64().unwrap() as u16
+                }).collect::<Vec<u16>>()
+        }).collect::<Vec<Vec<u16>>>()
+}
+
 /// Creates a new public/private key pair
 pub fn create_pub_priv_keys() -> Result<(String, String), Error> {
     let keys = try!(rsa::Rsa::generate(2048).map_err(Error::Ssl));

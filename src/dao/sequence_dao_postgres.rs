@@ -1,8 +1,9 @@
 use rustc_serialize::json;
 
-use project_types::Sequence;
 use dao::{SequenceDao, SequenceDaoPostgres};
 use error::Error;
+use project_types::Sequence;
+use utils;
 
 
 impl SequenceDao for SequenceDaoPostgres {
@@ -23,16 +24,7 @@ impl SequenceDao for SequenceDaoPostgres {
                 let num_frames: i32 = row.get(4);
                 let layout_id: i32 = row.get(5);
                 let data_json: json::Json = row.get(6);
-                let data_outer_array = data_json.as_array().unwrap();
-                let data_u16 = data_outer_array.iter().map(
-                    |row| {
-                        let row_vec = row.as_array().unwrap();
-                        row_vec.iter().map(
-                            |v| {
-                                let val = v.as_i64().unwrap();
-                                val as u16
-                            }).collect::<Vec<u16>>()
-                    }).collect::<Vec<Vec<u16>>>();
+                let data_u16 = utils::sequence_json_to_vec(data_json);
                 Ok(Sequence {
                     seqid: seqid,
                     name: name,

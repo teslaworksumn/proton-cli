@@ -4,6 +4,46 @@ use dao::{LayoutDao, LayoutDaoPostgres};
 
 
 impl LayoutDao for LayoutDaoPostgres {
+
+    fn new_layout(&self, name: &str, fixtures: Vec<u32>) -> Result<Layout, Error> {
+        let statement = "INSERT INTO layouts (name,fixtures) VALUES ($1,$2)";
+        let fixtures_i32 = fixtures.iter()
+            .map(|fixture| *fixture as i32)
+            .collect::<Vec<i32>>();
+        let rows_modified = try!(
+            self.conn.execute(
+                statement,
+                &[
+                    &name.to_owned(),
+                    &fixtures_i32
+                ])
+            .map_err(Error::Postgres));
+
+        let layout = try!(self.get_last_layout(name));
+        Ok(layout)
+    }
+
+    fn get_last_layout(&self, name: &str) -> Result<Layout, Error> {
+        let query = "SELECT layoutid, fixtures FROM layouts WHERE name = $1 ORDER BY layoutid DESC";
+        let results = try!(
+            self.conn.query(query, &[&name.to_owned()])
+            .map_err(Error::Postgres));
+        if results.len() == 0 {
+            return Err(Error::LayoutNotFound(0));
+        }
+
+        let row = results.get(0);
+        let layout_id: i32 = row.get(0);
+        let fixtures_i32: Vec<i32> = row.get(1);
+        let fixtures = fixtures_i32.iter()
+            .map(|fixture| *fixture as u32)
+            .collect::<Vec<u32>>();
+        Ok(Layout {
+            layout_id: layout_id as u32,
+            name: name.to_owned(),
+            fixtures: fixtures
+        })
+    }
     
     fn get_default_layout(&self) -> Result<Layout, Error> {
         let query = "SELECT layoutid, name, fixtures FROM layouts WHERE name = 'default'";

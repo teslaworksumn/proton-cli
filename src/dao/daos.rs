@@ -6,19 +6,40 @@ use dao;
 
 pub trait ChannelDao {
     /// Add a channel to the database
-    fn add_channel(&self, channel: Channel) -> Result<(), Error>;
+    fn new_channel(
+        &self,
+        name: &str,
+        primary_num: u32,
+        secondary_num: u32,
+        color: &str,
+        channel_dmx: u32,
+        location: (i32, i32, i32),
+        rotation: (i32, i32, i32)
+    ) -> Result<Channel, Error>;
+    
     /// Fetch a Channel with the given channel id
     fn get_channel(&self, chanid: u32) -> Result<Channel, Error>;
+    fn get_last_channel(&self, name: &str) -> Result<Channel, Error>;
 }
 
 pub trait FixtureDao {
-    fn get_fixture(&self, fixid: u32) -> Result<Fixture, Error>;   
+    fn new_fixture(
+        &self, 
+        name: &str,
+        location: (i32, i32, i32),
+        rotation: (i32, i32, i32),
+        channels: Vec<u32>
+    ) -> Result<Fixture, Error>;
+    fn get_fixture(&self, fixid: u32) -> Result<Fixture, Error>;
+    fn get_last_fixture(&self, name: &str) -> Result<Fixture, Error>;
     fn get_num_channels(&self, fixid: u32) -> Result<u32, Error>;
 }
 
 pub trait LayoutDao {
+    fn new_layout(&self, name: &str, fixtures: Vec<u32>) -> Result<Layout, Error>;
     fn get_default_layout(&self) -> Result<Layout, Error>;
     fn get_layout(&self, layoutid: u32) -> Result<Layout, Error>;
+    fn get_last_layout(&self, name: &str) -> Result<Layout, Error>;
 }
 
 pub trait PermissionDao {

@@ -1,5 +1,6 @@
 //! This module manages project sequences
 
+use rustc_serialize::json;
 use std::path::{Path, PathBuf};
 use std::fs;
 
@@ -13,6 +14,81 @@ use dao::{FixtureDao, LayoutDao, PermissionDao, SequenceDao, UserDao};
 use user;
 use utils;
 
+/// Creates a new sequence 
+pub fn new_vixen_sequence<P: AsRef<Path>, FD: FixtureDao, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
+    fixture_dao: &FD,
+    layout_dao: &LD,
+    perm_dao: &PD,
+    seq_dao: &SD,
+    user_dao: &UD,
+    admin_key_path: P,
+    name: &str,
+    music_file_path: P,
+    frame_duration_ms: u32,
+    data_file_path: P,
+    layout_id: u32
+) -> Result<(), Error> {
+
+    // Check that the admin has sufficient privileges
+    let valid_permissions = vec![PermissionEnum::Administrate];
+    let admin_uid = try!(utils::check_valid_permission(
+        perm_dao,
+        user_dao,
+        admin_key_path,
+        &valid_permissions));
+
+    // Get layout (also checks if it exists)
+    let layout = try!(layout_dao.get_layout(layout_id));
+
+    // Get number of channels
+    let num_channels = try!(layout.get_num_channels(fixture_dao));
+
+    // Make sure the music file is a valid format
+    try!(validate_file_type(&music_file_path));
+
+    // Get name of music file from path
+    let music_file_name = try!(utils::file_name_from_path(&music_file_path));
+
+    // Get duration of music file
+    let music_duration_sec = try!(get_music_duration_sec(&music_file_path));
+    
+    // Try to copy music file into music directory
+    try!(copy_music_file(&music_file_path, &music_file_name, "Music"));
+
+    // TODO: revert music file copy if rest fails
+
+    // Read in sequence data
+    let seq_data_str = try!(utils::file_as_string(data_file_path.as_ref()));
+    let seq_data_json = try!(json::Json::from_str(&seq_data_str).map_err(Error::JsonParse));
+    let seq_data = utils::sequence_json_to_vec(seq_data_json);
+
+    return Err(Error::TodoErr);
+
+    // Create sequence
+    let sequence = try!(
+        Sequence::new(
+            admin_uid,
+            name,
+            &music_file_name,
+            music_duration_sec,
+            Some(frame_duration_ms),
+            &layout,
+            num_channels,
+            Some(seq_data)
+        )
+    );
+
+    // Try to add sequence
+    try!(seq_dao.new_sequence(&sequence));
+
+    // Commit changes
+    let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
+    let msg = format!("Adding new sequence '{}'", name);
+    let repo_path: Option<P> = None;
+
+    utils::commit_all(repo_path, &signature, &msg)
+        .map(|_| ())
+}
 
 /// Creates a new user for the project in the current directory.
 /// Assumes the current directory contains a Protonfile.json file.
@@ -60,7 +136,7 @@ pub fn new_sequence<P: AsRef<Path>, FD: FixtureDao, LD: LayoutDao, PD: Permissio
 
     // TODO: revert music file copy if rest fails
 
-    // Create sequence
+    // Create sequence with default data
     let sequence = try!(
         Sequence::new(
             admin_uid,
@@ -69,7 +145,8 @@ pub fn new_sequence<P: AsRef<Path>, FD: FixtureDao, LD: LayoutDao, PD: Permissio
             music_duration_sec,
             frame_duration_ms,
             &layout,
-            num_channels
+            num_channels,
+            None::<Vec<Vec<u16>>>
         )
     );
 
