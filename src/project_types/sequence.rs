@@ -12,7 +12,6 @@ pub struct Sequence {
     pub frame_duration_ms: u32,
     pub num_frames: u32,
     pub layout_id: u32,
-    pub data: Vec<Vec<u16>>, // row is channel, col is frame
 }
 
 impl Sequence {
@@ -24,8 +23,7 @@ impl Sequence {
         music_duration_sec: u32,
         frame_duration_ms: Option<u32>,
         layout: &Layout,
-        num_channels: u32,
-        seq_data: Option<Vec<Vec<u16>>>
+        num_channels: u32
     ) -> Result<Sequence, Error> {
         // Defaults
         let frame_dur_ms = frame_duration_ms.unwrap_or(50);
@@ -43,8 +41,6 @@ impl Sequence {
         // Get layout id
         let layout_id = layout.layout_id;
 
-        let data = seq_data.unwrap_or(vec![vec![0; num_frames as usize]; num_channels as usize]);
-
         // Create sequence
         let sequence = Sequence {
             seqid: seqid,
@@ -53,27 +49,26 @@ impl Sequence {
             music_duration_sec: music_duration_sec,
             frame_duration_ms: frame_dur_ms,
             num_frames: num_frames,
-            layout_id: layout_id,
-            data: data
+            layout_id: layout_id
         };
 
         Ok(sequence)
     }
 
-    pub fn data_as_json(&self) -> Result<json::Json, Error> {        
-        let json_str = try!(json::encode(&self.data).map_err(Error::JsonEncode));
-        // Unwrap should be safe here, since we just encoded successfully
-        Ok(json::Json::from_str(&json_str).unwrap())
-    }
+    // pub fn data_as_json(&self) -> Result<json::Json, Error> {        
+    //     let json_str = try!(json::encode(&self.data).map_err(Error::JsonEncode));
+    //     // Unwrap should be safe here, since we just encoded successfully
+    //     Ok(json::Json::from_str(&json_str).unwrap())
+    // }
 
-    pub fn update_data(&self, uid: u32, new_data: Vec<Vec<u16>>, secid: u32) -> Result<(), Error> {
-        // Only update data within the given section
-        // If sections overlap then this will overwrite the last update in the overlapping section
-        // It is up to the user to deal with overlapping sections appropriately
+    // pub fn update_data(&self, uid: u32, new_data: Vec<Vec<u16>>, secid: u32) -> Result<(), Error> {
+    //     // Only update data within the given section
+    //     // If sections overlap then this will overwrite the last update in the overlapping section
+    //     // It is up to the user to deal with overlapping sections appropriately
 
-        // Check if user has permission to update this sequence/section
-        Err(Error::TodoErr)
-    }
+    //     // Check if user has permission to update this sequence/section
+    //     Err(Error::TodoErr)
+    // }
 
 
 }

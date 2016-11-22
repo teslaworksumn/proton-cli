@@ -19,6 +19,15 @@ pub trait ChannelDao {
     fn get_last_channel(&self, name: &str) -> Result<Channel, Error>;
 }
 
+pub trait DataDao {
+    fn new_data(
+        &self,
+        seqid: u32,
+        chan_ids: Vec<u32>,
+        default_data: Vec<u16>
+    ) -> Result<(), Error>;
+}
+
 pub trait FixtureDao {
     fn new_fixture(
         &self, 
@@ -63,6 +72,7 @@ pub trait SequenceDao {
     fn new_sequence(&self, sequence: &Sequence) -> Result<Sequence, Error>;
     fn set_layout(&self, seqid: u32, layout_id: u32) -> Result<(), Error>;
     fn sequence_exists(&self, seqid: u32) -> Result<bool, Error>;
+    fn get_channel_ids(&self, seqid: u32) -> Result<Vec<u32>, Error>;
 }
 
 pub trait UserDao {

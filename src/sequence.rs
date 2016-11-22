@@ -8,11 +8,12 @@ use sfml::audio::Music;
 
 use error::Error;
 use project_types::{PermissionEnum, Sequence};
-use dao::{FixtureDao, LayoutDao, PermissionDao, ProjectDao, SequenceDao, UserDao};
+use dao::{DataDao, FixtureDao, LayoutDao, PermissionDao, ProjectDao, SequenceDao, UserDao};
 use utils;
 
 /// Creates a new sequence 
-pub fn new_vixen_sequence<P: AsRef<Path>, FD: FixtureDao, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
+pub fn new_vixen_sequence<P: AsRef<Path>, DD: DataDao, FD: FixtureDao, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
+    data_dao: &DD,
     fixture_dao: &FD,
     layout_dao: &LD,
     perm_dao: &PD,
@@ -25,6 +26,8 @@ pub fn new_vixen_sequence<P: AsRef<Path>, FD: FixtureDao, LD: LayoutDao, PD: Per
     data_file_path: P,
     layout_id: u32
 ) -> Result<u32, Error> {
+
+    return Err(Error::TodoErr);
 
     // Check that the admin has sufficient privileges
     let valid_permissions = vec![PermissionEnum::Administrate];
@@ -58,7 +61,7 @@ pub fn new_vixen_sequence<P: AsRef<Path>, FD: FixtureDao, LD: LayoutDao, PD: Per
     let seq_data_str = try!(utils::file_as_string(data_file_path.as_ref()));
     let seq_data_json = try!(json::Json::from_str(&seq_data_str).map_err(Error::JsonParse));
     let seq_data = utils::sequence_json_to_vec(seq_data_json);
-
+    
     // Create sequence
     let sequence = try!(
         Sequence::new(
@@ -68,13 +71,16 @@ pub fn new_vixen_sequence<P: AsRef<Path>, FD: FixtureDao, LD: LayoutDao, PD: Per
             music_duration_sec,
             Some(frame_duration_ms),
             &layout,
-            num_channels,
-            Some(seq_data)
+            num_channels
         )
     );
 
     // Try to add sequence
     let seq = try!(seq_dao.new_sequence(&sequence));
+
+    // Try to add sequence data
+    // TODO
+
     Ok(seq.seqid)
 }
 
@@ -82,7 +88,8 @@ pub fn new_vixen_sequence<P: AsRef<Path>, FD: FixtureDao, LD: LayoutDao, PD: Per
 /// Assumes the current directory contains a Protonfile.json file.
 ///
 /// Impure.
-pub fn new_sequence<P: AsRef<Path>, FD: FixtureDao, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
+pub fn new_sequence<P: AsRef<Path>, DD: DataDao, FD: FixtureDao, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
+    data_dao: &DD,
     fixture_dao: &FD,
     layout_dao: &LD,
     perm_dao: &PD,
@@ -131,7 +138,7 @@ pub fn new_sequence<P: AsRef<Path>, FD: FixtureDao, LD: LayoutDao, PD: Permissio
 
     // TODO: revert music file copy if rest fails
 
-    // Create sequence with default data
+    // Create sequence with no data
     let sequence = try!(
         Sequence::new(
             admin_uid,
@@ -140,13 +147,21 @@ pub fn new_sequence<P: AsRef<Path>, FD: FixtureDao, LD: LayoutDao, PD: Permissio
             music_duration_sec,
             frame_duration_ms,
             &layout,
-            num_channels,
-            None::<Vec<Vec<u16>>>
+            num_channels
         )
     );
 
     // Try to add sequence
     let seq = try!(seq_dao.new_sequence(&sequence));
+
+    // Get list of channel ids in seq, sorted by dmx channel
+    let channel_ids = try!(seq_dao.get_channel_ids(seq.seqid));
+
+    // Try to add empty sequence data
+    let seq_data = vec![0; sequence.num_frames as usize];
+
+    let _ = try!(data_dao.new_data(seq.seqid, channel_ids, seq_data));
+
     Ok(seq.seqid)
 }
 

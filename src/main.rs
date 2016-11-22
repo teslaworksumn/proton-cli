@@ -176,12 +176,14 @@ fn run_new_vixen_sequence(args: Args) -> Result<ProtonReturn, Error> {
 			default_layout.layout_id
 		},
 	};
+	let data_dao = try!(dao::DataDaoPostgres::new());
 	let fixture_dao = try!(dao::FixtureDaoPostgres::new());
 	let layout_dao = try!(dao::LayoutDaoPostgres::new());
 	let perm_dao = try!(dao::PermissionDaoPostgres::new());
 	let sequence_dao = try!(dao::SequenceDaoPostgres::new());
 	let user_dao = try!(dao::UserDaoPostgres::new());
 	let seqid = try!(proton_cli::new_vixen_sequence(
+		&data_dao,
 		&fixture_dao,
 		&layout_dao,
 		&perm_dao,
@@ -203,12 +205,14 @@ fn run_new_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let music_file = args.arg_music_file.unwrap();
 	let music_file_path = Path::new(&music_file);
 	let layout_id = args.arg_layout_id;
+	let data_dao = try!(dao::DataDaoPostgres::new());
 	let fixture_dao = try!(dao::FixtureDaoPostgres::new());
 	let layout_dao = try!(dao::LayoutDaoPostgres::new());
 	let perm_dao = try!(dao::PermissionDaoPostgres::new());
 	let sequence_dao = try!(dao::SequenceDaoPostgres::new());
 	let user_dao = try!(dao::UserDaoPostgres::new());
 	let seqid = try!(proton_cli::new_sequence(
+		&data_dao,
 		&fixture_dao,
 		&layout_dao,
 		&perm_dao,

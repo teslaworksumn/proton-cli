@@ -10,6 +10,7 @@ pub struct DaoPostgres {
 }
 
 pub type ChannelDaoPostgres = DaoPostgres;
+pub type DataDaoPostgres = DaoPostgres;
 pub type FixtureDaoPostgres = DaoPostgres;
 pub type LayoutDaoPostgres = DaoPostgres;
 pub type PermissionDaoPostgres = DaoPostgres;

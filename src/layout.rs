@@ -52,7 +52,7 @@ pub fn set_sequence_layout<P: AsRef<Path>, LD: LayoutDao, SD: SequenceDao>(
     // Check that new layout exists
     try!(layout_dao.layout_exists(layout_id));
 
-    // Set sequence layout
+    // Set sequence layout id
     try!(sequence_dao.set_layout(seqid, layout_id));
 
     Ok(())
