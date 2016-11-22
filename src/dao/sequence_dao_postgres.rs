@@ -136,7 +136,6 @@ impl SequenceDao for SequenceDaoPostgres {
         let frame_dur = sequence.frame_duration_ms as i32;
         let num_frames = sequence.num_frames as i32;
         let layout_id = sequence.layout_id as i32;
-        let data = try!(sequence.data_as_json());
         let _ = try!(
             self.conn.execute(
                 statement,
@@ -146,8 +145,7 @@ impl SequenceDao for SequenceDaoPostgres {
                     &music_dur,
                     &frame_dur,
                     &num_frames,
-                    &layout_id,
-                    &data
+                    &layout_id
                 ])
             .map_err(Error::Postgres));
         let sequence = try!(self.get_last_sequence(&sequence.name));
