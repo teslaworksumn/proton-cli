@@ -20,8 +20,8 @@ Usage:
   ./proton new-project <name> <layout-id>
   ./proton new-user <admin-key> <name>
   ./proton remove-user <admin-key> <uid>
-  ./proton new-sequence <admin-key> <name> <music-file> [<layout-id>]
-  ./proton new-vixen-sequence <admin-key> <name> <music-file> <frame-duration> <data-file> [<layout-id>]
+  ./proton new-sequence <admin-key> <name> <music-file> <layout-id>
+  ./proton new-vixen-sequence <admin-key> <name> <music-file> <frame-duration> <data-file> <layout-id>
   ./proton add-sequence <admin-key> <proj-name> <seqid>
   ./proton remove-sequence <admin-key> <proj-name> <seqid>
   ./proton delete-sequence <admin-key> <seqid>
