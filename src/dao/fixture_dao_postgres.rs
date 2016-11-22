@@ -72,6 +72,14 @@ impl FixtureDao for FixtureDaoPostgres {
         Err(Error::TodoErr)
     }
 
+    fn fixture_exists(&self, fixid: u32) -> Result<bool, Error> {
+        let query = "SELECT fixid FROM fixtures WHERE fixid = $1";
+        let results = try!(
+            self.conn.query(query, &[&(fixid as i32)])
+            .map_err(Error::Postgres));
+        Ok(results.len() > 0)
+    }
+
     fn get_num_channels(&self, fixid: u32) -> Result<u32, Error> {
         let query = "SELECT array_length(channels,1) FROM fixtures WHERE fixid = $1";
         let results = try!(

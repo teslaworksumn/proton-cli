@@ -90,4 +90,12 @@ impl LayoutDao for LayoutDaoPostgres {
             x => Err(Error::InvalidNumResults(x)),
         }
     }
+
+    fn layout_exists(&self, layout_id: u32) -> Result<bool, Error> {
+        let query = "SELECT layoutid FROM layouts WHERE layoutid = $1";
+        let results = try!(
+            self.conn.query(query, &[&(layout_id as i32)])
+            .map_err(Error::Postgres));
+        Ok(results.len() > 0)
+    }
 }

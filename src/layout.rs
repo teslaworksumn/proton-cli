@@ -47,10 +47,10 @@ pub fn set_sequence_layout<P: AsRef<Path>, LD: LayoutDao, SD: SequenceDao>(
     let sequence = try!(sequence_dao.get_sequence(seqid));
 
     // Check that current layout exists
-    try!(layout_dao.get_layout(sequence.layout_id));
+    try!(layout_dao.layout_exists(sequence.layout_id));
     
     // Check that new layout exists
-    try!(layout_dao.get_layout(layout_id));
+    try!(layout_dao.layout_exists(layout_id));
 
     // Set sequence layout
     try!(sequence_dao.set_layout(seqid, layout_id));

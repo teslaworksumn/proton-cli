@@ -30,6 +30,7 @@ pub trait FixtureDao {
     fn get_fixture(&self, fixid: u32) -> Result<Fixture, Error>;
     fn get_last_fixture(&self, name: &str) -> Result<Fixture, Error>;
     fn get_num_channels(&self, fixid: u32) -> Result<u32, Error>;
+    fn fixture_exists(&self, fixid: u32) -> Result<bool, Error>;
 }
 
 pub trait LayoutDao {
@@ -37,6 +38,7 @@ pub trait LayoutDao {
     fn get_default_layout(&self) -> Result<Layout, Error>;
     fn get_layout(&self, layoutid: u32) -> Result<Layout, Error>;
     fn get_last_layout(&self, name: &str) -> Result<Layout, Error>;
+    fn layout_exists(&self, layoutid: u32) -> Result<bool, Error>;
 }
 
 pub trait PermissionDao {
@@ -60,6 +62,7 @@ pub trait SequenceDao {
     fn get_last_sequence(&self, name: &str) -> Result<Sequence, Error>;
     fn new_sequence(&self, sequence: &Sequence) -> Result<Sequence, Error>;
     fn set_layout(&self, seqid: u32, layout_id: u32) -> Result<(), Error>;
+    fn sequence_exists(&self, seqid: u32) -> Result<bool, Error>;
 }
 
 pub trait UserDao {
