@@ -154,6 +154,14 @@ impl SequenceDao for SequenceDaoPostgres {
         Ok(sequence)
     }
 
+    fn sequence_exists(&self, seqid: u32) -> Result<bool, Error> {
+        let query = "SELECT seqid FROM sequences WHERE seqid = $1";
+        let results = try!(
+            self.conn.query(query, &[&(seqid as i32)])
+            .map_err(Error::Postgres));
+        Ok(results.len() > 0)
+    }
+
     fn set_layout(&self, seqid: u32, layout_id: u32) -> Result<(), Error> {
         let statement = "UPDATE sequences SET layout_id = $1 WHERE seqid = $2";
         let _ = try!(
