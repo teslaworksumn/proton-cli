@@ -42,5 +42,18 @@ pub fn set_sequence_layout<P: AsRef<Path>, LD: LayoutDao, SD: SequenceDao>(
     layout_id: u32,
     seqid: u32
 ) -> Result<(), Error> {
-    Err(Error::TodoErr)
+
+    // Check that sequence exists
+    let sequence = try!(sequence_dao.get_sequence(seqid));
+
+    // Check that current layout exists
+    try!(layout_dao.get_layout(sequence.layout_id));
+    
+    // Check that new layout exists
+    try!(layout_dao.get_layout(layout_id));
+
+    // Set sequence layout
+    try!(sequence_dao.set_layout(seqid, layout_id));
+
+    Ok(())
 }

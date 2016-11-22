@@ -59,6 +59,7 @@ pub trait SequenceDao {
     fn get_sequence(&self, seqid: u32) -> Result<Sequence, Error>;
     fn get_last_sequence(&self, name: &str) -> Result<Sequence, Error>;
     fn new_sequence(&self, sequence: &Sequence) -> Result<Sequence, Error>;
+    fn set_layout(&self, seqid: u32, layout_id: u32) -> Result<(), Error>;
 }
 
 pub trait UserDao {

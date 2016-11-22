@@ -95,4 +95,17 @@ impl SequenceDao for SequenceDaoPostgres {
         let sequence = try!(self.get_last_sequence(&sequence.name));
         Ok(sequence)
     }
+
+    fn set_layout(&self, seqid: u32, layout_id: u32) -> Result<(), Error> {
+        let statement = "UPDATE sequences SET layout_id = $1 WHERE seqid = $2";
+        let _ = try!(
+            self.conn.execute(
+                statement,
+                &[
+                    &(layout_id as i32),
+                    &(seqid as i32)
+                ])
+            .map_err(Error::Postgres));
+        Ok(())
+    }
 }
