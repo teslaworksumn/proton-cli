@@ -1,11 +1,9 @@
 use postgres::{Connection, TlsMode};
-use postgres::types::ToSql;
 
 use error::Error;
-use project_types::Channel;
 
 
-const postgres_conn_str: &'static str = "postgresql://proton:1234qwermnbv@localhost/proton_cli";
+const POSTGRES_CONN_STR: &'static str = "postgresql://proton:1234qwermnbv@localhost/proton_cli";
 
 pub struct DaoPostgres {
     pub conn: Connection
@@ -15,6 +13,7 @@ pub type ChannelDaoPostgres = DaoPostgres;
 pub type FixtureDaoPostgres = DaoPostgres;
 pub type LayoutDaoPostgres = DaoPostgres;
 pub type PermissionDaoPostgres = DaoPostgres;
+pub type ProjectDaoPostgres = DaoPostgres;
 pub type SectionDaoPostgres = DaoPostgres;
 pub type SequenceDaoPostgres = DaoPostgres;
 pub type UserDaoPostgres = DaoPostgres;
@@ -31,7 +30,7 @@ impl DaoPostgres {
 
 /// Gets a new connection to the postgresql database
 fn get_connection() -> Result<Connection, Error> {
-    Connection::connect(postgres_conn_str, TlsMode::None)
+    Connection::connect(POSTGRES_CONN_STR, TlsMode::None)
         .map_err(Error::PostgresConnection)
 }
 

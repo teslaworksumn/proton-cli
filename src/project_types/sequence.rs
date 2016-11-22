@@ -1,13 +1,7 @@
-use std::path::{Path, PathBuf};
-use std::cmp;
-
-use git2::Signature;
 use rustc_serialize::json;
 
-use dao::{FixtureDao, LayoutDao};
 use error::Error;
 use project_types::Layout;
-use utils;
 
 #[derive(Debug)]
 pub struct Sequence {

@@ -1,14 +1,9 @@
 
 use std::path::Path;
-use std::ascii::AsciiExt;
-
-use git2::Signature;
 
 use error::Error;
-use project_types::{User, Permission};
-use utils;
-use user;
-use dao::{PermissionDao, UserDao};
+use project_types::Permission;
+use dao::PermissionDao;
 
 
 pub fn get_permissions<P: AsRef<Path>, PD: PermissionDao> (pdao: PD, uid: u32
@@ -34,14 +29,5 @@ pub fn set_permission<P: AsRef<Path>> (
     // Set permissions
     // Commit changes
     
-    // let signature = Signature::now(&auth_user.name, "proton@teslaworks.net").unwrap();
-    // let change_type = match add {
-    //     true => "granting",
-    //     false => "revoking",
-    // };
-    // let msg = format!("Admin '{}' {} permission '{:?}' to/from user {}",
-    //     auth_user.name, change_type, perm, target_username);
-
-    // utils::commit_all(None::<&Path>, &signature, &msg)
 }
 

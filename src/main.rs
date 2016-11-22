@@ -17,16 +17,16 @@ const USAGE: &'static str = "
 Command-line interface for Proton
 
 Usage:
-  ./proton init <folder>
+  ./proton new-project <name> <layout-id>
   ./proton new-user <admin-key> <name>
   ./proton remove-user <admin-key> <uid>
-  ./proton new-sequence <admin-key> <name> <music-file> [<layout_id>]
-  ./proton new-vixen-sequence <admin-key> <name> <music-file> <frame-duration> <data-file> [<layout_id>]
-  ./proton add-sequence <admin-key> <seqid>
-  ./proton remove-sequence <admin-key> <seqid>
+  ./proton new-sequence <admin-key> <name> <music-file> [<layout-id>]
+  ./proton new-vixen-sequence <admin-key> <name> <music-file> <frame-duration> <data-file> [<layout-id>]
+  ./proton add-sequence <admin-key> <proj-name> <seqid>
+  ./proton remove-sequence <admin-key> <proj-name> <seqid>
   ./proton delete-sequence <admin-key> <seqid>
   ./proton get-sequence <seqid>
-  ./proton new-layout <admin-key> <layout-file>
+  ./proton new-layout <layout-file>
   ./proton new-section <admin-key> <t_start> <t_end> <seqid> <fixid>..
   ./proton get-user-id <public-key>
   ./proton list-permissions <uid>
@@ -41,11 +41,11 @@ Options:
 
 #[derive(Debug, RustcDecodable)]
 struct Args {
-	arg_folder: Option<String>,
 	arg_root_public_key: Option<String>,
 	arg_public_key: Option<String>,
 	arg_admin_key: Option<String>,
 	arg_name: Option<String>,
+	arg_proj_name: Option<String>,
 	arg_uid: Option<u32>,
 	arg_seqid: Option<u32>,
 	arg_fixid: Option<u32>,
@@ -62,8 +62,9 @@ struct Args {
 
 enum ProtonReturn {
 	NoReturn,
-	PublicKey(String),
 	LayoutId(u32),
+	PublicKey(String),
+	SequenceId(u32),
 	Uid(u32),
 	Sequence(Sequence),
 }
@@ -76,7 +77,7 @@ fn main() {
 	// Below unwrap()'s are safe within Docopt's usage rules
 
 	let command: fn(Args) -> Result<ProtonReturn, Error> = match env::args().nth(1).unwrap().as_ref() {
-		"init" => run_init,
+		"new-project" => run_new_project,
 		"new-user" => run_new_user,
 		"remove-user" => run_remove_user,
 		"get_user_id" => run_get_user_id,
@@ -97,27 +98,30 @@ fn main() {
 	match result {
 		Ok(ret) => match ret {
 			ProtonReturn::NoReturn => println!("Worked!"),
-			ProtonReturn::PublicKey(s) => println!("{}", s),
-			ProtonReturn::LayoutId(lid) => println!("{}", lid),
-			ProtonReturn::Uid(uid) => println!("{}", uid),
-			ProtonReturn::Sequence(seq) => println!("{:?}", seq)
+			ProtonReturn::LayoutId(lid) => println!("Layout id: {}", lid),
+			ProtonReturn::PublicKey(s) => println!("PubKey: {}", s),
+			ProtonReturn::SequenceId(sid) => println!("Sequence id: {}", sid),
+			ProtonReturn::Uid(uid) => println!("User id: {}", uid),
+			ProtonReturn::Sequence(seq) => println!("Sequence: {:?}", seq)
 		},
 		Err(e) => println!("{:?}", e.to_string()),
 	};
 }
 
-fn run_init(args: Args) -> Result<ProtonReturn, Error> {
-	let name = args.arg_folder.unwrap();
-	let root_path = Path::new(&name);
-	let user_dao = try!(dao::UserDaoPostgres::new());
+fn run_new_project(args: Args) -> Result<ProtonReturn, Error> {
+	let name = args.arg_name.unwrap();
+	let layout_id = args.arg_layout_id.unwrap();
 	let layout_dao = try!(dao::LayoutDaoPostgres::new());
 	let perm_dao = try!(dao::PermissionDaoPostgres::new());
-	let root_pub_key = try!(proton_cli::initialize_project(
-		user_dao,
-		layout_dao,
-		perm_dao,
-		&root_path,
-		&name));
+	let project_dao = try!(dao::ProjectDaoPostgres::new());
+	let user_dao = try!(dao::UserDaoPostgres::new());
+	let root_pub_key = try!(proton_cli::new_project(
+		&layout_dao,
+		&perm_dao,
+		&project_dao,
+		&user_dao,
+		&name,
+		layout_id));
 	Ok(ProtonReturn::PublicKey(root_pub_key))
 }
 
@@ -175,7 +179,7 @@ fn run_new_vixen_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let perm_dao = try!(dao::PermissionDaoPostgres::new());
 	let sequence_dao = try!(dao::SequenceDaoPostgres::new());
 	let user_dao = try!(dao::UserDaoPostgres::new());
-	try!(proton_cli::new_vixen_sequence(
+	let seqid = try!(proton_cli::new_vixen_sequence(
 		&fixture_dao,
 		&layout_dao,
 		&perm_dao,
@@ -187,7 +191,7 @@ fn run_new_vixen_sequence(args: Args) -> Result<ProtonReturn, Error> {
 		frame_duration,
 		&data_file_path,
 		layout_id));
-	Ok(ProtonReturn::NoReturn)
+	Ok(ProtonReturn::SequenceId(seqid))
 }
 
 fn run_new_sequence(args: Args) -> Result<ProtonReturn, Error> {
@@ -196,20 +200,13 @@ fn run_new_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let name = args.arg_name.unwrap();
 	let music_file = args.arg_music_file.unwrap();
 	let music_file_path = Path::new(&music_file);
-	let layout_id = match args.arg_layout_id {
-		Some(lid) => lid,
-		None => {
-			let layout_dao = try!(dao::LayoutDaoPostgres::new());
-			let default_layout = try!(layout_dao.get_default_layout());
-			default_layout.layout_id
-		},
-	};
+	let layout_id = args.arg_layout_id;
 	let fixture_dao = try!(dao::FixtureDaoPostgres::new());
 	let layout_dao = try!(dao::LayoutDaoPostgres::new());
 	let perm_dao = try!(dao::PermissionDaoPostgres::new());
 	let sequence_dao = try!(dao::SequenceDaoPostgres::new());
 	let user_dao = try!(dao::UserDaoPostgres::new());
-	try!(proton_cli::new_sequence(
+	let seqid = try!(proton_cli::new_sequence(
 		&fixture_dao,
 		&layout_dao,
 		&perm_dao,
@@ -220,26 +217,31 @@ fn run_new_sequence(args: Args) -> Result<ProtonReturn, Error> {
 		&music_file_path,
 		None::<u32>,
 		layout_id));
-	Ok(ProtonReturn::NoReturn)
+	Ok(ProtonReturn::SequenceId(seqid))
 }
 
 fn run_add_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let admin_key = args.arg_admin_key.unwrap();
 	let admin_key_path = Path::new(&admin_key);
+	let proj_name = args.arg_proj_name.unwrap();
 	let seqid = args.arg_seqid.unwrap();
 	let perm_dao = try!(dao::PermissionDaoPostgres::new());
+	let project_dao = try!(dao::ProjectDaoPostgres::new());
+	let seq_dao = try!(dao::SequenceDaoPostgres::new());
 	let user_dao = try!(dao::UserDaoPostgres::new());
-	try!(proton_cli::add_sequence(&perm_dao, &user_dao, &admin_key_path, seqid));
+	try!(proton_cli::add_sequence(&perm_dao, &project_dao, &seq_dao, &user_dao, &admin_key_path, &proj_name, seqid));
 	Ok(ProtonReturn::NoReturn)
 }
 
 fn run_remove_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let admin_key = args.arg_admin_key.unwrap();
 	let admin_key_path = Path::new(&admin_key);
+	let proj_name = args.arg_proj_name.unwrap();
 	let seqid = args.arg_seqid.unwrap();
 	let perm_dao = try!(dao::PermissionDaoPostgres::new());
+	let project_dao = try!(dao::ProjectDaoPostgres::new());
 	let user_dao = try!(dao::UserDaoPostgres::new());
-	try!(proton_cli::remove_sequence(&perm_dao, &user_dao, &admin_key_path, seqid));
+	try!(proton_cli::remove_sequence(&perm_dao, &project_dao, &user_dao, &admin_key_path, &proj_name, seqid));
 	Ok(ProtonReturn::NoReturn)
 }
 
@@ -267,8 +269,6 @@ fn run_get_sequence(args: Args) -> Result<ProtonReturn, Error> {
 }
 
 fn run_new_layout(args: Args) -> Result<ProtonReturn, Error> {
-	let admin_key = args.arg_admin_key.unwrap();
-	let admin_key_path = Path::new(&admin_key);
 	let layout_file = args.arg_layout_file.unwrap();
 	let layout_file_path = Path::new(&layout_file);
 	let channel_dao = try!(dao::ChannelDaoPostgres::new());
@@ -282,7 +282,6 @@ fn run_new_layout(args: Args) -> Result<ProtonReturn, Error> {
 		&layout_dao,
 		&permission_dao,
 		&user_dao,
-		&admin_key_path,
 		&layout_file_path));
 	Ok(ProtonReturn::LayoutId(layout_id))
 }

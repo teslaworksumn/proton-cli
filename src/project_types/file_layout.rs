@@ -2,15 +2,17 @@ use std::collections::HashMap;
 
 use dao::{ChannelDao, FixtureDao};
 use error::Error;
-use project_types::{Channel, Fixture, Layout};
+use project_types::{Channel, Fixture};
 
 #[derive(Debug, RustcDecodable)]
+#[allow(non_snake_case)]
 pub struct FileLayout {
     pub layoutName: String,
     pub channels: Vec<FileLayoutRow>,
 }
 
 #[derive(Debug, RustcDecodable)]
+#[allow(non_snake_case)]
 pub struct FileLayoutRow {
     pub dmxChannel: u32,
     pub fixtureName: String,

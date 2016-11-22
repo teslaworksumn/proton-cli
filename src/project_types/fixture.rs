@@ -1,4 +1,3 @@
-use project_types::Channel;
 
 #[derive(Debug)]
 pub struct Fixture {

@@ -10,7 +10,7 @@ impl LayoutDao for LayoutDaoPostgres {
         let fixtures_i32 = fixtures.iter()
             .map(|fixture| *fixture as i32)
             .collect::<Vec<i32>>();
-        let rows_modified = try!(
+        let _ = try!(
             self.conn.execute(
                 statement,
                 &[

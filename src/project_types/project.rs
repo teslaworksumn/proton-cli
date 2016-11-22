@@ -1,6 +1,4 @@
-
 use dao::LayoutDao;
-use project_types::{Sequence, User, Permission};
 use error::Error;
 
 
@@ -14,26 +12,6 @@ pub struct Project {
 }
 
 impl Project {
-
-    pub fn empty<L: LayoutDao>(
-        layout_dao: L,
-        name: &str,
-        layout_id: Option<u32>
-    ) -> Result<Project, Error> {
-
-        // Check that layout_id is valid if given
-        let layout = match layout_id {
-            Some(lid) => try!(layout_dao.get_layout(lid)),
-            None => try!(layout_dao.get_default_layout())
-        };
-
-        // Create new Rroject
-        Ok(Project {
-            name: name.to_owned(),
-            playlist: vec![],
-            layout_id: layout.layout_id
-        })
-    }
 
     /// Adds a sequence to the project's playlist
     pub fn add_sequence(&self, seqid: u32) -> Result<Project, Error> {

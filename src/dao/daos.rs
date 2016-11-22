@@ -1,8 +1,5 @@
-use std::path::Path;
-
 use error::Error;
 use project_types::{Channel, Fixture, Layout, Permission, Project, Section, Sequence, User};
-use dao;
 
 pub trait ChannelDao {
     /// Add a channel to the database
@@ -48,17 +45,24 @@ pub trait PermissionDao {
     fn get_permission(&self, permid: u32) -> Result<Permission, Error>;
 }
 
+pub trait ProjectDao {
+    fn new_project(&self, name: &str, layoutid: u32) -> Result<Project, Error>;
+    fn get_project(&self, name: &str) -> Result<Project, Error>;
+    fn update_project(&self, new_project: Project) -> Result<(), Error>;
+}
+
 pub trait SectionDao {
     fn get_section(&self, secid: u32) -> Result<Section, Error>;
 }
 
 pub trait SequenceDao {
     fn get_sequence(&self, seqid: u32) -> Result<Sequence, Error>;
-    fn new_sequence(&self, sequence: &Sequence) -> Result<(), Error>;
+    fn get_last_sequence(&self, name: &str) -> Result<Sequence, Error>;
+    fn new_sequence(&self, sequence: &Sequence) -> Result<Sequence, Error>;
 }
 
 pub trait UserDao {
-    fn add_initial_user(&self, private_key: &str, public_key: &str) -> Result<u32, Error>;
+    fn add_initial_user(&self, proj_name: &str, private_key: &str, public_key: &str) -> Result<u32, Error>;
     fn add_user(&self, name: &str, private_key: &str, public_key: &str) -> Result<u32, Error>;
     fn get_user(&self, uid: u32) -> Result<User, Error>;
     fn get_user_id(&self, public_key: &str) -> Result<u32, Error>;

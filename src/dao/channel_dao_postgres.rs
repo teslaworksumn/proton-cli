@@ -23,7 +23,7 @@ impl ChannelDao for ChannelDaoPostgres {
         let statement = "INSERT INTO channels (name,primary_num,secondary_num,\
             color,channel_dmx,location_x,location_y,location_z,rotation_a,rotation_b,rotation_c) \
             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)";
-        let rows_modified = try!(
+        let _ = try!(
             self.conn.execute(
                 statement,
                 &[

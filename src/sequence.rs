@@ -4,14 +4,11 @@ use rustc_serialize::json;
 use std::path::{Path, PathBuf};
 use std::fs;
 
-use git2::Signature;
-use regex::Regex;
 use sfml::audio::Music;
 
 use error::Error;
-use project_types::{Permission, PermissionEnum, Sequence};
-use dao::{FixtureDao, LayoutDao, PermissionDao, SequenceDao, UserDao};
-use user;
+use project_types::{PermissionEnum, Sequence};
+use dao::{FixtureDao, LayoutDao, PermissionDao, ProjectDao, SequenceDao, UserDao};
 use utils;
 
 /// Creates a new sequence 
@@ -27,7 +24,7 @@ pub fn new_vixen_sequence<P: AsRef<Path>, FD: FixtureDao, LD: LayoutDao, PD: Per
     frame_duration_ms: u32,
     data_file_path: P,
     layout_id: u32
-) -> Result<(), Error> {
+) -> Result<u32, Error> {
 
     // Check that the admin has sufficient privileges
     let valid_permissions = vec![PermissionEnum::Administrate];
@@ -62,8 +59,6 @@ pub fn new_vixen_sequence<P: AsRef<Path>, FD: FixtureDao, LD: LayoutDao, PD: Per
     let seq_data_json = try!(json::Json::from_str(&seq_data_str).map_err(Error::JsonParse));
     let seq_data = utils::sequence_json_to_vec(seq_data_json);
 
-    return Err(Error::TodoErr);
-
     // Create sequence
     let sequence = try!(
         Sequence::new(
@@ -79,15 +74,8 @@ pub fn new_vixen_sequence<P: AsRef<Path>, FD: FixtureDao, LD: LayoutDao, PD: Per
     );
 
     // Try to add sequence
-    try!(seq_dao.new_sequence(&sequence));
-
-    // Commit changes
-    let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
-    let msg = format!("Adding new sequence '{}'", name);
-    let repo_path: Option<P> = None;
-
-    utils::commit_all(repo_path, &signature, &msg)
-        .map(|_| ())
+    let seq = try!(seq_dao.new_sequence(&sequence));
+    Ok(seq.seqid)
 }
 
 /// Creates a new user for the project in the current directory.
@@ -104,8 +92,8 @@ pub fn new_sequence<P: AsRef<Path>, FD: FixtureDao, LD: LayoutDao, PD: Permissio
     name: &str,
     music_file_path: P,
     frame_duration_ms: Option<u32>,
-    layout_id: u32
-) -> Result<(), Error> {
+    layout_id: Option<u32>
+) -> Result<u32, Error> {
 
     // Check that the admin has sufficient privileges
     let valid_permissions = vec![PermissionEnum::Administrate];
@@ -116,11 +104,18 @@ pub fn new_sequence<P: AsRef<Path>, FD: FixtureDao, LD: LayoutDao, PD: Permissio
         &valid_permissions));
 
     // Get layout (also checks if it exists)
-    let layout = try!(layout_dao.get_layout(layout_id));
+    let lid = match layout_id {
+        Some(id) => id,
+        None => {
+            let default_layout = try!(layout_dao.get_default_layout());
+            default_layout.layout_id
+        },
+    };
+
+    let layout = try!(layout_dao.get_layout(lid));
 
     // Get number of channels
     let num_channels = try!(layout.get_num_channels(fixture_dao));
-    println!("num_channels: {}", &num_channels);
 
     // Make sure the music file is a valid format
     try!(validate_file_type(&music_file_path));
@@ -151,80 +146,60 @@ pub fn new_sequence<P: AsRef<Path>, FD: FixtureDao, LD: LayoutDao, PD: Permissio
     );
 
     // Try to add sequence
-    try!(seq_dao.new_sequence(&sequence));
-
-    // Commit changes
-    let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
-    let msg = format!("Adding new sequence '{}'", name);
-    let repo_path: Option<P> = None;
-
-    utils::commit_all(repo_path, &signature, &msg)
-        .map(|_| ())
+    let seq = try!(seq_dao.new_sequence(&sequence));
+    Ok(seq.seqid)
 }
 
 /// Adds the sequence with the given name to the project's playlist
-pub fn add_sequence<P: AsRef<Path>, PD: PermissionDao, UD: UserDao>(
-    perm_dao: &PD,
+pub fn add_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, SD: SequenceDao, UD: UserDao>(
+    perm_dao: &PMD,
+    project_dao: &PTD,
+    seq_dao: &SD,
     user_dao: &UD,
     admin_key_path: P,
+    proj_name: &str,
     seqid: u32
 ) -> Result<(), Error> {
     
     // Check that the admin has sufficient privileges
     let valid_permissions = vec![PermissionEnum::Administrate, PermissionEnum::EditSequence(seqid)];
-    let admin_uid = try!(utils::check_valid_permission(
+    let _ = try!(utils::check_valid_permission(
         perm_dao,
         user_dao,
         admin_key_path,
         &valid_permissions));
 
     // Check that seqid exists
-    return Err(Error::TodoErr);
+    let _ = try!(seq_dao.get_sequence(seqid));
 
     // Add sequence to project's playlist
-    let project = try!(utils::read_protonfile(None::<P>));
+    let project = try!(project_dao.get_project(proj_name));
     let new_project = try!(project.add_sequence(seqid));
-
-    // Save project
-    try!(utils::write_protonfile(&new_project, None::<P>));
-
-    // Commit changes
-    let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
-    let msg = format!("Adding sequence '{}' to playlist", seqid);
-    let repo_path: Option<P> = None;
-
-    utils::commit_all(repo_path, &signature, &msg)
-        .map(|_| ())
+    project_dao.update_project(new_project)
 }
 
 /// Removes the sequence with the given name from the project
 /// and deletes its files
-pub fn remove_sequence<P: AsRef<Path>, PD: PermissionDao, UD: UserDao>(
-    perm_dao: &PD,
+pub fn remove_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, UD: UserDao>(
+    perm_dao: &PMD,
+    project_dao: &PTD,
     user_dao: &UD,
     admin_key_path: P,
+    proj_name: &str,
     seqid: u32
 ) -> Result<(), Error> {
     
     return Err(Error::TodoErr);
     
     // Check that the admin has sufficient privileges
+
     // Remove sequence from project's playlist
-    let project = try!(utils::read_protonfile(None::<P>));
+    let project = try!(project_dao.get_project(proj_name));
     let new_project = try!(project.remove_sequence(seqid));
+    project_dao.update_project(new_project)
 
     // Remove sequence's music file if not used elsewhere in playlist
-
-    // Save project
-    try!(utils::write_protonfile(&new_project, None::<P>));
-
-    // Commit changes
-    let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
-    let msg = format!("Removing sequence '{}' from playlist", seqid);
-    let repo_path: Option<P> = None;
-
-    utils::commit_all(repo_path, &signature, &msg)
-        .map(|_| ())
+    
 }
 
 /// Deletes sequence from storage

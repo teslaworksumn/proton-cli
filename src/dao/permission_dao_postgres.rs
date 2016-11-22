@@ -1,4 +1,4 @@
-use project_types::{self, Permission, PermissionEnum};
+use project_types::{self, Permission};
 use dao::{PermissionDao, PermissionDaoPostgres};
 use error::Error;
 

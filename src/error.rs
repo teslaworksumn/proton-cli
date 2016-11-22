@@ -1,6 +1,5 @@
 extern crate openssl;
 
-use git2;
 use openssl::error as openssl_err;
 use postgres::error as postgres_err;
 use rustc_serialize::json;
@@ -9,7 +8,6 @@ use std::{io, error, fmt};
 #[derive(Debug)]
 pub enum Error {
     Io(io::Error),
-    Git(git2::Error),
     JsonEncode(json::EncoderError),
     JsonDecode(json::DecoderError),
     JsonParse(json::ParserError),
@@ -36,6 +34,7 @@ pub enum Error {
     ChannelNotFound(u32),
     FixtureNotFound(u32),
     LayoutNotFound(u32),
+    ProjectNotFound(String),
     SequenceNotFound(u32),
     UserNotFound,
     UnauthorizedAction,
@@ -46,7 +45,6 @@ impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
             Error::Io(_) => "IO error occurred",
-            Error::Git(_) => "Libgit2 error occurred",
             Error::JsonDecode(_) => "Json decoding error occurred",
             Error::JsonEncode(_) => "Json encoding error occurred",
             Error::JsonParse(_) => "Json parsing error occurred",
@@ -73,6 +71,7 @@ impl error::Error for Error {
             Error::ChannelNotFound(_) => "Channel not found",
             Error::FixtureNotFound(_) => "Fixture not found",
             Error::LayoutNotFound(_) => "Layout not found",
+            Error::ProjectNotFound(_) => "Project not found",
             Error::SequenceNotFound(_) => "Sequence not found",
             Error::UserNotFound => "User not found",
             Error::UnauthorizedAction => "Unauthorized action",
@@ -83,7 +82,6 @@ impl error::Error for Error {
     fn cause(&self) -> Option<&error::Error> {
         match *self {
            Error::Io(ref err) => Some(err),
-           Error::Git(ref err) => Some(err),
            Error::JsonDecode(ref err) => Some(err),
            Error::JsonEncode(ref err) => Some(err),
            Error::JsonParse(ref err) => Some(err),
@@ -110,6 +108,7 @@ impl error::Error for Error {
            Error::ChannelNotFound(_) => None,
            Error::FixtureNotFound(_) => None,
            Error::LayoutNotFound(_) => None,
+           Error::ProjectNotFound(_) => None,
            Error::SequenceNotFound(_) => None,
            Error::UserNotFound => None,
            Error::UnauthorizedAction => None,
@@ -123,8 +122,6 @@ impl fmt::Display for Error {
         match *self {
             Error::Io(ref err) => write!(f,
                 "IO error occurred: {}", error::Error::description(err)),
-            Error::Git(ref err) => write!(f,
-                "Libgit2 error occurred: {}", error::Error::description(err)),
             Error::JsonDecode(ref err) => write!(f,
                 "Json decoding error occurred: {}", err),
             Error::JsonEncode(ref err) => write!(f,
@@ -175,6 +172,8 @@ impl fmt::Display for Error {
                 "Fixture not found: {}", fix_id),
             Error::LayoutNotFound(ref layout_id) => write!(f,
                 "Layout not found: {}", layout_id),
+            Error::ProjectNotFound(ref proj_name) => write!(f,
+                "Project not found: {}", proj_name),
             Error::SequenceNotFound(ref name) => write!(f,
                 "Sequence not found: '{}'", name),
             Error::UserNotFound => write!(f, "User not found"),

@@ -1,5 +1,3 @@
-use postgres::Connection;
-
 use project_types::Fixture;
 use error::Error;
 use dao::{FixtureDao, FixtureDaoPostgres};
@@ -18,7 +16,7 @@ impl FixtureDao for FixtureDaoPostgres {
         let channels_i32 = channels.iter()
             .map(|channel| *channel as i32)
             .collect::<Vec<i32>>();
-        let rows_modified = try!(
+        let _ = try!(
             self.conn.execute(
                 statement,
                 &[

@@ -1,23 +1,22 @@
-use postgres::types::ToSql;
 use std::path::Path;
 
 use dao::{UserDao, UserDaoPostgres};
 use error::Error;
 use project_types::User;
-use utils;
 
 
 impl UserDao for UserDaoPostgres {
 
-    fn add_initial_user(&self, private_key: &str, public_key: &str) -> Result<u32, Error> {
-        self.add_user("root", private_key, public_key)
+    fn add_initial_user(&self, proj_name: &str, private_key: &str, public_key: &str) -> Result<u32, Error> {
+        let root_uname = format!("{}_{}", "root", proj_name);
+        self.add_user(&root_uname, private_key, public_key)
     }
 
     fn add_user(&self, name: &str, private_key: &str, public_key: &str) -> Result<u32, Error> {
         let statement = "INSERT INTO users (name, private_key, public_key) VALUES ($1, $2, $3)";
         let private_string = private_key.trim_matches('\n');
         let public_string = public_key.trim_matches('\n');
-        let rows_modified = try!(
+        let _ = try!(
             self.conn.execute(
                 statement,
                 &[&name.to_owned(), &private_string, &public_string])

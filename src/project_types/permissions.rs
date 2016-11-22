@@ -1,10 +1,6 @@
-use std::path::Path;
-use std::ascii::AsciiExt;
-
 use error::Error;
 use dao::PermissionDao;
 use project_types::PermissionEnum;
-use utils;
 
 
 #[derive(Debug, RustcDecodable, RustcEncodable)]
