@@ -26,6 +26,7 @@ Usage:
   ./proton remove-sequence <admin-key> <proj-name> <seqid>
   ./proton delete-sequence <admin-key> <seqid>
   ./proton get-sequence <seqid>
+  ./proton set-sequence-layout <admin-key> <seqid> <layout-id>
   ./proton new-layout <layout-file>
   ./proton new-section <admin-key> <t_start> <t_end> <seqid> <fixid>..
   ./proton get-user-id <public-key>
@@ -87,6 +88,7 @@ fn main() {
 		"remove-sequence" => run_remove_sequence,
 		"delete-sequence" => run_delete_sequence,
 		"get-sequence" => run_get_sequence,
+		"set-sequence-layout" => run_set_sequence_layout,
 		"new-layout" => run_new_layout,
 		"new-section" => run_new_section,
 		"list-permissions" => run_list_permissions,
@@ -266,6 +268,22 @@ fn run_get_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let seq_dao = try!(dao::SequenceDaoPostgres::new());
 	let sequence = try!(proton_cli::get_sequence(&seq_dao, seqid));
 	Ok(ProtonReturn::Sequence(sequence))
+}
+
+fn run_set_sequence_layout(args: Args) -> Result<ProtonReturn, Error> {
+	let admin_key = args.arg_admin_key.unwrap();
+	let admin_key_path = Path::new(&admin_key);
+	let seqid = args.arg_seqid.unwrap();
+	let layout_id = args.arg_layout_id.unwrap();
+	let seq_dao = try!(dao::SequenceDaoPostgres::new());
+	let layout_dao = try!(dao::LayoutDaoPostgres::new());
+	try!(proton_cli::set_sequence_layout(
+		&admin_key_path,
+		&layout_dao,
+		&seq_dao,
+		layout_id,
+		seqid));
+	Ok(ProtonReturn::NoReturn)
 }
 
 fn run_new_layout(args: Args) -> Result<ProtonReturn, Error> {

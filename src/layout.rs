@@ -1,7 +1,7 @@
 use rustc_serialize::json;
 use std::path::Path;
 
-use dao::{ChannelDao, FixtureDao, LayoutDao, PermissionDao, UserDao};
+use dao::{ChannelDao, FixtureDao, LayoutDao, PermissionDao, SequenceDao, UserDao};
 use error::Error;
 use project_types::{FileLayout, PermissionEnum};
 use utils;
@@ -35,3 +35,12 @@ pub fn new_layout<P: AsRef<Path>, CD: ChannelDao, FD: FixtureDao, LD: LayoutDao,
     Ok(layout.layout_id)
 }
 
+pub fn set_sequence_layout<P: AsRef<Path>, LD: LayoutDao, SD: SequenceDao>(
+    admin_key_path: P,
+    layout_dao: &LD,
+    sequence_dao: &SD,
+    layout_id: u32,
+    seqid: u32
+) -> Result<(), Error> {
+    Err(Error::TodoErr)
+}
