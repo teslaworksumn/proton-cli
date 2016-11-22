@@ -6,6 +6,7 @@ use error::Error;
 use project_types::Permission;
 use dao::PermissionDao;
 
+
 pub fn get_permissions<P: AsRef<Path>, PD: PermissionDao> (pdao: PD, uid: u32
 ) -> Result<Vec<Permission>, Error> {
     pdao.get_all_permissions(uid)

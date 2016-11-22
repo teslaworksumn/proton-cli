@@ -137,7 +137,7 @@ impl SequenceDao for SequenceDaoPostgres {
         let num_frames = sequence.num_frames as i32;
         let layout_id = sequence.layout_id as i32;
         let data = try!(sequence.data_as_json());
-        let rows_modified = try!(
+        let _ = try!(
             self.conn.execute(
                 statement,
                 &[
@@ -150,6 +150,7 @@ impl SequenceDao for SequenceDaoPostgres {
                     &data
                 ])
             .map_err(Error::Postgres));
-        Ok(())
+        let sequence = try!(self.get_last_sequence(&sequence.name));
+        Ok(sequence)
     }
 }

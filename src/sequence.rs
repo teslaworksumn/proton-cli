@@ -205,38 +205,31 @@ pub fn add_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, SD: Seq
 }
 
 /// Adds the sequence with the given name to the project's playlist
-pub fn add_sequence<P: AsRef<Path>, PD: PermissionDao, UD: UserDao>(
-    perm_dao: &PD,
+pub fn add_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, SD: SequenceDao, UD: UserDao>(
+    perm_dao: &PMD,
+    project_dao: &PTD,
+    seq_dao: &SD,
     user_dao: &UD,
     admin_key_path: P,
+    proj_name: &str,
     seqid: u32
 ) -> Result<(), Error> {
     
     // Check that the admin has sufficient privileges
     let valid_permissions = vec![PermissionEnum::Administrate, PermissionEnum::EditSequence(seqid)];
-    let admin_uid = try!(utils::check_valid_permission(
+    let _ = try!(utils::check_valid_permission(
         perm_dao,
         user_dao,
         admin_key_path,
         &valid_permissions));
 
     // Check that seqid exists
-    return Err(Error::TodoErr);
+    let _ = try!(seq_dao.get_sequence(seqid));
 
     // Add sequence to project's playlist
-    let project = try!(utils::read_protonfile(None::<P>));
+    let project = try!(project_dao.get_project(proj_name));
     let new_project = try!(project.add_sequence(seqid));
-
-    // Save project
-    try!(utils::write_protonfile(&new_project, None::<P>));
-
-    // Commit changes
-    let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
-    let msg = format!("Adding sequence '{}' to playlist", seqid);
-    let repo_path: Option<P> = None;
-
-    utils::commit_all(repo_path, &signature, &msg)
-        .map(|_| ())
+    project_dao.update_project(new_project)
 }
 
 /// Removes the sequence with the given name from the project

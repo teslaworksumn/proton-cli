@@ -78,6 +78,8 @@ enum ProtonReturn {
 	NoReturn,
 	PublicKey(String),
 	LayoutId(u32),
+	PublicKey(String),
+	SequenceId(u32),
 	Uid(u32),
 	Sequence(Sequence),
 }
@@ -266,10 +268,13 @@ fn run_add_sequence(args: Args) -> Result<ProtonReturn, Error> {
 fn run_add_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let admin_key = args.arg_admin_key.unwrap();
 	let admin_key_path = Path::new(&admin_key);
+	let proj_name = args.arg_proj_name.unwrap();
 	let seqid = args.arg_seqid.unwrap();
 	let perm_dao = try!(dao::PermissionDaoPostgres::new());
+	let project_dao = try!(dao::ProjectDaoPostgres::new());
+	let seq_dao = try!(dao::SequenceDaoPostgres::new());
 	let user_dao = try!(dao::UserDaoPostgres::new());
-	try!(proton_cli::add_sequence(&perm_dao, &user_dao, &admin_key_path, seqid));
+	try!(proton_cli::add_sequence(&perm_dao, &project_dao, &seq_dao, &user_dao, &admin_key_path, &proj_name, seqid));
 	Ok(ProtonReturn::NoReturn)
 }
 

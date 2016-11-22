@@ -1,5 +1,4 @@
 use postgres::{Connection, TlsMode};
-use postgres::types::ToSql;
 
 use error::Error;
 
