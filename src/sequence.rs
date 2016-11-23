@@ -204,17 +204,21 @@ pub fn remove_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, UD: 
     seqid: u32
 ) -> Result<(), Error> {
     
-    return Err(Error::TodoErr);
-    
     // Check that the admin has sufficient privileges
+    let valid_permissions = vec![PermissionEnum::Administrate, PermissionEnum::EditSequence(seqid)];
+    let _ = try!(utils::check_valid_permission(
+        perm_dao,
+        user_dao,
+        admin_key_path,
+        &valid_permissions));
 
     // Remove sequence from project's playlist
     let project = try!(project_dao.get_project(proj_name));
     let new_project = try!(project.remove_sequence(seqid));
     project_dao.update_project(new_project)
 
-    // Remove sequence's music file if not used elsewhere in playlist
-    
+    // TODO: Remove sequence's music file if not used elsewhere in playlist
+
 }
 
 /// Deletes sequence from storage
