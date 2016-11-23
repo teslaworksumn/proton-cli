@@ -54,7 +54,6 @@ struct Args {
 	arg_seqid: Option<u32>,
 	arg_fixid: Option<u32>,
 	arg_layout_id: Option<u32>,
-	arg_project_id: Option<u32>,
 	arg_layout_file: Option<String>,
 	arg_music_file: Option<String>,
 	arg_data_file: Option<String>,
