@@ -30,6 +30,7 @@ Usage:
   ./proton new-layout <layout-file>
   ./proton new-section <admin-key> <t_start> <t_end> <seqid> <fixid>..
   ./proton get-user-id <public-key>
+  ./proton get-layout-id <project-id>
   ./proton list-permissions <uid>
   ./proton set-permission <admin-key> (add | remove) <uid> Administrate
   ./proton set-permission <admin-key> (add | remove) <uid> EditSequence <target-sequence>
@@ -51,6 +52,7 @@ struct Args {
 	arg_seqid: Option<u32>,
 	arg_fixid: Option<u32>,
 	arg_layout_id: Option<u32>,
+	arg_project_id: Option<u32>,
 	arg_layout_file: Option<String>,
 	arg_music_file: Option<String>,
 	arg_data_file: Option<String>,
@@ -82,6 +84,7 @@ fn main() {
 		"new-user" => run_new_user,
 		"remove-user" => run_remove_user,
 		"get_user_id" => run_get_user_id,
+		"get-layout-id" => run_get_layout_id,
 		"new-sequence" => run_new_sequence,
 		"new-vixen-sequence" => run_new_vixen_sequence,
 		"add-sequence" => run_add_sequence,
@@ -143,6 +146,13 @@ fn run_get_user_id(args: Args) -> Result<ProtonReturn, Error> {
 	let user_dao = try!(dao::UserDaoPostgres::new());
 	let uid = try!(proton_cli::get_user_id(user_dao, &public_key_path));
 	Ok(ProtonReturn::Uid(uid))
+}
+
+fn run_get_layout_id(args: Args) -> Result<ProtonReturn, Error> {
+	let proj_name = args.arg_proj_name.unwrap();
+	let proj_dao = try!(dao::ProjectDaoPostgres::new());
+	let layout_id = try!(proton_cli::get_layout_id(&proj_dao, &proj_name));
+	Ok(ProtonReturn::LayoutId(layout_id))
 }
 
 fn run_remove_user(args: Args) -> Result<ProtonReturn, Error> {

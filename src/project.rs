@@ -42,3 +42,15 @@ pub fn new_project<LD: LayoutDao, PMD: PermissionDao, PTD: ProjectDao, UD: UserD
     // Return root user's public key
     Ok(root_pub_key)
 }
+
+pub fn get_layout_id<PD: ProjectDao>(
+    proj_dao: &PD,
+    proj_name: &str
+) -> Result<u32, Error> {
+    
+    // Check that project exists
+    let project = try!(proj_dao.get_project(proj_name));
+
+    // Return layout id
+    Ok(project.layout_id)
+}
