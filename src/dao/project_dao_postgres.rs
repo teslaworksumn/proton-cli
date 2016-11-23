@@ -46,6 +46,14 @@ impl ProjectDao for ProjectDaoPostgres {
     }
 
     fn update_project(&self, new_project: Project) -> Result<(), Error> {
-        Err(Error::TodoErr)
+        let query = "UPDATE projects SET playlist = $1, layoutid = $2 WHERE name = $3";
+        let playlist_i32 = new_project.playlist.iter()
+            .map(|seqid| *seqid as i32)
+            .collect::<Vec<i32>>();
+        let layoutid_i32 = new_project.layout_id as i32;
+        let name = new_project.name;
+        let _ = try!(self.conn.query(query, &[&playlist_i32, &layoutid_i32, &name])
+            .map_err(Error::Postgres));
+        Ok(())
     }
 }

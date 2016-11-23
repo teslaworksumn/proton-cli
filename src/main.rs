@@ -30,7 +30,7 @@ Usage:
   ./proton new-layout <layout-file>
   ./proton new-section <admin-key> <t_start> <t_end> <seqid> <fixid>..
   ./proton get-user-id <public-key>
-  ./proton get-layout-id <project-id>
+  ./proton get-layout-id <proj-name>
   ./proton list-permissions <uid>
   ./proton set-permission <admin-key> (add | remove) <uid> Administrate
   ./proton set-permission <admin-key> (add | remove) <uid> EditSequence <target-sequence>
@@ -52,7 +52,6 @@ struct Args {
 	arg_seqid: Option<u32>,
 	arg_fixid: Option<u32>,
 	arg_layout_id: Option<u32>,
-	arg_project_id: Option<u32>,
 	arg_layout_file: Option<String>,
 	arg_music_file: Option<String>,
 	arg_data_file: Option<String>,
