@@ -27,4 +27,23 @@ impl DataDao for DataDaoPostgres {
         }
         Ok(())
     }
+
+    fn get_data(&self, seqid: u32, chanid: u32) -> Result<Vec<u16>, Error> {
+        let query = "SELECT data FROM channel_data WHERE seqid = $1 AND chanid = $2";
+        let results = try!(
+            self.conn.query(query, &[&(seqid as i32), &(chanid as i32)])
+            .map_err(Error::Postgres));
+        match results.len() {
+            0 => Err(Error::ChannelDataNotFound(seqid, chanid)),
+            1 => {
+                let row = results.get(0);
+                let data: Vec<i32> = row.get(0);
+                let data_u16 = data.iter()
+                    .map(|frame_val| *frame_val as u16)
+                    .collect::<Vec<u16>>();
+                Ok(data_u16)
+            },
+            x => Err(Error::InvalidNumResults(x)),
+        }
+    }
 }

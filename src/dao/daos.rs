@@ -26,6 +26,7 @@ pub trait DataDao {
         chan_ids: Vec<u32>,
         default_data: Vec<u16>
     ) -> Result<(), Error>;
+    fn get_data(&self, seqid: u32, chanid: u32) -> Result<Vec<u16>, Error>;
 }
 
 pub trait FixtureDao {

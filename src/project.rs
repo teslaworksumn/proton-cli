@@ -1,10 +1,9 @@
-//! This module initializes a project.
-
 use std::path::Path;
+use rustc_serialize::json;
 
 use utils;
 use error::Error;
-use dao::{LayoutDao, PermissionDao, ProjectDao, UserDao};
+use dao::{ChannelDao, DataDao, LayoutDao, PermissionDao, ProjectDao, SequenceDao, UserDao};
 
 
 /// Initializes a new project at root. The root must either not exist, or must
@@ -53,4 +52,46 @@ pub fn get_layout_id<PD: ProjectDao>(
 
     // Return layout id
     Ok(project.layout_id)
+}
+
+/// Gets all sequence data in the project's playlist
+/// Returns as JSON array, each index corresponding to a DMX channel
+/// The value at index 0 will always be 0, since DMX starts at 1
+pub fn get_playlist_data<CD: ChannelDao, DD: DataDao, PD: ProjectDao, SD: SequenceDao>(
+    chan_dao: &CD,
+    data_dao: &DD,
+    proj_dao: &PD,
+    seq_dao: &SD,
+    proj_name: &str
+) -> Result<String, Error> {
+
+    // Check that project exists
+    let project = try!(proj_dao.get_project(proj_name));
+
+    let mut playlist_data = vec![Vec::new(); project.playlist.len()];
+
+    // Go through each sequence in the playlist
+    for (i, seqid) in project.playlist.iter().enumerate() {
+
+        // Get sequence
+        let sequence = try!(seq_dao.get_sequence(seqid.to_owned()));
+
+        // Get the sequence's channel ids
+        let chan_ids = try!(seq_dao.get_channel_ids(seqid.to_owned()));
+
+        // Create vector for sequence data
+        // Up to 512 channels per universe, plus one because DMX starts at 1
+        let mut seq_data = vec![vec![0; sequence.num_frames as usize]; 513];
+
+        // Get each channel's data and put it in the correct vector slot
+        for chanid in chan_ids {
+            let channel = try!(chan_dao.get_channel(chanid));
+            let chan_data = try!(data_dao.get_data(seqid.to_owned(), chanid.to_owned()));
+            seq_data[channel.channel_dmx as usize] = chan_data;
+        }
+
+        playlist_data[i] = seq_data;
+    }
+
+    json::encode(&playlist_data).map_err(Error::JsonEncode)
 }

@@ -6,7 +6,39 @@ use project_types::Channel;
 impl ChannelDao for ChannelDaoPostgres {
     /// Fetch a Channel with the given channel id
     fn get_channel(&self, chanid: u32) -> Result<Channel, Error> {
-        Err(Error::TodoErr)
+        let query = "SELECT name,primary_num,secondary_num,color,channel_dmx, \
+        location_x,location_y,location_z,rotation_a,rotation_b,rotation_c \
+        FROM channels WHERE chanid = $1";
+        let results = try!(
+            self.conn.query(query, &[&(chanid as i32)])
+            .map_err(Error::Postgres));
+        match results.len() {
+            0 => Err(Error::ChannelNotFound(chanid)),
+            1 => {
+                let row = results.get(0);
+                let name: String = row.get(0);
+                let primary_num: i32 = row.get(1);
+                let secondary_num: i32 = row.get(2);
+                let color: String = row.get(3);
+                let channel_dmx: i32 = row.get(4);
+                let location_x: i32 = row.get(5);
+                let location_y: i32 = row.get(6);
+                let location_z: i32 = row.get(7);
+                let rotation_a: i32 = row.get(8);
+                let rotation_b: i32 = row.get(9);
+                let rotation_c: i32 = row.get(10);
+                Ok(Channel {
+                    chanid: chanid,
+                    name: name,
+                    numbers: (primary_num as u32, secondary_num as u32),
+                    color: color,
+                    channel_dmx: channel_dmx as u32,
+                    location: (location_x, location_y, location_z),
+                    rotation: (rotation_a, rotation_b, rotation_c)
+                })
+            },
+            x => Err(Error::InvalidNumResults(x)),
+        }
     }
 
     /// Add a channel to the database

@@ -159,7 +159,6 @@ pub fn new_sequence<P: AsRef<Path>, DD: DataDao, FD: FixtureDao, LD: LayoutDao, 
 
     // Try to add empty sequence data
     let seq_data = vec![0; sequence.num_frames as usize];
-
     let _ = try!(data_dao.new_data(seq.seqid, channel_ids, seq_data));
 
     Ok(seq.seqid)

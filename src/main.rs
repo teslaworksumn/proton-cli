@@ -26,6 +26,7 @@ Usage:
   ./proton remove-sequence <admin-key> <proj-name> <seqid>
   ./proton delete-sequence <admin-key> <seqid>
   ./proton get-sequence <seqid>
+  ./proton get-playlist-data <proj-name>
   ./proton set-sequence-layout <admin-key> <seqid> <layout-id>
   ./proton new-layout <layout-file>
   ./proton new-section <admin-key> <t_start> <t_end> <seqid> <fixid>..
@@ -66,9 +67,10 @@ enum ProtonReturn {
 	NoReturn,
 	LayoutId(u32),
 	PublicKey(String),
+	PlaylistData(String),
+	Sequence(Sequence),
 	SequenceId(u32),
 	Uid(u32),
-	Sequence(Sequence),
 }
 
 fn main() {
@@ -84,6 +86,7 @@ fn main() {
 		"remove-user" => run_remove_user,
 		"get_user_id" => run_get_user_id,
 		"get-layout-id" => run_get_layout_id,
+		"get-playlist-data" => run_get_playlist_data,
 		"new-sequence" => run_new_sequence,
 		"new-vixen-sequence" => run_new_vixen_sequence,
 		"add-sequence" => run_add_sequence,
@@ -103,10 +106,11 @@ fn main() {
 		Ok(ret) => match ret {
 			ProtonReturn::NoReturn => println!("Worked!"),
 			ProtonReturn::LayoutId(lid) => println!("Layout id: {}", lid),
+			ProtonReturn::PlaylistData(data) => println!("{}", data),
 			ProtonReturn::PublicKey(s) => println!("PubKey: {}", s),
+			ProtonReturn::Sequence(seq) => println!("Sequence: {:?}", seq),
 			ProtonReturn::SequenceId(sid) => println!("Sequence id: {}", sid),
-			ProtonReturn::Uid(uid) => println!("User id: {}", uid),
-			ProtonReturn::Sequence(seq) => println!("Sequence: {:?}", seq)
+			ProtonReturn::Uid(uid) => println!("User id: {}", uid)
 		},
 		Err(e) => println!("{:?}", e.to_string()),
 	};
@@ -281,6 +285,21 @@ fn run_get_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let seq_dao = try!(dao::SequenceDaoPostgres::new());
 	let sequence = try!(proton_cli::get_sequence(&seq_dao, seqid));
 	Ok(ProtonReturn::Sequence(sequence))
+}
+
+fn run_get_playlist_data(args: Args) -> Result<ProtonReturn, Error> {
+	let proj_name = args.arg_proj_name.unwrap();
+	let channel_dao = try!(dao::ChannelDaoPostgres::new());
+	let data_dao = try!(dao::DataDaoPostgres::new());
+	let proj_dao = try!(dao::ProjectDaoPostgres::new());
+	let seq_dao = try!(dao::SequenceDaoPostgres::new());
+	let data = try!(proton_cli::get_playlist_data(
+		&channel_dao,
+		&data_dao,
+		&proj_dao,
+		&seq_dao,
+		&proj_name));
+	Ok(ProtonReturn::PlaylistData(data))
 }
 
 fn run_set_sequence_layout(args: Args) -> Result<ProtonReturn, Error> {
