@@ -74,16 +74,6 @@ enum ProtonReturn {
 	Uid(u32),
 }
 
-enum ProtonReturn {
-	NoReturn,
-	PublicKey(String),
-	LayoutId(u32),
-	PublicKey(String),
-	SequenceId(u32),
-	Uid(u32),
-	Sequence(Sequence),
-}
-
 fn main() {
 	let args: Args = Docopt::new(USAGE)
 		.and_then(|d| d.decode())
