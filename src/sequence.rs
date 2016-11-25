@@ -8,11 +8,12 @@ use sfml::audio::Music;
 
 use error::Error;
 use project_types::{PermissionEnum, Sequence};
-use dao::{DataDao, FixtureDao, LayoutDao, PermissionDao, ProjectDao, SequenceDao, UserDao};
+use dao::{ChannelDao, DataDao, FixtureDao, LayoutDao, PermissionDao, ProjectDao, SequenceDao, UserDao};
 use utils;
 
 /// Creates a new sequence 
-pub fn new_vixen_sequence<P: AsRef<Path>, DD: DataDao, FD: FixtureDao, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
+pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, FD: FixtureDao, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
+    chan_dao: &CD,
     data_dao: &DD,
     fixture_dao: &FD,
     layout_dao: &LD,
@@ -26,8 +27,6 @@ pub fn new_vixen_sequence<P: AsRef<Path>, DD: DataDao, FD: FixtureDao, LD: Layou
     data_file_path: P,
     layout_id: u32
 ) -> Result<u32, Error> {
-
-    return Err(Error::TodoErr);
 
     // Check that the admin has sufficient privileges
     let valid_permissions = vec![PermissionEnum::Administrate];
@@ -57,11 +56,6 @@ pub fn new_vixen_sequence<P: AsRef<Path>, DD: DataDao, FD: FixtureDao, LD: Layou
 
     // TODO: revert music file copy if rest fails
 
-    // Read in sequence data
-    let seq_data_str = try!(utils::file_as_string(data_file_path.as_ref()));
-    let seq_data_json = try!(json::Json::from_str(&seq_data_str).map_err(Error::JsonParse));
-    let seq_data = utils::sequence_json_to_vec(seq_data_json);
-    
     // Create sequence
     let sequence = try!(
         Sequence::new(
@@ -78,8 +72,25 @@ pub fn new_vixen_sequence<P: AsRef<Path>, DD: DataDao, FD: FixtureDao, LD: Layou
     // Try to add sequence
     let seq = try!(seq_dao.new_sequence(&sequence));
 
-    // Try to add sequence data
-    // TODO
+    // Get sequence channel ids to match up dmx channels with given data
+    let chan_ids = try!(seq_dao.get_channel_ids(seq.seqid));
+
+    // Read in vixen sequence data
+    let vixen_data_str = try!(utils::file_as_string(data_file_path.as_ref()));
+    let vixen_data: Vec<Vec<u16>> = try!(json::decode(&vixen_data_str).map_err(Error::JsonDecode));
+
+    // Make sure the number of channels matches with the layout
+    if chan_ids.len() != vixen_data.len() {
+        println!("{} vs {}", chan_ids.len(), vixen_data.len());
+        return Err(Error::InvalidVixenData("Number of channels not the same as the given layout".to_string()));
+    }
+    
+    // For each channel the sequence created, update its data based on vixen_data
+    for chanid in chan_ids {
+        let channel = try!(chan_dao.get_channel(chanid));
+        let ref chan_data = vixen_data[channel.channel_dmx as usize - 1]; // TODO, check out of bounds
+        try!(data_dao.new_data(seq.seqid, chanid, chan_data));
+    }
 
     Ok(seq.seqid)
 }
@@ -159,7 +170,7 @@ pub fn new_sequence<P: AsRef<Path>, DD: DataDao, FD: FixtureDao, LD: LayoutDao, 
 
     // Try to add empty sequence data
     let seq_data = vec![0; sequence.num_frames as usize];
-    let _ = try!(data_dao.new_data(seq.seqid, channel_ids, seq_data));
+    let _ = try!(data_dao.new_data_default(seq.seqid, channel_ids, seq_data));
 
     Ok(seq.seqid)
 }

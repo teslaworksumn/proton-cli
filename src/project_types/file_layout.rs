@@ -18,19 +18,24 @@ pub struct FileLayoutRow {
     pub fixtureName: String,
     pub channelName: String,
     pub color: String,
-    pub num_primary: u32, // Default is 0
-    pub num_secondary: u32, // Default is 0
+    pub num_primary: Option<u32>, // Default is 0
+    pub num_secondary: Option<u32>, // Default is 0
     pub location: String, // Default is "0,0,0"
     pub rotation: String, // Default is "0,0,0"
 }
 
 impl FileLayout {
 
-    fn layout_str_to_i32<'a>(s: &'a str, err_msg: &'a str) -> Result<i32, Error> {
-        s.parse::<i32>().map_err(|_| Error::InvalidLayout(String::from(err_msg)))
+    fn layout_str_to_i32<'a>(s: &'a str, err_msg: &'a str) -> Result<Option<i32>, Error> {
+        match s.is_empty() {
+            true => Ok(None::<i32>),
+            false => s.parse::<i32>()
+                .map(|s_i32| Some(s_i32))
+                .map_err(|_| Error::InvalidLayout(String::from(err_msg)))
+        }
     }
 
-    fn layout_get_i32_tuple(s: &str) -> Result<(i32, i32, i32), Error> {
+    fn layout_get_i32_tuple(s: &str) -> Result<(Option<i32>, Option<i32>, Option<i32>), Error> {
         let parts = s.trim_matches(',').split(',').collect::<Vec<&str>>();
         if parts.len() != 3 {
             return Err(Error::InvalidLayout(String::from("Locations must be of the form x,y,z")))

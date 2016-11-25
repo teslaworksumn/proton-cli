@@ -6,12 +6,12 @@ pub trait ChannelDao {
     fn new_channel(
         &self,
         name: &str,
-        primary_num: u32,
-        secondary_num: u32,
+        primary_num: Option<u32>,
+        secondary_num: Option<u32>,
         color: &str,
         channel_dmx: u32,
-        location: (i32, i32, i32),
-        rotation: (i32, i32, i32)
+        location: (Option<i32>, Option<i32>, Option<i32>),
+        rotation: (Option<i32>, Option<i32>, Option<i32>)
     ) -> Result<Channel, Error>;
     
     /// Fetch a Channel with the given channel id
@@ -20,13 +20,20 @@ pub trait ChannelDao {
 }
 
 pub trait DataDao {
-    fn new_data(
+    fn new_data_default(
         &self,
         seqid: u32,
         chan_ids: Vec<u32>,
         default_data: Vec<u16>
     ) -> Result<(), Error>;
+    fn new_data<'a>(
+        &'a self,
+        seqid: u32,
+        chanid: u32,
+        new_data: &'a Vec<u16>
+    ) -> Result<(), Error>;
     fn get_data(&self, seqid: u32, chanid: u32) -> Result<Vec<u16>, Error>;
+    fn update_data<'a>(&'a self, seqid: u32, chanid: u32, new_data: &'a Vec<u16>) -> Result<(), Error>;
 }
 
 pub trait FixtureDao {

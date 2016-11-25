@@ -189,6 +189,7 @@ fn run_new_vixen_sequence(args: Args) -> Result<ProtonReturn, Error> {
 			default_layout.layout_id
 		},
 	};
+	let channel_dao = try!(dao::ChannelDaoPostgres::new());
 	let data_dao = try!(dao::DataDaoPostgres::new());
 	let fixture_dao = try!(dao::FixtureDaoPostgres::new());
 	let layout_dao = try!(dao::LayoutDaoPostgres::new());
@@ -196,6 +197,7 @@ fn run_new_vixen_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let sequence_dao = try!(dao::SequenceDaoPostgres::new());
 	let user_dao = try!(dao::UserDaoPostgres::new());
 	let seqid = try!(proton_cli::new_vixen_sequence(
+		&channel_dao,
 		&data_dao,
 		&fixture_dao,
 		&layout_dao,
