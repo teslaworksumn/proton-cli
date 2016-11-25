@@ -28,8 +28,6 @@ pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, FD: Fixtu
     layout_id: u32
 ) -> Result<u32, Error> {
 
-    return Err(Error::TodoErr);
-
     // Check that the admin has sufficient privileges
     let valid_permissions = vec![PermissionEnum::Administrate];
     let admin_uid = try!(utils::check_valid_permission(
