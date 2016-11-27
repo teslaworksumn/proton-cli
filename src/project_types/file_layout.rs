@@ -106,24 +106,27 @@ impl FileLayout {
         let mut channels = Vec::new();
         let mut fixture_names = HashMap::new();
         // Create channels and add to vec. Place ids in fixture buckets
+        // Ignore channels with name of "Spare" or "X"
         for c in &self.channels {
-            let location = try!(FileLayout::layout_get_i32_tuple(&c.location));
-            let rotation = try!(FileLayout::layout_get_i32_tuple(&c.rotation));
-            let channel = try!(chan_dao.new_channel(
-                &c.channelName,
-                c.num_primary,
-                c.num_secondary,
-                &c.color,
-                c.dmxChannel,
-                location,
-                rotation));
-            let fix_name = channel.name.clone();
-            if !fixture_names.contains_key(&fix_name) {
-                fixture_names.insert(fix_name, vec![channel.chanid]);
-            } else {
-                fixture_names.get_mut(&fix_name).unwrap().push(channel.chanid);
+            if c.channelName != "Spare" && c.channelName != "X" {
+                let location = try!(FileLayout::layout_get_i32_tuple(&c.location));
+                let rotation = try!(FileLayout::layout_get_i32_tuple(&c.rotation));
+                let channel = try!(chan_dao.new_channel(
+                    &c.channelName,
+                    c.num_primary,
+                    c.num_secondary,
+                    &c.color,
+                    c.dmxChannel,
+                    location,
+                    rotation));
+                let fix_name = channel.name.clone();
+                if !fixture_names.contains_key(&fix_name) {
+                    fixture_names.insert(fix_name, vec![channel.chanid]);
+                } else {
+                    fixture_names.get_mut(&fix_name).unwrap().push(channel.chanid);
+                }
+                channels.push(channel);
             }
-            channels.push(channel);
         }
 
         // Create fixtures
