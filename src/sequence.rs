@@ -81,7 +81,7 @@ pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, FD: Fixtu
 
     // Make sure the number of channels matches with the layout
     if chan_ids.len() != vixen_data.len() {
-        println!("{} vs {}", chan_ids.len(), vixen_data.len());
+        println!("layout: {} vs data: {}", chan_ids.len(), vixen_data.len());
         return Err(Error::InvalidVixenData("Number of channels not the same as the given layout".to_string()));
     }
     

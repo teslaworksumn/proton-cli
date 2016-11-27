@@ -86,12 +86,12 @@ impl FileLayout {
                 return Err(Error::InvalidLayout(String::from("Fixture name has to be alphanumeric: ") + &channel.fixtureName))   
             }
 
-            // Validate color not too long and only alphabetic or spaces
+            // Validate color not too long and only alphanumerics or spaces
             if channel.color.len() > 16 {
                 return Err(Error::InvalidLayout(String::from("Color cannot be longer than 16 characters")))
             }
-            if !channel.color.chars().all(|c| c.is_alphabetic() || c == ' ') {
-                return Err(Error::InvalidLayout(String::from("Color has to be alphabetic")))   
+            if !channel.color.chars().all(|c| c.is_alphanumeric() || c == ' ') {
+                return Err(Error::InvalidLayout(String::from("Color has to be alphanumeric")))   
             }
         }
         Ok(())
