@@ -21,6 +21,7 @@ impl Sequence {
         name: &str,
         music_file_name: &str,
         music_duration_sec: u32,
+        seq_duration_ms: u32,
         frame_duration_ms: Option<u32>,
         layout: &Layout,
         num_channels: u32
@@ -32,7 +33,7 @@ impl Sequence {
         }
 
         // Calculate num_frames
-        let num_frames_f32: f32 = (music_duration_sec as f32 * 1000_f32) / frame_dur_ms as f32;
+        let num_frames_f32: f32 = seq_duration_ms as f32 / frame_dur_ms as f32;
         let num_frames = num_frames_f32.ceil() as u32;
 
         // Create temporary seqid (seqid will be set internally by the sequence dao)

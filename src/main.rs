@@ -20,8 +20,8 @@ Usage:
   ./proton new-project <name> <layout-id>
   ./proton new-user <admin-key> <name>
   ./proton remove-user <admin-key> <uid>
-  ./proton new-sequence <admin-key> <name> <music-file> <layout-id>
-  ./proton new-vixen-sequence <admin-key> <name> <music-file> <frame-duration> <data-file> <layout-id>
+  ./proton new-sequence <admin-key> <name> <music-file> <seq-duration> <layout-id>
+  ./proton new-vixen-sequence <admin-key> <name> <music-file> <seq-duration> <frame-duration> <data-file> <layout-id>
   ./proton add-sequence <admin-key> <proj-name> <seqid>
   ./proton remove-sequence <admin-key> <proj-name> <seqid>
   ./proton delete-sequence <admin-key> <seqid>
@@ -52,6 +52,7 @@ struct Args {
 	arg_proj_name: Option<String>,
 	arg_uid: Option<u32>,
 	arg_seqid: Option<u32>,
+	arg_seq_duration: Option<u32>,
 	arg_fixid: Option<u32>,
 	arg_layout_id: Option<u32>,
 	arg_layout_file: Option<String>,
@@ -179,6 +180,7 @@ fn run_new_vixen_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let name = args.arg_name.unwrap();
 	let music_file = args.arg_music_file.unwrap();
 	let music_file_path = Path::new(&music_file);
+	let seq_duration = args.arg_seq_duration.unwrap();
 	let frame_duration = args.arg_frame_duration.unwrap();
 	let data_file = args.arg_data_file.unwrap();
 	let data_file_path = Path::new(&data_file);
@@ -208,6 +210,7 @@ fn run_new_vixen_sequence(args: Args) -> Result<ProtonReturn, Error> {
 		&admin_key_path,
 		&name,
 		&music_file_path,
+		seq_duration,
 		frame_duration,
 		&data_file_path,
 		layout_id));
@@ -220,6 +223,7 @@ fn run_new_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let name = args.arg_name.unwrap();
 	let music_file = args.arg_music_file.unwrap();
 	let music_file_path = Path::new(&music_file);
+	let seq_duration = args.arg_seq_duration.unwrap();
 	let layout_id = args.arg_layout_id;
 	let data_dao = try!(dao::DataDaoPostgres::new());
 	let fixture_dao = try!(dao::FixtureDaoPostgres::new());
@@ -237,6 +241,7 @@ fn run_new_sequence(args: Args) -> Result<ProtonReturn, Error> {
 		&admin_key_path,
 		&name,
 		&music_file_path,
+		seq_duration,
 		None::<u32>,
 		layout_id));
 	Ok(ProtonReturn::SequenceId(seqid))

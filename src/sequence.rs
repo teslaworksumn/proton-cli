@@ -23,6 +23,7 @@ pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, FD: Fixtu
     admin_key_path: P,
     name: &str,
     music_file_path: P,
+    seq_duration_ms: u32,
     frame_duration_ms: u32,
     data_file_path: P,
     layout_id: u32
@@ -63,6 +64,7 @@ pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, FD: Fixtu
             name,
             &music_file_name,
             music_duration_sec,
+            seq_duration_ms,
             Some(frame_duration_ms),
             &layout,
             num_channels
@@ -109,6 +111,7 @@ pub fn new_sequence<P: AsRef<Path>, DD: DataDao, FD: FixtureDao, LD: LayoutDao, 
     admin_key_path: P,
     name: &str,
     music_file_path: P,
+    seq_duration_ms: u32,
     frame_duration_ms: Option<u32>,
     layout_id: Option<u32>
 ) -> Result<u32, Error> {
@@ -156,6 +159,7 @@ pub fn new_sequence<P: AsRef<Path>, DD: DataDao, FD: FixtureDao, LD: LayoutDao, 
             name,
             &music_file_name,
             music_duration_sec,
+            seq_duration_ms,
             frame_duration_ms,
             &layout,
             num_channels
