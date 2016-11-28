@@ -1,9 +1,10 @@
 use std::path::Path;
 use rustc_serialize::json;
 
-use utils;
-use error::Error;
 use dao::{ChannelDao, DataDao, LayoutDao, PermissionDao, ProjectDao, SequenceDao, UserDao};
+use error::Error;
+use project_types::PlaylistData;
+use utils;
 
 
 /// Initializes a new project at root. The root must either not exist, or must
@@ -68,7 +69,7 @@ pub fn get_playlist_data<CD: ChannelDao, DD: DataDao, PD: ProjectDao, SD: Sequen
     // Check that project exists
     let project = try!(proj_dao.get_project(proj_name));
 
-    let mut playlist_data = vec![Vec::new(); project.playlist.len()];
+    let mut playlist_data = Vec::with_capacity(project.playlist.len());
 
     // Go through each sequence in the playlist
     for (i, seqid) in project.playlist.iter().enumerate() {
@@ -90,7 +91,12 @@ pub fn get_playlist_data<CD: ChannelDao, DD: DataDao, PD: ProjectDao, SD: Sequen
             seq_data[channel.channel_dmx as usize] = chan_data;
         }
 
-        playlist_data[i] = seq_data;
+        let playlist_datam = PlaylistData {
+            seqid: *seqid,
+            data: seq_data
+        };
+
+        playlist_data[i] = playlist_datam;
     }
 
     json::encode(&playlist_data).map_err(Error::JsonEncode)
