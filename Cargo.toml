@@ -21,3 +21,4 @@ tempdir = "0.*"
 
 [[bin]]
 name = "proton"
+path = "src/main.rs"
