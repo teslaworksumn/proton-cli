@@ -92,6 +92,7 @@ pub fn get_playlist_data<CD: ChannelDao, DD: DataDao, PD: ProjectDao, SD: Sequen
         let sequence_data = SequenceData {
             name: sequence.name,
             frame_dur_ms: sequence.frame_duration_ms,
+            music_file: sequence.music_file_name,
             num_frames: sequence.num_frames,
             data: seq_data
         };
