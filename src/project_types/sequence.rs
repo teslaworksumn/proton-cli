@@ -1,10 +1,7 @@
-use std::path::{Path, PathBuf};
-use std::cmp;
-
-use git2::Signature;
+use rustc_serialize::json;
 
 use error::Error;
-use utils;
+use project_types::Layout;
 
 #[derive(Debug)]
 pub struct Sequence {
@@ -15,18 +12,18 @@ pub struct Sequence {
     pub frame_duration_ms: u32,
     pub num_frames: u32,
     pub layout_id: u32,
-    pub data: Vec<Vec<u16>>, // row is channel, col is frame
 }
 
 impl Sequence {
     /// Creates a new Sequence, allowing the default value of 50ms for frame_duration_ms
     pub fn new(
-        uid: u32,
+        admin_uid: u32,
         name: &str,
-        music_file_path: &str,
+        music_file_name: &str,
         music_duration_sec: u32,
         frame_duration_ms: Option<u32>,
-        layout_id: u32 
+        layout: &Layout,
+        num_channels: u32
     ) -> Result<Sequence, Error> {
         // Defaults
         let frame_dur_ms = frame_duration_ms.unwrap_or(50);
@@ -34,45 +31,44 @@ impl Sequence {
             return Err(Error::InvalidFrameDuration(frame_dur_ms));
         }
 
-        // Make sure user has permission to create sequence
-        // Check that layout id is valid
-        // Check that music file exists
-        // Check that name isn't already taken 
-        // (useful for preventing creating multiple identical sequences accidentally)
-        // Get name of music file
-        let mf_path = Path::new(music_file_path);
-        let music_file_name = try!(utils::file_name_from_path(&mf_path));
-        // Copy music file to Music/
         // Calculate num_frames
-        let num_frames = 200;
-        // Create unique seqid
+        let num_frames_f32: f32 = (music_duration_sec as f32 * 1000_f32) / frame_dur_ms as f32;
+        let num_frames = num_frames_f32.ceil() as u32;
+
+        // Create temporary seqid (seqid will be set internally by the sequence dao)
         let seqid = 0;
-        // Get number of channels
-        let num_channels = 400; // Layout::get_num_channels(layout_id)
+
+        // Get layout id
+        let layout_id = layout.layout_id;
 
         // Create sequence
-        let mut sequence = Sequence {
+        let sequence = Sequence {
             seqid: seqid,
             name: name.to_string(),
             music_file_name: music_file_name.to_string(),
             music_duration_sec: music_duration_sec,
             frame_duration_ms: frame_dur_ms,
             num_frames: num_frames,
-            layout_id: layout_id,
-            data: vec![vec![0; num_frames as usize]; num_channels as usize]
+            layout_id: layout_id
         };
 
         Ok(sequence)
     }
 
-    pub fn update_data(&self, uid: u32, new_data: Vec<Vec<u16>>, secid: u32) -> Result<(), Error> {
-        // Only update data within the given section
-        // If sections overlap then this will overwrite the last update in the overlapping section
-        // It is up to the user to deal with overlapping sections appropriately
+    // pub fn data_as_json(&self) -> Result<json::Json, Error> {        
+    //     let json_str = try!(json::encode(&self.data).map_err(Error::JsonEncode));
+    //     // Unwrap should be safe here, since we just encoded successfully
+    //     Ok(json::Json::from_str(&json_str).unwrap())
+    // }
 
-        // Check if user has permission to update this sequence/section
-        Err(Error::TodoErr)
-    }
+    // pub fn update_data(&self, uid: u32, new_data: Vec<Vec<u16>>, secid: u32) -> Result<(), Error> {
+    //     // Only update data within the given section
+    //     // If sections overlap then this will overwrite the last update in the overlapping section
+    //     // It is up to the user to deal with overlapping sections appropriately
+
+    //     // Check if user has permission to update this sequence/section
+    //     Err(Error::TodoErr)
+    // }
 
 
 }

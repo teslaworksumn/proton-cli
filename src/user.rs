@@ -1,40 +1,49 @@
 //! This module manages project users
 use std::path::Path;
-use std::fs::File;
-use std::io::Cursor;
-use openssl::crypto::rsa::RSA as openssl_RSA;
-use openssl::crypto::hash::Type as openssl_HashType;
 
-use git2::Signature;
-
+use dao::{PermissionDao, UserDao};
 use error::Error;
-use project_types::User;
+use project_types::PermissionEnum;
 use utils;
 
+
+pub fn get_user_id<P: AsRef<Path>, UD: UserDao>(
+    user_dao: UD,
+    public_key_path: P
+) -> Result<u32, Error> {
+    let public_key_str = try!(utils::file_as_string(public_key_path.as_ref()));
+    let uid = try!(user_dao.get_user_id(&public_key_str));
+    Ok(uid)
+}
+
 /// Creates a new user for the project in the current directory.
-/// Assumes the current directory contains a Protonfile.json file.
-///
-/// 1. Read the new user's public key from the file path given
-/// 2. Add the user's name and public key to the protonfile
+/// Generates a public/private key pair for the new user
+/// and returns the public key.
 ///
 /// Impure.
-pub fn new_user<P: AsRef<Path>>(
+pub fn new_user<P: AsRef<Path>, UD: UserDao, PD: PermissionDao>(
+    user_dao: UD,
+    perm_dao: PD,
     admin_key_path: P,
-    public_key_path: P,
     name: &str
-) -> Result<(), Error> {
+) -> Result<String, Error> {
 
-    Err(Error::TodoErr)
     // See if admin has permission to add user
+    let valid_permissions = vec![PermissionEnum::Administrate];
+    let _ = try!(utils::check_valid_permission(
+        &perm_dao,
+        &user_dao,
+        admin_key_path,
+        &valid_permissions));
+
+    // Create keys
+    let (user_pub_key, user_private_key) = try!(utils::create_pub_priv_keys());
+
     // Add user
-    // Commit changes
+    let _ = try!(user_dao.add_user(name, &user_private_key, &user_pub_key));
 
-    // let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
-    // let msg = format!("Adding {} as new user", name);
-    // let pf_path = Path::new("Protonfile.json");
-    // let repo_path: Option<P> = None;
-
-    // utils::commit_file(&pf_path, repo_path, &signature, &msg)
+    // Return public key
+    Ok(user_pub_key)
 }
 
 /// Removes a user from the project in the current directory
@@ -51,13 +60,5 @@ pub fn remove_user<P: AsRef<Path>>(
     // Can't remove root
     // Remove user
 
-    // Commit changes
-
-    // let signature = Signature::now("Proton Lights", "proton@teslaworks.net").unwrap();
-    // let msg = format!("Removing user {}", name);
-    // let pf_path = Path::new("Protonfile.json");
-    // let repo_path: Option<P> = None;
-
-    // utils::commit_file(&pf_path, repo_path, &signature, &msg)
 }
 

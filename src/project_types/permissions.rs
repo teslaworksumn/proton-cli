@@ -1,23 +1,14 @@
-use std::path::Path;
-use std::ascii::AsciiExt;
-
 use error::Error;
 use dao::PermissionDao;
-use utils;
+use project_types::PermissionEnum;
 
-
-#[derive(Debug, RustcDecodable, RustcEncodable)]
-pub enum PermissionEnum {
-    Administrate,
-    EditSequence,
-    EditSection,
-}
 
 #[derive(Debug, RustcDecodable, RustcEncodable)]
 pub struct Permission {
+    pub permid: u32,
     pub uid: u32,
-    pub seqid: u32,
-    pub secid: u32,
+    pub seqid: Option<u32>,
+    pub secid: Option<u32>,
     pub permission: PermissionEnum,
 }
 

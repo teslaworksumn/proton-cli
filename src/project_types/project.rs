@@ -1,5 +1,4 @@
-
-use project_types::{Sequence, User, Permission};
+use dao::LayoutDao;
 use error::Error;
 
 
@@ -14,62 +13,13 @@ pub struct Project {
 
 impl Project {
 
-    pub fn empty(name: &str, layout_id: Option<u32>) -> Result<Project, Error> {
-        // Check that layout_id is valid if given
-        // Validate name characters??
-        Err(Error::TodoErr)
-    }
+    /// Adds a sequence to the project's playlist
+    pub fn add_sequence(&self, seqid: u32) -> Result<Project, Error> {
 
-    /// Finds a sequence by its id
-    /// Returns the sequence if found, else None
-    pub fn find_sequence_by_seqid(&self, seqid: u32) -> Option<&Sequence> {
-        None
-    }
+        // Check if seqid exists?? Assume it is checked earlier for now
 
-    /// Finds a user with the given id
-    /// Returns the user if found, else None
-    fn find_user_by_uid(&self, uid: u32) -> Option<&User> {
-        None
-    }
-
-    /// Adds a user to the users table
-    pub fn add_user(&self, name: &str, pub_key: &str) -> Result<(), Error> {
-        let user = try!(User::new(name, pub_key));
-        // Insert into users table
-        Err(Error::TodoErr)
-    }
-
-    /// Removes a user from the users table
-    pub fn remove_user(&self, uid: u32) -> Result<Project, Error> {
-        // Update table, drop row where uid = uid
-        // Return different error if UserNotFound
-        Err(Error::TodoErr)
-    }
-
-    /// Adds a sequence to the project
-    pub fn add_sequence(
-        &self,
-        uid: u32,
-        name: &str,
-        music_file_name: &str,
-        music_duration_sec: u32,
-        frame_duration_ms: Option<u32>
-    ) -> Result<Project, Error> {
-
-        let sequence = try!(Sequence::new(
-            uid,
-            name,
-            music_file_name,
-            music_duration_sec,
-            frame_duration_ms,
-            self.layout_id
-        ));
-
-        // Check if duplicate name (part of error returned by Sequence::new)
-
-        // Add sequence to playlist
         let mut new_project = self.clone();
-        new_project.playlist.push(sequence.seqid);
+        new_project.playlist.push(seqid);
         Ok(new_project)
     }
 

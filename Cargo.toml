@@ -1,6 +1,6 @@
 [package]
 name = "proton_cli"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Ramith Jayatilleka <ramith.jayatilleka@gmail.com>, Ryan Fredlund <fredl027@umn.edu>, Kayla Engelstad <engel813@umn.edu> , Vlad Kuksenko <Kukse004@umn.edu>"]
 description = "Command line utility for managing ProtonLights projects."
 homepage = "https://github.com/ProtonLights/cli"
@@ -9,16 +9,15 @@ readme = "README.md"
 license = "MIT"
 
 [dependencies]
-docopt = "0.6.86"
-openssl = "~0.7"
-sfml = "0.11.2"
-git2 = "0.4.2"
-rustc-serialize = "0.3.18"
-regex = "0.1.71"
-postgres = "0.12.0"
+docopt = "0.6.*"
+openssl = "0.*"
+sfml = "0.*"
+rustc-serialize = "0.3.*"
+regex = "0.*"
+postgres = {version="0.*", features = ["with-rustc-serialize"]}
 
 [dev-dependencies]
-tempdir = "0.3.4"
+tempdir = "0.*"
 
 [[bin]]
 name = "proton"

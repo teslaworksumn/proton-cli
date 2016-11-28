@@ -1,23 +1,13 @@
 
 use std::path::Path;
-use std::ascii::AsciiExt;
-
-use git2::Signature;
 
 use error::Error;
-use project_types::{User, Permission};
-use utils;
-use user;
-use dao::{PermissionDao, UserDao};
+use project_types::Permission;
+use dao::PermissionDao;
 
 
-pub fn get_permissions<P: AsRef<Path>, PD: PermissionDao, UD: UserDao> (
-    pdao: PD,
-    udao: UD,
-    user_key_path: P
+pub fn get_permissions<P: AsRef<Path>, PD: PermissionDao> (pdao: PD, uid: u32
 ) -> Result<Vec<Permission>, Error> {
-
-    let uid = try!(udao.id_user(&user_key_path));
     pdao.get_all_permissions(uid)
 }
 
@@ -29,7 +19,7 @@ pub fn set_permission<P: AsRef<Path>> (
     target_sequence: Option<u32>,
     target_section: Option<u32>
 ) -> Result<(), Error> {
-    let admin_uid = try!(utils::get_uid_from_key(&admin_key_path));
+    //let admin_uid = try!(utils::get_uid_from_key(&admin_key_path));
 
     Err(Error::TodoErr)
     
@@ -39,14 +29,5 @@ pub fn set_permission<P: AsRef<Path>> (
     // Set permissions
     // Commit changes
     
-    // let signature = Signature::now(&auth_user.name, "proton@teslaworks.net").unwrap();
-    // let change_type = match add {
-    //     true => "granting",
-    //     false => "revoking",
-    // };
-    // let msg = format!("Admin '{}' {} permission '{:?}' to/from user {}",
-    //     auth_user.name, change_type, perm, target_username);
-
-    // utils::commit_all(None::<&Path>, &signature, &msg)
 }
 

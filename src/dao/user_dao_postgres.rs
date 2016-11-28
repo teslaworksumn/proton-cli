@@ -1,51 +1,73 @@
 use std::path::Path;
 
-use project_types::User;
-use dao::UserDao;
+use dao::{UserDao, UserDaoPostgres};
 use error::Error;
+use project_types::User;
 
-pub struct UserDaoPostgres{}
 
 impl UserDao for UserDaoPostgres {
 
-    fn get_user(&self, uid: u32) -> Result<User, Error> {
-        Err(Error::TodoErr)
+    fn add_initial_user(&self, proj_name: &str, private_key: &str, public_key: &str) -> Result<u32, Error> {
+        let root_uname = format!("{}_{}", "root", proj_name);
+        self.add_user(&root_uname, private_key, public_key)
     }
 
-    /// Identifies a user by their private SSH key by finding the
-    /// corresponding public key in the project. This private key
+    fn add_user(&self, name: &str, private_key: &str, public_key: &str) -> Result<u32, Error> {
+        let statement = "INSERT INTO users (name, private_key, public_key) VALUES ($1, $2, $3)";
+        let private_string = private_key.trim_matches('\n');
+        let public_string = public_key.trim_matches('\n');
+        let _ = try!(
+            self.conn.execute(
+                statement,
+                &[&name.to_owned(), &private_string, &public_string])
+            .map_err(Error::Postgres));
+        let uid = try!(self.get_user_id(&public_string));
+        Ok(uid)
+    }
+
+    /// Identifies a user by their public SSH key by finding the
+    /// public key in the database. This public key
     /// acts like the user's password, and should be protected.
     /// 
     /// Impure.
-    fn id_user<P: AsRef<Path>>(&self, private_key_path: P) -> Result<u32, Error> {
-        Err(Error::TodoErr)
-    //     let test_data: &[u8] = b"Testing to find private/public key pair";
+    fn get_user_id(&self, public_key: &str) -> Result<u32, Error> {
+        let public_string = public_key.trim_matches('\n');
+        let query = "SELECT uid FROM users WHERE public_key = $1";
+        let results = try!(
+            self.conn.query(query, &[&public_string])
+            .map_err(Error::Postgres));
         
-    //     let mut private_key_file = try!(File::open(&private_key_path).map_err(Error::Io));
-        
-    //     let private_key = try!(openssl_RSA::private_key_from_pem(&mut private_key_file)
-    //         .map_err(Error::Ssl));
-
-    //     let signature = try!(private_key.sign(openssl_HashType::MD5, &test_data)
-    //         .map_err(Error::Ssl));
-
-    //     let users = get_all_users();
-    //     for user in project.users {
-    //         let user_key = user.public_key.clone();
-    //         let mut pub_key_readable = Cursor::new(&user_key);
-
-    //         let rsa_public = try!(openssl_RSA::public_key_from_pem(&mut pub_key_readable)
-    //             .map_err(Error::Ssl));
-            
-    //         match rsa_public.verify(openssl_HashType::MD5, &test_data, &signature) {
-    //             Ok(valid) => if valid {
-    //                 return Ok(user)
-    //             },
-    //             Err(e) => return Err(Error::Ssl(e)),
-    //         };
-    //     };
-        
-    //     Err(Error::UserNotFound)
+        match results.len() {
+            0 => Err(Error::AdminNotFound),
+            1 => {
+                let row = results.get(0);
+                let uid: i32 = row.get(0);
+                Ok(uid as u32)
+            },
+            x => Err(Error::InvalidNumResults(x)),
+        }
     }
     
+    fn get_user(&self, uid: u32) -> Result<User, Error> {
+        let query = "SELECT name, public_key FROM users WHERE uid = $1";
+        let uid_i32 = uid as i32;
+        let results = try!(
+            self.conn.query(query, &[&uid_i32])
+            .map_err(Error::Postgres));
+        match results.len() {
+            0 => Err(Error::UserNotFound),
+            1 => {
+                let row = results.get(0);
+                let name: String = row.get(0);
+                let public_key: String = row.get(1);
+                Ok(User {
+                    uid: uid,
+                    name: name,
+                    public_key: public_key
+                })
+            },
+            x => Err(Error::InvalidNumResults(x)),
+        }
+    }
+
 }
