@@ -3,7 +3,7 @@ use rustc_serialize::json;
 
 use dao::{ChannelDao, DataDao, LayoutDao, PermissionDao, ProjectDao, SequenceDao, UserDao};
 use error::Error;
-use project_types::PlaylistData;
+use project_types::SequenceData;
 use utils;
 
 
@@ -56,8 +56,6 @@ pub fn get_layout_id<PD: ProjectDao>(
 }
 
 /// Gets all sequence data in the project's playlist
-/// Returns as JSON array, each index corresponding to a DMX channel
-/// The value at index 0 will always be 0, since DMX starts at 1
 pub fn get_playlist_data<CD: ChannelDao, DD: DataDao, PD: ProjectDao, SD: SequenceDao>(
     chan_dao: &CD,
     data_dao: &DD,
@@ -91,12 +89,14 @@ pub fn get_playlist_data<CD: ChannelDao, DD: DataDao, PD: ProjectDao, SD: Sequen
             seq_data[channel.channel_dmx as usize] = chan_data;
         }
 
-        let playlist_datam = PlaylistData {
-            seqid: *seqid,
+        let sequence_data = SequenceData {
+            name: sequence.name,
+            frame_dur_ms: sequence.frame_duration_ms,
+            num_frames: sequence.num_frames,
             data: seq_data
         };
 
-        playlist_data[i] = playlist_datam;
+        playlist_data.push(sequence_data);
     }
 
     json::encode(&playlist_data).map_err(Error::JsonEncode)
