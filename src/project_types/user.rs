@@ -6,8 +6,6 @@
 pub struct User {
     pub uid: u32,
     pub name: String,
-    pub uid: u32,
-    pub name: String,
     pub public_key: String,
 }
 

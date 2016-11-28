@@ -8,7 +8,6 @@ use project_types::{Channel, Fixture};
 #[allow(non_snake_case)]
 pub struct FileLayout {
     pub layoutName: String,
-    pub layoutName: String,
     pub channels: Vec<FileLayoutRow>,
 }
 

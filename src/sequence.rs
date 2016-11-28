@@ -203,34 +203,6 @@ pub fn add_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, SD: Seq
     project_dao.update_project(new_project)
 }
 
-/// Adds the sequence with the given name to the project's playlist
-pub fn add_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, SD: SequenceDao, UD: UserDao>(
-    perm_dao: &PMD,
-    project_dao: &PTD,
-    seq_dao: &SD,
-    user_dao: &UD,
-    admin_key_path: P,
-    proj_name: &str,
-    seqid: u32
-) -> Result<(), Error> {
-    
-    // Check that the admin has sufficient privileges
-    let valid_permissions = vec![PermissionEnum::Administrate, PermissionEnum::EditSequence(seqid)];
-    let _ = try!(utils::check_valid_permission(
-        perm_dao,
-        user_dao,
-        admin_key_path,
-        &valid_permissions));
-
-    // Check that seqid exists
-    let _ = try!(seq_dao.get_sequence(seqid));
-
-    // Add sequence to project's playlist
-    let project = try!(project_dao.get_project(proj_name));
-    let new_project = try!(project.add_sequence(seqid));
-    project_dao.update_project(new_project)
-}
-
 /// Removes the sequence with the given name from the project
 /// and deletes its files
 pub fn remove_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, UD: UserDao>(
@@ -257,26 +229,6 @@ pub fn remove_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, UD: 
 
     // TODO: Remove sequence's music file if not used elsewhere in playlist
 
-}
-
-/// Deletes sequence from storage
-pub fn delete_sequence<P: AsRef<Path>, PD: PermissionDao, UD: UserDao, SD: SequenceDao> (
-    perm_dao: &PD,
-    user_dao: &UD,
-    seq_dao: &SD,
-    admin_key_path: P,
-    seqid: u32
-) -> Result<(), Error> {
-
-    // Check admin permission
-    // Check that sequence exists
-    // Try to delete sequence
-    Err(Error::TodoErr)
-}
-
-/// Retrieves the given sequence
-pub fn get_sequence<SD: SequenceDao>(seq_dao: &SD, seqid: u32) -> Result<Sequence, Error> {
-    seq_dao.get_sequence(seqid)
 }
 
 /// Deletes sequence from storage
