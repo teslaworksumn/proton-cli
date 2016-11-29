@@ -29,6 +29,7 @@ Usage:
   ./proton get-playlist-data <proj-name>
   ./proton set-sequence-layout <admin-key> <seqid> <layout-id>
   ./proton new-layout <layout-file>
+  ./proton patch-layout <admin-key> <layout-id> <patch-file>
   ./proton new-section <admin-key> <t_start> <t_end> <seqid> <fixid>..
   ./proton get-user-id <public-key>
   ./proton get-layout-id <proj-name>
@@ -45,24 +46,25 @@ Options:
 
 #[derive(Debug, RustcDecodable)]
 struct Args {
-	arg_root_public_key: Option<String>,
-	arg_public_key: Option<String>,
 	arg_admin_key: Option<String>,
-	arg_name: Option<String>,
-	arg_proj_name: Option<String>,
-	arg_uid: Option<u32>,
-	arg_seqid: Option<u32>,
-	arg_seq_duration: Option<u32>,
+	arg_data_file: Option<String>,
 	arg_fixid: Option<u32>,
+	arg_frame_duration: Option<u32>,
 	arg_layout_id: Option<u32>,
 	arg_layout_file: Option<String>,
 	arg_music_file: Option<String>,
-	arg_data_file: Option<String>,
+	arg_name: Option<String>,
+	arg_patch_file: Option<String>,
+	arg_proj_name: Option<String>,
+	arg_public_key: Option<String>,
+	arg_root_public_key: Option<String>,
+	arg_seqid: Option<u32>,
+	arg_seq_duration: Option<u32>,
 	arg_t_start: Option<u32>,
 	arg_t_end: Option<u32>,
 	arg_target_sequence: Option<u32>,
 	arg_target_section: Option<u32>,
-	arg_frame_duration: Option<u32>,
+	arg_uid: Option<u32>,
 }
 
 enum ProtonReturn {
@@ -97,6 +99,7 @@ fn main() {
 		"get-sequence" => run_get_sequence,
 		"set-sequence-layout" => run_set_sequence_layout,
 		"new-layout" => run_new_layout,
+		"patch-layout" => run_patch_layout,
 		"new-section" => run_new_section,
 		"list-permissions" => run_list_permissions,
 		"set-permission" => run_set_permission,
@@ -342,6 +345,32 @@ fn run_new_layout(args: Args) -> Result<ProtonReturn, Error> {
 		&user_dao,
 		&layout_file_path));
 	Ok(ProtonReturn::LayoutId(layout_id))
+}
+
+fn run_patch_layout(args: Args) -> Result<ProtonReturn, Error> {
+	let admin_key = args.arg_admin_key.unwrap();
+	let admin_key_path = Path::new(&admin_key);
+	let layout_id = args.arg_layout_id.unwrap();
+	let patch_file = args.arg_patch_file.unwrap();
+	let patch_file_path = Path::new(&patch_file);
+
+	let channel_dao = try!(dao::ChannelDaoPostgres::new());
+	let fixture_dao = try!(dao::FixtureDaoPostgres::new());
+	let layout_dao = try!(dao::LayoutDaoPostgres::new());
+	let permission_dao = try!(dao::PermissionDaoPostgres::new());
+	let user_dao = try!(dao::UserDaoPostgres::new());
+
+	try!(proton_cli::patch_layout(
+		&channel_dao,
+		&fixture_dao,
+		&layout_dao,
+		&permission_dao,
+		&user_dao,
+		&admin_key_path,
+		layout_id,
+		&patch_file_path));
+	
+	Ok(ProtonReturn::NoReturn)	
 }
 
 fn run_list_permissions(args: Args) -> Result<ProtonReturn, Error> {

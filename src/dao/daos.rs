@@ -57,6 +57,12 @@ pub trait LayoutDao {
     fn get_layout(&self, layoutid: u32) -> Result<Layout, Error>;
     fn get_last_layout(&self, name: &str) -> Result<Layout, Error>;
     fn layout_exists(&self, layoutid: u32) -> Result<bool, Error>;
+    fn patch_channel(
+        &self,
+        layoutid: u32,
+        channel_internal: u32,
+        channel_dmx: u32
+    ) -> Result<u64, Error>;
 }
 
 pub trait PermissionDao {
