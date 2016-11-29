@@ -9,6 +9,7 @@ pub trait ChannelDao {
         primary_num: Option<u32>,
         secondary_num: Option<u32>,
         color: &str,
+        channel_internal: u32,
         channel_dmx: u32,
         location: (Option<i32>, Option<i32>, Option<i32>),
         rotation: (Option<i32>, Option<i32>, Option<i32>)
