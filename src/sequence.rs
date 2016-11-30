@@ -53,7 +53,7 @@ pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, FD: Fixtu
     let music_duration_sec = try!(get_music_duration_sec(&music_file_path));
     
     // Try to copy music file into music directory
-    try!(copy_music_file(&music_file_path, &music_file_name, "Music"));
+    //try!(copy_music_file(&music_file_path, &music_file_name, "Music"));
 
     // TODO: revert music file copy if rest fails
 
