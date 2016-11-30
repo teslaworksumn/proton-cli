@@ -1,0 +1,877 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 9.5.5
+-- Dumped by pg_dump version 9.5.5
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+--
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+
+--
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
+SET search_path = public, pg_catalog;
+
+--
+-- Name: color; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE color AS ENUM (
+    'red',
+    'green',
+    'blue',
+    'truewhite',
+    'warmwhite'
+);
+
+
+ALTER TYPE color OWNER TO postgres;
+
+--
+-- Name: perm_enum; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE perm_enum AS ENUM (
+    'administrate',
+    'editsequence',
+    'editsection'
+);
+
+
+ALTER TYPE perm_enum OWNER TO postgres;
+
+--
+-- Name: get_internal_chan_id(integer, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION get_internal_chan_id(lid integer, chan_internal integer) RETURNS integer
+    LANGUAGE sql IMMUTABLE
+    AS $$
+SELECT chanid FROM layouts l INNER JOIN fixtures f ON f.fixid = ANY(l.fixtures) INNER JOIN channels c ON c.chanid = ANY(f.channels) WHERE l.layoutid = lid AND c.channel_internal = chan_internal
+$$;
+
+
+ALTER FUNCTION public.get_internal_chan_id(lid integer, chan_internal integer) OWNER TO postgres;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- Name: channel_data; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE channel_data (
+    dataid integer NOT NULL,
+    chanid integer NOT NULL,
+    seqid integer NOT NULL,
+    data integer[] NOT NULL,
+    CONSTRAINT pos_chanid CHECK ((chanid >= 0)),
+    CONSTRAINT pos_seqid CHECK ((seqid >= 0))
+);
+
+
+ALTER TABLE channel_data OWNER TO postgres;
+
+--
+-- Name: channel_data_dataid_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE channel_data_dataid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE channel_data_dataid_seq OWNER TO postgres;
+
+--
+-- Name: channel_data_dataid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE channel_data_dataid_seq OWNED BY channel_data.dataid;
+
+
+--
+-- Name: channels; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE channels (
+    chanid integer NOT NULL,
+    name character varying(40),
+    primary_num integer,
+    secondary_num integer,
+    color character varying(16) NOT NULL,
+    channel_dmx integer NOT NULL,
+    location_x integer,
+    location_y integer,
+    location_z integer,
+    rotation_a integer,
+    rotation_b integer,
+    rotation_c integer,
+    channel_internal integer NOT NULL,
+    CONSTRAINT pos_channel_dmx CHECK ((channel_dmx > 0)),
+    CONSTRAINT pos_channel_internal CHECK ((channel_internal > 0))
+);
+
+
+ALTER TABLE channels OWNER TO postgres;
+
+--
+-- Name: channels_chanid_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE channels_chanid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE channels_chanid_seq OWNER TO postgres;
+
+--
+-- Name: channels_chanid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE channels_chanid_seq OWNED BY channels.chanid;
+
+
+--
+-- Name: fixtures; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE fixtures (
+    fixid integer NOT NULL,
+    name character varying(40) NOT NULL,
+    location_x integer NOT NULL,
+    location_y integer NOT NULL,
+    location_z integer NOT NULL,
+    rotation_a integer NOT NULL,
+    rotation_b integer NOT NULL,
+    rotation_c integer NOT NULL,
+    channels integer[] NOT NULL,
+    CONSTRAINT channels_not_empty CHECK ((array_length(channels, 1) > 0))
+);
+
+
+ALTER TABLE fixtures OWNER TO postgres;
+
+--
+-- Name: fixtures_fixid_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE fixtures_fixid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE fixtures_fixid_seq OWNER TO postgres;
+
+--
+-- Name: fixtures_fixid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE fixtures_fixid_seq OWNED BY fixtures.fixid;
+
+
+--
+-- Name: layouts; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE layouts (
+    layoutid integer NOT NULL,
+    name character varying(64) NOT NULL,
+    fixtures integer[] NOT NULL,
+    CONSTRAINT fixtures_not_empty CHECK ((array_length(fixtures, 1) > 0))
+);
+
+
+ALTER TABLE layouts OWNER TO postgres;
+
+--
+-- Name: layouts_layoutid_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE layouts_layoutid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE layouts_layoutid_seq OWNER TO postgres;
+
+--
+-- Name: layouts_layoutid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE layouts_layoutid_seq OWNED BY layouts.layoutid;
+
+
+--
+-- Name: permissions; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE permissions (
+    permid integer NOT NULL,
+    uid integer NOT NULL,
+    seqid integer,
+    secid integer,
+    permission character varying(16) NOT NULL,
+    CONSTRAINT pos_secid CHECK ((secid >= 0)),
+    CONSTRAINT pos_seqid CHECK ((seqid >= 0)),
+    CONSTRAINT pos_uid CHECK ((uid >= 0))
+);
+
+
+ALTER TABLE permissions OWNER TO postgres;
+
+--
+-- Name: permissions_permid_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE permissions_permid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE permissions_permid_seq OWNER TO postgres;
+
+--
+-- Name: permissions_permid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE permissions_permid_seq OWNED BY permissions.permid;
+
+
+--
+-- Name: projects; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE projects (
+    name character varying(40) NOT NULL,
+    playlist integer[] NOT NULL,
+    layoutid integer NOT NULL,
+    CONSTRAINT pos_layout_id CHECK ((layoutid >= 0))
+);
+
+
+ALTER TABLE projects OWNER TO postgres;
+
+--
+-- Name: sections; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE sections (
+    secid integer NOT NULL,
+    seqid integer NOT NULL,
+    t_start integer NOT NULL,
+    t_end integer NOT NULL,
+    fixtures integer[] NOT NULL,
+    CONSTRAINT fixtures_not_empty CHECK ((array_length(fixtures, 1) > 0)),
+    CONSTRAINT pos_seq_id CHECK ((seqid >= 0)),
+    CONSTRAINT pos_t_start CHECK ((t_start >= 0)),
+    CONSTRAINT start_after_end CHECK ((t_end >= t_start))
+);
+
+
+ALTER TABLE sections OWNER TO postgres;
+
+--
+-- Name: sections_secid_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE sections_secid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE sections_secid_seq OWNER TO postgres;
+
+--
+-- Name: sections_secid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE sections_secid_seq OWNED BY sections.secid;
+
+
+--
+-- Name: sequences; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE sequences (
+    seqid integer NOT NULL,
+    name character varying(64) NOT NULL,
+    music_file_name character varying(64) NOT NULL,
+    music_dur_sec integer NOT NULL,
+    frame_dur_ms integer NOT NULL,
+    num_frames integer NOT NULL,
+    layout_id integer NOT NULL,
+    CONSTRAINT pos_frame_dur CHECK ((frame_dur_ms > 0)),
+    CONSTRAINT pos_layout_id CHECK ((layout_id > 0)),
+    CONSTRAINT pos_music_dur CHECK ((music_dur_sec > 0)),
+    CONSTRAINT pos_num_frames CHECK ((num_frames > 0))
+);
+
+
+ALTER TABLE sequences OWNER TO postgres;
+
+--
+-- Name: sequences_seqid_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE sequences_seqid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE sequences_seqid_seq OWNER TO postgres;
+
+--
+-- Name: sequences_seqid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE sequences_seqid_seq OWNED BY sequences.seqid;
+
+
+--
+-- Name: users; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE users (
+    uid integer NOT NULL,
+    name character varying(64) NOT NULL,
+    public_key character varying(1720) NOT NULL,
+    private_key character varying(1720) NOT NULL
+);
+
+
+ALTER TABLE users OWNER TO postgres;
+
+--
+-- Name: users_uid_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE users_uid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE users_uid_seq OWNER TO postgres;
+
+--
+-- Name: users_uid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE users_uid_seq OWNED BY users.uid;
+
+
+--
+-- Name: dataid; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY channel_data ALTER COLUMN dataid SET DEFAULT nextval('channel_data_dataid_seq'::regclass);
+
+
+--
+-- Name: chanid; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY channels ALTER COLUMN chanid SET DEFAULT nextval('channels_chanid_seq'::regclass);
+
+
+--
+-- Name: fixid; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY fixtures ALTER COLUMN fixid SET DEFAULT nextval('fixtures_fixid_seq'::regclass);
+
+
+--
+-- Name: layoutid; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY layouts ALTER COLUMN layoutid SET DEFAULT nextval('layouts_layoutid_seq'::regclass);
+
+
+--
+-- Name: permid; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY permissions ALTER COLUMN permid SET DEFAULT nextval('permissions_permid_seq'::regclass);
+
+
+--
+-- Name: secid; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY sections ALTER COLUMN secid SET DEFAULT nextval('sections_secid_seq'::regclass);
+
+
+--
+-- Name: seqid; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY sequences ALTER COLUMN seqid SET DEFAULT nextval('sequences_seqid_seq'::regclass);
+
+
+--
+-- Name: uid; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY users ALTER COLUMN uid SET DEFAULT nextval('users_uid_seq'::regclass);
+
+
+--
+-- Data for Name: channel_data; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY channel_data (dataid, chanid, seqid, data) FROM stdin;
+\.
+
+
+--
+-- Name: channel_data_dataid_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('channel_data_dataid_seq', 1, false);
+
+
+--
+-- Data for Name: channels; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY channels (chanid, name, primary_num, secondary_num, color, channel_dmx, location_x, location_y, location_z, rotation_a, rotation_b, rotation_c, channel_internal) FROM stdin;
+\.
+
+
+--
+-- Name: channels_chanid_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('channels_chanid_seq', 1, false);
+
+
+--
+-- Data for Name: fixtures; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY fixtures (fixid, name, location_x, location_y, location_z, rotation_a, rotation_b, rotation_c, channels) FROM stdin;
+\.
+
+
+--
+-- Name: fixtures_fixid_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('fixtures_fixid_seq', 1, false);
+
+
+--
+-- Data for Name: layouts; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY layouts (layoutid, name, fixtures) FROM stdin;
+\.
+
+
+--
+-- Name: layouts_layoutid_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('layouts_layoutid_seq', 1, false);
+
+
+--
+-- Data for Name: permissions; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY permissions (permid, uid, seqid, secid, permission) FROM stdin;
+\.
+
+
+--
+-- Name: permissions_permid_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('permissions_permid_seq', 1, false);
+
+
+--
+-- Data for Name: projects; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY projects (name, playlist, layoutid) FROM stdin;
+\.
+
+
+--
+-- Data for Name: sections; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY sections (secid, seqid, t_start, t_end, fixtures) FROM stdin;
+\.
+
+
+--
+-- Name: sections_secid_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('sections_secid_seq', 1, false);
+
+
+--
+-- Data for Name: sequences; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY sequences (seqid, name, music_file_name, music_dur_sec, frame_dur_ms, num_frames, layout_id) FROM stdin;
+\.
+
+
+--
+-- Name: sequences_seqid_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('sequences_seqid_seq', 1, false);
+
+
+--
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY users (uid, name, public_key, private_key) FROM stdin;
+\.
+
+
+--
+-- Name: users_uid_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('users_uid_seq', 1, false);
+
+
+--
+-- Name: channel_data_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY channel_data
+    ADD CONSTRAINT channel_data_pkey PRIMARY KEY (dataid);
+
+
+--
+-- Name: channels_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY channels
+    ADD CONSTRAINT channels_pkey PRIMARY KEY (chanid);
+
+
+--
+-- Name: fixtures_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY fixtures
+    ADD CONSTRAINT fixtures_pkey PRIMARY KEY (fixid);
+
+
+--
+-- Name: layout_name_unique; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY layouts
+    ADD CONSTRAINT layout_name_unique UNIQUE (name);
+
+
+--
+-- Name: layouts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY layouts
+    ADD CONSTRAINT layouts_pkey PRIMARY KEY (layoutid);
+
+
+--
+-- Name: name_unique; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY fixtures
+    ADD CONSTRAINT name_unique UNIQUE (name);
+
+
+--
+-- Name: permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY permissions
+    ADD CONSTRAINT permissions_pkey PRIMARY KEY (permid);
+
+
+--
+-- Name: projects_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY projects
+    ADD CONSTRAINT projects_pkey PRIMARY KEY (name);
+
+
+--
+-- Name: sections_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY sections
+    ADD CONSTRAINT sections_pkey PRIMARY KEY (secid);
+
+
+--
+-- Name: sequences_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY sequences
+    ADD CONSTRAINT sequences_pkey PRIMARY KEY (seqid);
+
+
+--
+-- Name: unique_name; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY users
+    ADD CONSTRAINT unique_name UNIQUE (name);
+
+
+--
+-- Name: users_name_public_key_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY users
+    ADD CONSTRAINT users_name_public_key_key UNIQUE (name, public_key);
+
+
+--
+-- Name: users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (uid);
+
+
+--
+-- Name: public; Type: ACL; Schema: -; Owner: postgres
+--
+
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM postgres;
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO PUBLIC;
+
+
+--
+-- Name: channel_data; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE channel_data FROM PUBLIC;
+REVOKE ALL ON TABLE channel_data FROM postgres;
+GRANT ALL ON TABLE channel_data TO postgres;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE channel_data TO proton;
+
+
+--
+-- Name: channel_data_dataid_seq; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE channel_data_dataid_seq FROM PUBLIC;
+REVOKE ALL ON SEQUENCE channel_data_dataid_seq FROM postgres;
+GRANT ALL ON SEQUENCE channel_data_dataid_seq TO postgres;
+GRANT ALL ON SEQUENCE channel_data_dataid_seq TO proton;
+
+
+--
+-- Name: channels; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE channels FROM PUBLIC;
+REVOKE ALL ON TABLE channels FROM postgres;
+GRANT ALL ON TABLE channels TO postgres;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE channels TO proton;
+
+
+--
+-- Name: channels_chanid_seq; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE channels_chanid_seq FROM PUBLIC;
+REVOKE ALL ON SEQUENCE channels_chanid_seq FROM postgres;
+GRANT ALL ON SEQUENCE channels_chanid_seq TO postgres;
+GRANT USAGE ON SEQUENCE channels_chanid_seq TO proton;
+
+
+--
+-- Name: fixtures; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE fixtures FROM PUBLIC;
+REVOKE ALL ON TABLE fixtures FROM postgres;
+GRANT ALL ON TABLE fixtures TO postgres;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE fixtures TO proton;
+
+
+--
+-- Name: fixtures_fixid_seq; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE fixtures_fixid_seq FROM PUBLIC;
+REVOKE ALL ON SEQUENCE fixtures_fixid_seq FROM postgres;
+GRANT ALL ON SEQUENCE fixtures_fixid_seq TO postgres;
+GRANT USAGE ON SEQUENCE fixtures_fixid_seq TO proton;
+
+
+--
+-- Name: layouts; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE layouts FROM PUBLIC;
+REVOKE ALL ON TABLE layouts FROM postgres;
+GRANT ALL ON TABLE layouts TO postgres;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE layouts TO proton;
+
+
+--
+-- Name: layouts_layoutid_seq; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE layouts_layoutid_seq FROM PUBLIC;
+REVOKE ALL ON SEQUENCE layouts_layoutid_seq FROM postgres;
+GRANT ALL ON SEQUENCE layouts_layoutid_seq TO postgres;
+GRANT USAGE ON SEQUENCE layouts_layoutid_seq TO proton;
+
+
+--
+-- Name: permissions; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE permissions FROM PUBLIC;
+REVOKE ALL ON TABLE permissions FROM postgres;
+GRANT ALL ON TABLE permissions TO postgres;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE permissions TO proton;
+
+
+--
+-- Name: permissions_permid_seq; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE permissions_permid_seq FROM PUBLIC;
+REVOKE ALL ON SEQUENCE permissions_permid_seq FROM postgres;
+GRANT ALL ON SEQUENCE permissions_permid_seq TO postgres;
+GRANT USAGE ON SEQUENCE permissions_permid_seq TO proton;
+
+
+--
+-- Name: projects; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE projects FROM PUBLIC;
+REVOKE ALL ON TABLE projects FROM postgres;
+GRANT ALL ON TABLE projects TO postgres;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE projects TO proton;
+
+
+--
+-- Name: sections; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE sections FROM PUBLIC;
+REVOKE ALL ON TABLE sections FROM postgres;
+GRANT ALL ON TABLE sections TO postgres;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE sections TO proton;
+
+
+--
+-- Name: sections_secid_seq; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE sections_secid_seq FROM PUBLIC;
+REVOKE ALL ON SEQUENCE sections_secid_seq FROM postgres;
+GRANT ALL ON SEQUENCE sections_secid_seq TO postgres;
+GRANT USAGE ON SEQUENCE sections_secid_seq TO proton;
+
+
+--
+-- Name: sequences; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE sequences FROM PUBLIC;
+REVOKE ALL ON TABLE sequences FROM postgres;
+GRANT ALL ON TABLE sequences TO postgres;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE sequences TO proton;
+
+
+--
+-- Name: sequences_seqid_seq; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE sequences_seqid_seq FROM PUBLIC;
+REVOKE ALL ON SEQUENCE sequences_seqid_seq FROM postgres;
+GRANT ALL ON SEQUENCE sequences_seqid_seq TO postgres;
+GRANT USAGE ON SEQUENCE sequences_seqid_seq TO proton;
+
+
+--
+-- Name: users; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE users FROM PUBLIC;
+REVOKE ALL ON TABLE users FROM postgres;
+GRANT ALL ON TABLE users TO postgres;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE users TO proton;
+
+
+--
+-- Name: users_uid_seq; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE users_uid_seq FROM PUBLIC;
+REVOKE ALL ON SEQUENCE users_uid_seq FROM postgres;
+GRANT ALL ON SEQUENCE users_uid_seq TO postgres;
+GRANT USAGE ON SEQUENCE users_uid_seq TO proton;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
