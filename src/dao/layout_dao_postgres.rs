@@ -29,17 +29,27 @@ impl LayoutDao for LayoutDaoPostgres {
         channel_internal: u32,
         channel_dmx: u32
     ) -> Result<u64, Error> {
-    
-        let statement = "UPDATE channels SET channel_dmx = $3 FROM \
-            (SELECT c.channel_internal,c.channel_dmx from layouts l WHERE l.layoutid = $1 \
+
+        // TODO fix this
+        let query = "SELECT chanid FROM layouts l \
                 INNER JOIN fixtures f ON f.fixid = ANY(l.fixtures) \
                 INNER JOIN channels c ON c.chanid = ANY(f.channels) \
-                WHERE c.channel_internal = $2)";
+                WHERE l.layoutid = $1 AND c.channel_internal = $2 ";
+        let results = try!(
+            self.conn.query(query, &[&(layoutid as i32), &(channel_internal as i32)])
+            .map_err(Error::Postgres));
+        if results.len() == 0 {
+            return Err(Error::LayoutNotFound(0));
+        }
+
+        let row = results.get(0);
+        let chan_id: i32 = row.get(0);
+    
+        let statement = "UPDATE channels SET channel_dmx=$1 WHERE chanid = $2";
         let rows_altered = try!(
             self.conn.execute(statement, &[
-                &(layoutid as i32),
-                &(channel_internal as i32),
-                &(channel_dmx as i32)
+                &(channel_dmx as i32),
+                &chan_id
             ])
             .map_err(Error::Postgres));
 

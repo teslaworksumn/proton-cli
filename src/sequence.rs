@@ -90,7 +90,7 @@ pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, FD: Fixtu
     // For each channel the sequence created, update its data based on vixen_data
     for chanid in chan_ids {
         let channel = try!(chan_dao.get_channel(chanid));
-        let ref chan_data = vixen_data[channel.channel_dmx as usize - 1]; // TODO, check out of bounds
+        let ref chan_data = vixen_data[channel.channel_internal as usize - 1]; // TODO, check out of bounds
         try!(data_dao.new_data(seq.seqid, chanid, chan_data));
     }
 

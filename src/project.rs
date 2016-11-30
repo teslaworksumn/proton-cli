@@ -78,6 +78,11 @@ pub fn get_playlist_data<CD: ChannelDao, DD: DataDao, PD: ProjectDao, SD: Sequen
         // Get the sequence's channel ids
         let chan_ids = try!(seq_dao.get_channel_ids(seqid.to_owned()));
 
+        if chan_ids.len() < 5 {
+            println!("Less than 5 channels");
+            panic!("Problem");
+        }
+
         // Create vector for sequence data
         // Up to 512 channels per universe, plus one because DMX starts at 1
         let mut seq_data = vec![vec![0; sequence.num_frames as usize]; 513];
