@@ -13,7 +13,9 @@ pub struct Permission {
 }
 
 impl Permission {
+    
     /// Creates a new Permission
+    #[allow(unused_variables)]
     pub fn new(
         uid: u32,
         seqid: Option<u32>,
@@ -26,6 +28,7 @@ impl Permission {
     }
 
     /// Add a user permission
+    #[allow(unused_variables)]
     pub fn add_permission<T: PermissionDao>(dao: &T, perm: Permission) -> Result<(), Error> {
         Err(Error::TodoErr)
     }

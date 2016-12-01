@@ -1,8 +1,4 @@
-use std::collections::HashMap;
-
-use dao::{ChannelDao, FixtureDao};
 use error::Error;
-use project_types::{Channel, Fixture};
 
 #[derive(Debug, RustcDecodable)]
 pub struct FilePatch {

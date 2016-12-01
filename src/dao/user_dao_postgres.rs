@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use dao::{UserDao, UserDaoPostgres};
 use error::Error;
 use project_types::User;

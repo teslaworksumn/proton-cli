@@ -1,6 +1,6 @@
 [package]
 name = "proton_cli"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["Ramith Jayatilleka <ramith.jayatilleka@gmail.com>, Ryan Fredlund <fredl027@umn.edu>, Kayla Engelstad <engel813@umn.edu> , Vlad Kuksenko <Kukse004@umn.edu>"]
 description = "Command line utility for managing ProtonLights projects."
 homepage = "https://github.com/ProtonLights/cli"

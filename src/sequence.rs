@@ -8,14 +8,13 @@ use sfml::audio::Music;
 
 use error::Error;
 use project_types::{PermissionEnum, Sequence};
-use dao::{ChannelDao, DataDao, FixtureDao, LayoutDao, PermissionDao, ProjectDao, SequenceDao, UserDao};
+use dao::{ChannelDao, DataDao, LayoutDao, PermissionDao, ProjectDao, SequenceDao, UserDao};
 use utils;
 
 /// Creates a new sequence 
-pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, FD: FixtureDao, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
+pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
     chan_dao: &CD,
     data_dao: &DD,
-    fixture_dao: &FD,
     layout_dao: &LD,
     perm_dao: &PD,
     seq_dao: &SD,
@@ -31,7 +30,7 @@ pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, FD: Fixtu
 
     // Check that the admin has sufficient privileges
     let valid_permissions = vec![PermissionEnum::Administrate];
-    let admin_uid = try!(utils::check_valid_permission(
+    let _ = try!(utils::check_valid_permission(
         perm_dao,
         user_dao,
         admin_key_path,
@@ -39,9 +38,6 @@ pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, FD: Fixtu
 
     // Get layout (also checks if it exists)
     let layout = try!(layout_dao.get_layout(layout_id));
-
-    // Get number of channels
-    let num_channels = try!(layout.get_num_channels(fixture_dao));
 
     // Make sure the music file is a valid format
     try!(validate_file_type(&music_file_path));
@@ -60,14 +56,12 @@ pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, FD: Fixtu
     // Create sequence
     let sequence = try!(
         Sequence::new(
-            admin_uid,
             name,
             &music_file_name,
             music_duration_sec,
             seq_duration_ms,
             Some(frame_duration_ms),
-            &layout,
-            num_channels
+            &layout
         )
     );
 
@@ -101,9 +95,8 @@ pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, FD: Fixtu
 /// Assumes the current directory contains a Protonfile.json file.
 ///
 /// Impure.
-pub fn new_sequence<P: AsRef<Path>, DD: DataDao, FD: FixtureDao, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
+pub fn new_sequence<P: AsRef<Path>, DD: DataDao, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
     data_dao: &DD,
-    fixture_dao: &FD,
     layout_dao: &LD,
     perm_dao: &PD,
     seq_dao: &SD,
@@ -118,7 +111,7 @@ pub fn new_sequence<P: AsRef<Path>, DD: DataDao, FD: FixtureDao, LD: LayoutDao, 
 
     // Check that the admin has sufficient privileges
     let valid_permissions = vec![PermissionEnum::Administrate];
-    let admin_uid = try!(utils::check_valid_permission(
+    let _ = try!(utils::check_valid_permission(
         perm_dao,
         user_dao,
         admin_key_path,
@@ -134,9 +127,6 @@ pub fn new_sequence<P: AsRef<Path>, DD: DataDao, FD: FixtureDao, LD: LayoutDao, 
     };
 
     let layout = try!(layout_dao.get_layout(lid));
-
-    // Get number of channels
-    let num_channels = try!(layout.get_num_channels(fixture_dao));
 
     // Make sure the music file is a valid format
     try!(validate_file_type(&music_file_path));
@@ -155,14 +145,12 @@ pub fn new_sequence<P: AsRef<Path>, DD: DataDao, FD: FixtureDao, LD: LayoutDao, 
     // Create sequence with no data
     let sequence = try!(
         Sequence::new(
-            admin_uid,
             name,
             &music_file_name,
             music_duration_sec,
             seq_duration_ms,
             frame_duration_ms,
-            &layout,
-            num_channels
+            &layout
         )
     );
 
@@ -236,6 +224,7 @@ pub fn remove_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, UD: 
 }
 
 /// Deletes sequence from storage
+#[allow(unused_variables)]
 pub fn delete_sequence<P: AsRef<Path>, PD: PermissionDao, UD: UserDao, SD: SequenceDao> (
     perm_dao: &PD,
     user_dao: &UD,

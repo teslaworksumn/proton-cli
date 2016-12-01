@@ -1,4 +1,3 @@
-use std::path::Path;
 use rustc_serialize::json;
 
 use dao::{ChannelDao, DataDao, LayoutDao, PermissionDao, ProjectDao, SequenceDao, UserDao};
@@ -70,7 +69,7 @@ pub fn get_playlist_data<CD: ChannelDao, DD: DataDao, PD: ProjectDao, SD: Sequen
     let mut playlist_data = Vec::with_capacity(project.playlist.len());
 
     // Go through each sequence in the playlist
-    for (i, seqid) in project.playlist.iter().enumerate() {
+    for seqid in project.playlist.iter() {
 
         // Get sequence
         let sequence = try!(seq_dao.get_sequence(seqid.to_owned()));

@@ -1,5 +1,3 @@
-use rustc_serialize::json;
-
 use error::Error;
 use project_types::Layout;
 
@@ -17,15 +15,14 @@ pub struct Sequence {
 impl Sequence {
     /// Creates a new Sequence, allowing the default value of 50ms for frame_duration_ms
     pub fn new(
-        admin_uid: u32,
         name: &str,
         music_file_name: &str,
         music_duration_sec: u32,
         seq_duration_ms: u32,
         frame_duration_ms: Option<u32>,
-        layout: &Layout,
-        num_channels: u32
+        layout: &Layout
     ) -> Result<Sequence, Error> {
+
         // Defaults
         let frame_dur_ms = frame_duration_ms.unwrap_or(50);
         if frame_dur_ms < 25 {

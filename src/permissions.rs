@@ -1,6 +1,4 @@
-
 use std::path::Path;
-use std::ascii::AsciiExt;
 
 use error::Error;
 use project_types::Permission;
@@ -12,6 +10,7 @@ pub fn get_permissions<P: AsRef<Path>, PD: PermissionDao> (pdao: PD, uid: u32
     pdao.get_all_permissions(uid)
 }
 
+#[allow(unused_variables)]
 pub fn set_permission<P: AsRef<Path>> (
     admin_key_path: P,
     add: bool,

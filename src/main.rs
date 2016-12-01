@@ -213,14 +213,10 @@ fn run_new_layout(args: Args) -> Result<ProtonReturn, Error> {
 	let channel_dao = try!(dao::ChannelDaoPostgres::new());
 	let fixture_dao = try!(dao::FixtureDaoPostgres::new());
 	let layout_dao = try!(dao::LayoutDaoPostgres::new());
-	let permission_dao = try!(dao::PermissionDaoPostgres::new());
-	let user_dao = try!(dao::UserDaoPostgres::new());
 	let layout_id = try!(proton_cli::new_layout(
 		&channel_dao,
 		&fixture_dao,
 		&layout_dao,
-		&permission_dao,
-		&user_dao,
 		&layout_file_path));
 	Ok(ProtonReturn::LayoutId(layout_id))
 }
@@ -242,6 +238,7 @@ fn run_new_project(args: Args) -> Result<ProtonReturn, Error> {
 	Ok(ProtonReturn::PublicKey(root_pub_key))
 }
 
+#[allow(unused_variables)]
 fn run_new_section(args: Args) -> Result<ProtonReturn, Error> {
 	Err(Error::TodoErr)
 }
@@ -255,14 +252,12 @@ fn run_new_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let seq_duration = args.arg_seq_duration.unwrap();
 	let layout_id = args.arg_layout_id;
 	let data_dao = try!(dao::DataDaoPostgres::new());
-	let fixture_dao = try!(dao::FixtureDaoPostgres::new());
 	let layout_dao = try!(dao::LayoutDaoPostgres::new());
 	let perm_dao = try!(dao::PermissionDaoPostgres::new());
 	let sequence_dao = try!(dao::SequenceDaoPostgres::new());
 	let user_dao = try!(dao::UserDaoPostgres::new());
 	let seqid = try!(proton_cli::new_sequence(
 		&data_dao,
-		&fixture_dao,
 		&layout_dao,
 		&perm_dao,
 		&user_dao,
@@ -306,7 +301,6 @@ fn run_new_vixen_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	};
 	let channel_dao = try!(dao::ChannelDaoPostgres::new());
 	let data_dao = try!(dao::DataDaoPostgres::new());
-	let fixture_dao = try!(dao::FixtureDaoPostgres::new());
 	let layout_dao = try!(dao::LayoutDaoPostgres::new());
 	let perm_dao = try!(dao::PermissionDaoPostgres::new());
 	let sequence_dao = try!(dao::SequenceDaoPostgres::new());
@@ -314,7 +308,6 @@ fn run_new_vixen_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let seqid = try!(proton_cli::new_vixen_sequence(
 		&channel_dao,
 		&data_dao,
-		&fixture_dao,
 		&layout_dao,
 		&perm_dao,
 		&user_dao,
@@ -336,15 +329,11 @@ fn run_patch_layout(args: Args) -> Result<ProtonReturn, Error> {
 	let patch_file = args.arg_patch_file.unwrap();
 	let patch_file_path = Path::new(&patch_file);
 
-	let channel_dao = try!(dao::ChannelDaoPostgres::new());
-	let fixture_dao = try!(dao::FixtureDaoPostgres::new());
 	let layout_dao = try!(dao::LayoutDaoPostgres::new());
 	let permission_dao = try!(dao::PermissionDaoPostgres::new());
 	let user_dao = try!(dao::UserDaoPostgres::new());
 
 	try!(proton_cli::patch_layout(
-		&channel_dao,
-		&fixture_dao,
 		&layout_dao,
 		&permission_dao,
 		&user_dao,
@@ -399,12 +388,16 @@ fn run_set_sequence_layout(args: Args) -> Result<ProtonReturn, Error> {
 	let admin_key_path = Path::new(&admin_key);
 	let seqid = args.arg_seqid.unwrap();
 	let layout_id = args.arg_layout_id.unwrap();
-	let seq_dao = try!(dao::SequenceDaoPostgres::new());
 	let layout_dao = try!(dao::LayoutDaoPostgres::new());
+	let perm_dao = try!(dao::PermissionDaoPostgres::new());
+	let seq_dao = try!(dao::SequenceDaoPostgres::new());
+	let user_dao = try!(dao::UserDaoPostgres::new());
 	try!(proton_cli::set_sequence_layout(
 		&admin_key_path,
 		&layout_dao,
+		&perm_dao,
 		&seq_dao,
+		&user_dao,
 		layout_id,
 		seqid));
 	Ok(ProtonReturn::NoReturn)

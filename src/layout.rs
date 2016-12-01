@@ -7,9 +7,7 @@ use project_types::{FileLayout, FilePatch, PermissionEnum};
 use utils;
 
 
-pub fn patch_layout<P: AsRef<Path>, CD: ChannelDao, FD: FixtureDao, LD: LayoutDao, PD: PermissionDao, UD: UserDao> (
-    chan_dao: &CD,
-    fix_dao: &FD,
+pub fn patch_layout<P: AsRef<Path>, LD: LayoutDao, PD: PermissionDao, UD: UserDao> (
     layout_dao: &LD,
     perm_dao: &PD,
     user_dao: &UD,
@@ -20,7 +18,7 @@ pub fn patch_layout<P: AsRef<Path>, CD: ChannelDao, FD: FixtureDao, LD: LayoutDa
 
     // Check that the admin has sufficient privileges
     let valid_permissions = vec![PermissionEnum::Administrate];
-    let admin_uid = try!(utils::check_valid_permission(
+    let _ = try!(utils::check_valid_permission(
         perm_dao,
         user_dao,
         admin_key_path,
@@ -46,12 +44,10 @@ pub fn patch_layout<P: AsRef<Path>, CD: ChannelDao, FD: FixtureDao, LD: LayoutDa
 
 
 
-pub fn new_layout<P: AsRef<Path>, CD: ChannelDao, FD: FixtureDao, LD: LayoutDao, PD: PermissionDao, UD: UserDao>(
+pub fn new_layout<P: AsRef<Path>, CD: ChannelDao, FD: FixtureDao, LD: LayoutDao>(
     chan_dao: &CD,
     fix_dao: &FD,
     layout_dao: &LD,
-    perm_dao: &PD,
-    user_dao: &UD,
     layout_path: P,
 ) -> Result<u32, Error> {
 
@@ -75,13 +71,24 @@ pub fn new_layout<P: AsRef<Path>, CD: ChannelDao, FD: FixtureDao, LD: LayoutDao,
     Ok(layout.layout_id)
 }
 
-pub fn set_sequence_layout<P: AsRef<Path>, LD: LayoutDao, SD: SequenceDao>(
+pub fn set_sequence_layout<P: AsRef<Path>, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
     admin_key_path: P,
     layout_dao: &LD,
+    perm_dao: &PD,
     sequence_dao: &SD,
+    user_dao: &UD,
     layout_id: u32,
     seqid: u32
 ) -> Result<(), Error> {
+
+    // Check that the admin has sufficient privileges
+    let valid_permissions = vec![PermissionEnum::Administrate];
+    let _ = try!(utils::check_valid_permission(
+        perm_dao,
+        user_dao,
+        admin_key_path,
+        &valid_permissions));
+
 
     // Check that sequence exists
     let sequence = try!(sequence_dao.get_sequence(seqid));

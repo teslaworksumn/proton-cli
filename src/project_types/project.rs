@@ -1,9 +1,7 @@
-use dao::LayoutDao;
 use error::Error;
 
 
 /// Structure to represent a Proton Project.
-/// This is what will be written to a Protonfile at the project root.
 #[derive(Clone, Debug, PartialEq, Eq, RustcEncodable, RustcDecodable)]
 pub struct Project {
     pub name: String,
