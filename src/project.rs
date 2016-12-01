@@ -3,18 +3,11 @@ use rustc_serialize::json;
 
 use dao::{ChannelDao, DataDao, LayoutDao, PermissionDao, ProjectDao, SequenceDao, UserDao};
 use error::Error;
-use project_types::SequenceData;
+use project_types::{Project, SequenceData};
 use utils;
 
 
-/// Initializes a new project at root. The root must either not exist, or must
-/// be an empty directory. This will
-///
-/// 1. Create the directory if it doesn't exist.
-/// 2. Create a Protonfile
-/// 3. Initialize a git repository and commit the protonfile.
-///
-/// Impure.
+/// Creates a new Proton project. Returns the public key of the root user.
 pub fn new_project<LD: LayoutDao, PMD: PermissionDao, PTD: ProjectDao, UD: UserDao>(
     layout_dao: &LD,
     perm_dao: &PMD,
@@ -41,6 +34,13 @@ pub fn new_project<LD: LayoutDao, PMD: PermissionDao, PTD: ProjectDao, UD: UserD
 
     // Return root user's public key
     Ok(root_pub_key)
+}
+
+pub fn get_project<PD: ProjectDao>(
+    proj_dao: &PD,
+    proj_name: &str
+) -> Result<Project, Error> {
+    proj_dao.get_project(proj_name)
 }
 
 pub fn get_layout_id<PD: ProjectDao>(
