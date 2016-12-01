@@ -34,7 +34,9 @@ pub fn patch_layout<P: AsRef<Path>, LD: LayoutDao, PD: PermissionDao, UD: UserDa
     // Apply patch
     for patch in patch_file.patches.iter() {
         match layout_dao.patch_channel(layout_id, patch.internalChannel, patch.dmxChannel) {
-            Ok(num_ch) => println!("Patched {} channels...", num_ch),
+            Ok(1) => {},
+            Ok(0) => println!("No channels patched. vix: {}, dmx: {}", patch.internalChannel, patch.dmxChannel),
+            Ok(num_ch) => println!("Patched {} channels.", num_ch),
             Err(e) => println!("Error: {}", e),
         }
     }
