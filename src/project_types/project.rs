@@ -11,12 +11,17 @@ pub struct Project {
 
 impl Project {
 
-    /// Adds a sequence to the project's playlist
-    pub fn add_sequence(&self, seqid: u32) -> Result<Project, Error> {
+    /// Inserts a sequence in the project's playlist at the given offset
+    pub fn insert_sequence(&self, seqid: u32, offset: u32) -> Result<Project, Error> {
+
+        // Check if offset is out of bounds
+        if offset > self.playlist.len() as u32 {
+            return Err(Error::OffsetOutOfBounds(offset, self.playlist.len() as u32));
+        }
 
         // Check if seqid exists?? Assume it is checked earlier for now
         let mut new_project = self.clone();
-        new_project.playlist.push(seqid);
+        new_project.playlist.insert(offset as usize, seqid);
 
         Ok(new_project)
     }

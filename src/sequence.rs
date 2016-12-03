@@ -168,14 +168,15 @@ pub fn new_sequence<P: AsRef<Path>, DD: DataDao, LD: LayoutDao, PD: PermissionDa
 }
 
 /// Adds the sequence with the given name to the project's playlist
-pub fn add_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, SD: SequenceDao, UD: UserDao>(
+pub fn insert_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, SD: SequenceDao, UD: UserDao>(
     perm_dao: &PMD,
     project_dao: &PTD,
     seq_dao: &SD,
     user_dao: &UD,
     admin_key_path: P,
     proj_name: &str,
-    seqid: u32
+    seqid: u32,
+    index: Option<u32>
 ) -> Result<(), Error> {
     
     // Check that the admin has sufficient privileges
@@ -189,9 +190,14 @@ pub fn add_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, SD: Seq
     // Check that seqid exists
     let _ = try!(seq_dao.get_sequence(seqid));
 
-    // Add sequence to project's playlist
+    // Get project
     let project = try!(project_dao.get_project(proj_name));
-    let new_project = try!(project.add_sequence(seqid));
+
+    // Get offset to insert at (default is end of playlist)
+    let offset = index.unwrap_or(project.playlist.len() as u32);
+
+    // Add sequence to project's playlist
+    let new_project = try!(project.insert_sequence(seqid, offset));
     project_dao.update_project(new_project)
 }
 

@@ -17,13 +17,13 @@ const USAGE: &'static str = "
 Command-line interface for Proton
 
 Usage:
-  ./proton add-sequence <admin-key> <proj-name> <seqid>
   ./proton delete-sequence <admin-key> <seqid>
   ./proton get-layout-id <proj-name>
   ./proton get-sequence <seqid>
   ./proton get-project <proj-name>
   ./proton get-playlist-data <proj-name>
   ./proton get-user-id <public-key>
+  ./proton insert-sequence <admin-key> <proj-name> <seqid> [<index>]
   ./proton list-permissions <uid>
   ./proton new-layout <layout-file>
   ./proton new-project <name> <layout-id>
@@ -51,6 +51,7 @@ struct Args {
 	arg_data_file: Option<String>,
 	arg_fixid: Option<u32>,
 	arg_frame_duration: Option<u32>,
+	arg_index: Option<u32>,
 	arg_layout_id: Option<u32>,
 	arg_layout_file: Option<String>,
 	arg_music_file: Option<String>,
@@ -87,13 +88,13 @@ fn main() {
 	// Below unwrap()'s are safe within Docopt's usage rules
 
 	let command: fn(Args) -> Result<ProtonReturn, Error> = match env::args().nth(1).unwrap().as_ref() {
-		"add-sequence" => run_add_sequence,
 		"delete-sequence" => run_delete_sequence,
 		"get-layout-id" => run_get_layout_id,
 		"get-playlist-data" => run_get_playlist_data,
 		"get-project" => run_get_project,
 		"get-sequence" => run_get_sequence,
 		"get_user_id" => run_get_user_id,
+		"insert-sequence" => run_insert_sequence,
 		"list-permissions" => run_list_permissions,
 		"new-layout" => run_new_layout,
 		"new-project" => run_new_project,
@@ -125,16 +126,19 @@ fn main() {
 	};
 }
 
-fn run_add_sequence(args: Args) -> Result<ProtonReturn, Error> {
+fn run_insert_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let admin_key = args.arg_admin_key.unwrap();
 	let admin_key_path = Path::new(&admin_key);
 	let proj_name = args.arg_proj_name.unwrap();
 	let seqid = args.arg_seqid.unwrap();
+	let index = args.arg_index;
+
 	let perm_dao = try!(dao::PermissionDaoPostgres::new());
 	let project_dao = try!(dao::ProjectDaoPostgres::new());
 	let seq_dao = try!(dao::SequenceDaoPostgres::new());
 	let user_dao = try!(dao::UserDaoPostgres::new());
-	try!(proton_cli::add_sequence(&perm_dao, &project_dao, &seq_dao, &user_dao, &admin_key_path, &proj_name, seqid));
+	
+	try!(proton_cli::insert_sequence(&perm_dao, &project_dao, &seq_dao, &user_dao, &admin_key_path, &proj_name, seqid, index));
 	Ok(ProtonReturn::NoReturn)
 }
 
