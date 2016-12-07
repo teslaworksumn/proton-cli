@@ -71,16 +71,25 @@ pub fn get_playlist_data<CD: ChannelDao, DD: DataDao, PD: ProjectDao, SD: Sequen
     // Go through each sequence in the playlist
     for seqid in project.playlist.iter() {
 
+        print!("Getting sequence {}...", seqid);
+
         // Get sequence
         let sequence = try!(seq_dao.get_sequence(seqid.to_owned()));
+
+        println!("Sequence '{}' retrieved", &sequence.name);
+        print!("Getting channel ids...");
 
         // Get the sequence's channel ids
         let chan_ids = try!(seq_dao.get_channel_ids(seqid.to_owned()));
 
-        if chan_ids.len() < 5 {
-            println!("Less than 5 channels");
-            panic!("Problem");
+        if chan_ids.len() < 1 {
+            // TODO: make error
+            println!("No channels found");
+            panic!("No channels found");
         }
+
+        println!("Channel ids loaded.");
+        print!("Getting data...");
 
         // Create vector for sequence data
         // Up to 512 channels per universe, plus one because DMX starts at 1
@@ -102,7 +111,10 @@ pub fn get_playlist_data<CD: ChannelDao, DD: DataDao, PD: ProjectDao, SD: Sequen
         };
 
         playlist_data.push(sequence_data);
+
+        println!("done");
     }
 
+    print!("Encoding playlist data..");
     json::encode(&playlist_data).map_err(Error::JsonEncode)
 }
