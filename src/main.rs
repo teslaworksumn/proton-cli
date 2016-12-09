@@ -115,7 +115,7 @@ fn main() {
 		Ok(ret) => match ret {
 			ProtonReturn::LayoutId(lid) => println!("Layout id: {}", lid),
 			ProtonReturn::NoReturn => println!("Worked!"),
-			ProtonReturn::PlaylistData(data) => println!("{}", data),
+			ProtonReturn::PlaylistData(data) => println!("PLAYLIST_DATA:::{}", data),
 			ProtonReturn::Project(project) => println!("Project: {:?}", project),
 			ProtonReturn::PublicKey(s) => println!("PubKey: {}", s),
 			ProtonReturn::Sequence(seq) => println!("Sequence: {:?}", seq),
