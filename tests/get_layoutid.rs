@@ -3,6 +3,7 @@ extern crate proton_cli;
 mod dao;
 
 use proton_cli::project_types::Project;
+use proton_cli::error::Error;
 
 
 #[test]
@@ -37,6 +38,19 @@ fn fails_if_name_invalid() {
 }
 
 #[test]
-#[should_panic(expected = "")]
+#[should_panic(expected = "ProjectNotFound")]
 fn fails_if_name_not_found() {
+    let project_name = "Name";
+    let mut project_dao = dao::ProjectDaoTesting::new();
+    project_dao.get_project_fn = Box::new(|name: String| {
+        match name.as_ref() {
+            "OtherName" => Ok(Project {
+                name: name,
+                playlist: Vec::new(),
+                layout_id: 1
+            }),
+            _ => Err(Error::ProjectNotFound(name))
+        }
+    });
+    let _ = proton_cli::get_layout_id(&project_dao, project_name).expect("Error getting layout id");
 }
