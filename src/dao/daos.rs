@@ -73,6 +73,7 @@ pub trait PermissionDao {
 
 pub trait ProjectDao {
     fn new_project(&self, name: &str, layoutid: u32) -> Result<Project, Error>;
+    /// Retrieves the project with the given name. Returns an error if name is invalid or not found.
     fn get_project(&self, name: &str) -> Result<Project, Error>;
     fn update_project(&self, new_project: Project) -> Result<(), Error>;
 }
