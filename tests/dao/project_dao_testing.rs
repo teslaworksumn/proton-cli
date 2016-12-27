@@ -5,6 +5,10 @@ use proton_cli::error::Error;
 use proton_cli::project_types::Project;
 
 
+/// Implementation of ProjectDao for testing purposes. Uses given functions to return values.
+/// Functions are boxed so their sizes are known (pointers).
+/// The general naming convention used is trait_function_name_fn, for all trait functions.
+/// &str references are converted to Strings so we don't have to deal with lifetime headaches (bookdude13 tried on 12/25/16)
 pub struct ProjectDaoTesting {
 	pub new_project_fn: Box<Fn(String, u32) -> Result<Project, Error>>,
 	pub get_project_fn: Box<Fn(String) -> Result<Project, Error>>,
@@ -13,6 +17,7 @@ pub struct ProjectDaoTesting {
 
 
 impl ProjectDaoTesting {
+	/// Creates a new ProjectDaoTesting struct with all functions set to return Error::TodoErr
 	pub fn new() -> ProjectDaoTesting {
 		ProjectDaoTesting {
 			new_project_fn: Box::new(|_, _| -> Result<Project, Error> { Err(Error::TodoErr) }),
@@ -22,6 +27,7 @@ impl ProjectDaoTesting {
 	}
 }
 
+/// The Dao implementation simply calls the corresponding stored function
 impl ProjectDao for ProjectDaoTesting {
 	fn new_project(&self, name: &str, layoutid: u32) -> Result<Project, Error> {
 		(self.new_project_fn)(name.to_owned(), layoutid)

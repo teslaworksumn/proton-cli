@@ -11,6 +11,7 @@ pub struct Project {
 
 impl Project {
 
+    /// Checks to see that the given project name is valid (alphanumerics and spaces)
     pub fn validate_name(name: &str) -> bool {
         name.chars().all(|c| c.is_alphanumeric() || c == ' ')
     }

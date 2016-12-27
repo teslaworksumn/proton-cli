@@ -5,6 +5,10 @@ use proton_cli::error::Error;
 use proton_cli::project_types::Layout;
 
 
+/// Implementation of LayoutDao for testing purposes. Uses given functions to return values.
+/// Functions are boxed so their sizes are known (pointers).
+/// The general naming convention used is trait_function_name_fn, for all trait functions.
+/// &str references are converted to Strings so we don't have to deal with lifetime headaches (bookdude13 tried on 12/25/16)
 pub struct LayoutDaoTesting {
 	pub new_layout_fn: Box<Fn(String, Vec<u32>) -> Result<Layout, Error>>,
 	pub default_layout_fn: Box<Fn() -> Result<Layout, Error>>,
@@ -16,6 +20,7 @@ pub struct LayoutDaoTesting {
 
 
 impl LayoutDaoTesting {
+	/// Creates a new LayoutDaoTesting struct with all functions set to return Error::TodoErr
 	pub fn new() -> LayoutDaoTesting {
 		LayoutDaoTesting {
 			new_layout_fn: Box::new(|_, _| -> Result<Layout, Error> { Err(Error::TodoErr) }),
@@ -28,6 +33,7 @@ impl LayoutDaoTesting {
 	}
 }
 
+/// The Dao implementation simply calls the corresponding stored function
 impl LayoutDao for LayoutDaoTesting {
 	fn new_layout(&self, name: &str, fixtures: Vec<u32>) -> Result<Layout, Error> {
 		(self.new_layout_fn)(name.to_owned(), fixtures)
