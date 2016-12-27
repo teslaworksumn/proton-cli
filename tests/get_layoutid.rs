@@ -24,13 +24,16 @@ fn proper_id_returned_with_existing_name() {
         }
     });
     let expected = 1;
-    let actual = proton_cli::get_layout_id(&project_dao, project_name).expect("Error getting layout id"); // TODO: implement
+    let actual = proton_cli::get_layout_id(&project_dao, project_name).expect("Error getting layout id");
     assert_eq!(expected, actual);
 }
 
 #[test]
-#[should_panic(expected = "")]
+#[should_panic(expected = "InvalidProjectName")]
 fn fails_if_name_invalid() {
+    let project_name = "_*($%";
+    let project_dao = dao::ProjectDaoTesting::new();
+    let _ = proton_cli::get_layout_id(&project_dao, project_name).expect("Error getting layout id");
 }
 
 #[test]
