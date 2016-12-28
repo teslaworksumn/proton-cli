@@ -2,7 +2,7 @@ use error::Error;
 use project_types::{Channel, Fixture, Layout, Permission, Project, Section, Sequence, User};
 
 pub trait ChannelDao {
-    /// Add a channel to the database
+    /// Add a channel
     fn new_channel(
         &self,
         name: &str,
