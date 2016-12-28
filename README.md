@@ -3,28 +3,67 @@ Command line interface to manipulate ProtonLights projects.
 
 ## Interface
 
-- `init <folder> <root-public-key>`: Init empty project
-- `new-user <admin-key> <name> <public-key>`: Add user from public key
-- `remove-user <admin-key> <name>`: Removes user from project
-- `new-sequence <admin-key> <name> <music-file>`: Init a sequence
-- `remove-sequence <admin-key> <name>`: Removes a sequence and deletes its files
-- `id-user <private-key>`: Identify user by ssh key (public key in repo)
-- `list-permissions <private-key>`: Get list of user's permissions
-- `set-permission <admin-key> (add | remove) <name> Administrate`: Set admin permission
-- `set-permission <admin-key> (add | remove) <name> EditSeq <target-sequence>`: Set permission to edit a sequence
-- `set-permission <admin-key> (add | remove) <name> EditSeqSec <target-sequence> <target-section>`: Set permission to edit a sequence section
-- `resection-sequence <admin-key> <name> <num-sections>`: (Re-)Section a sequence
+- `new-project <name> <layout-id>`
+- `new-user <admin-key> <name>`
+- `remove-user <admin-key> <uid>`
+- `new-sequence <admin-key> <name> <music-file> <seq-duration> <layout-id>`
+- `new-vixen-sequence <admin-key> <name> <music-file> <seq-duration> <frame-duration> <data-file> <- `layout-id>`
+- `add-sequence <admin-key> <proj-name> <seqid>`
+- `remove-sequence <admin-key> <proj-name> <seqid>`
+- `delete-sequence <admin-key> <seqid>`
+- `get-sequence <seqid>`
+- `get-playlist-data <proj-name>`
+- `set-sequence-layout <admin-key> <seqid> <layout-id>`
+- `new-layout <layout-file>`
+- `patch-layout <admin-key> <layout-id> <patch-file>`
+- `new-section <admin-key> <t_start> <t_end> <seqid> <fixid>..`
+- `get-user-id <public-key>`
+- `get-layout-id <proj-name>`
+- `list-permissions <uid>`
+- `set-permission <admin-key> (add | remove) <uid> Administrate`
+- `set-permission <admin-key> (add | remove) <uid> EditSequence <target-sequence>`
+- `set-permission <admin-key> (add | remove) <uid> EditSection <target-sequence> <target-section>`
+- `set-permission <admin-key> (add | remove) <name> EditSeqSec <target-section>`
 
 Permissions include:
-  - edit sequence
-  - edit sequence section
   - project administration
-  - edit show [TODO]
+  - edit sequence [TODO]
+  - edit sequence section [TODO]
 
 ## Native Dependencies
 
 - cmake
 - libssl-dev
+- libsfml-dev
 - libcsfml-dev
-- libsfml-audio2.3v5
-- libcsfml-audio2.3
+- postgresql (version 9.5 works for sure)
+
+## Setting up the database
+
+Install postgresql  
+`$ sudo apt install postgres`
+
+Set password of postgres user (can be anything. You won't be able to see the password while you type it)  
+`$ sudo passwd postgres`
+
+Change to postgres user and start the server  
+`$ su - postgres`  
+`$ psql`
+
+Set psql's postgres password (can/should be different than the other password)  
+`# \password postgres`
+
+Create proton user (password used by cli, so keep the same)  
+`# CREATE USER proton WITH PASSWORD '1234qwermnbv'`
+
+Create database  
+`# CREATE DATABASE proton_cli`
+
+Quit psql  
+`# \q`
+
+Load in database structure  
+`$ psql proton_cli < /path/to/proton-cli/db_backups/working_xx_p`
+
+Done, so exit su  
+`$ exit`
