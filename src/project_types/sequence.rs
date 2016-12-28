@@ -1,7 +1,7 @@
 use error::Error;
 use project_types::Layout;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Sequence {
     pub seqid: u32,
     pub name: String,
