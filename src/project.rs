@@ -46,6 +46,11 @@ pub fn get_layout_id<PD: ProjectDao>(
     proj_dao: &PD,
     proj_name: &str
 ) -> Result<u32, Error> {
+
+    // Check that project name is valid
+    if !Project::validate_name(proj_name) {
+        return Err(Error::InvalidProjectName(proj_name.to_owned()));
+    }
     
     // Check that project exists
     let project = try!(proj_dao.get_project(proj_name));
