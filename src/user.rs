@@ -11,8 +11,17 @@ pub fn get_user_id<P: AsRef<Path>, UD: UserDao>(
     user_dao: UD,
     public_key_path: P
 ) -> Result<u32, Error> {
+    
     let public_key_str = try!(utils::file_as_string(public_key_path.as_ref()));
+
+    // Throw error if the given key is not a valid RSA public key
+    if !utils::validate_rsa_pub_key(&public_key_str) {
+        return Err(Error::InvalidPublicKey(public_key_str));
+    }
+
+    // Lookup uid
     let uid = try!(user_dao.get_user_id(&public_key_str));
+
     Ok(uid)
 }
 

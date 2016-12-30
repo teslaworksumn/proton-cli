@@ -38,6 +38,12 @@ pub fn create_pub_priv_keys() -> Result<(String, String), Error> {
     Ok((public_key_str, private_key_str))
 }
 
+/// Checks that the given string is a valid RSA public key
+pub fn validate_rsa_pub_key(pub_key: &str) -> bool {
+    rsa::Rsa::public_key_from_pem(&pub_key.bytes().collect::<Vec<u8>>())
+        .is_ok()
+}
+
 /// Checks if the user with a public key at the given path has
 /// one of the given valid permissions
 /// Returns this user if found and has permission, else error
