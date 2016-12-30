@@ -37,5 +37,8 @@ fn fails_if_public_key_given_doesnt_match() {
 #[test]
 #[should_panic(expected = "FileNotFound")]
 fn fails_if_path_to_key_nonexistent() {
-    
+    let priv_key_path = "bad_path";
+    let mut user_dao = dao::UserDaoTesting::new();
+    user_dao.get_user_id_fn = Box::new(|_| { Ok(1) });
+    let _ = proton_cli::get_user_id(user_dao, priv_key_path).expect("Error getting user id");   
 }
