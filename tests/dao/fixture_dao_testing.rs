@@ -9,6 +9,7 @@ use proton_cli::project_types::Fixture;
 /// Functions are boxed so their sizes are known (pointers).
 /// The general naming convention used is trait_function_name_fn, for all trait functions.
 /// &str references are converted to Strings so we don't have to deal with lifetime headaches (bookdude13 tried on 12/25/16)
+#[allow(dead_code)]
 pub struct FixtureDaoTesting {
 	pub new_fixture_fn: Box<Fn(String, (i32, i32, i32), (i32, i32, i32), Vec<u32>) -> Result<Fixture, Error>>,
 	pub get_fixture_fn: Box<Fn(u32) -> Result<Fixture, Error>>,
@@ -20,6 +21,7 @@ pub struct FixtureDaoTesting {
 
 impl FixtureDaoTesting {
 	/// Creates a new FixtureDaoTesting struct with all functions set to return Error::TodoErr
+    #[allow(dead_code)]
 	pub fn new() -> FixtureDaoTesting {
 		FixtureDaoTesting {
 			new_fixture_fn: Box::new(|_, _, _, _| -> Result<Fixture, Error> { Err(Error::TodoErr) }),

@@ -9,6 +9,7 @@ use proton_cli::project_types::Permission;
 /// Functions are boxed so their sizes are known (pointers).
 /// The general naming convention used is trait_function_name_fn, for all trait functions.
 /// &str references are converted to Strings so we don't have to deal with lifetime headaches (bookdude13 tried on 12/25/16)
+#[allow(dead_code)]
 pub struct PermissionDaoTesting {
 	pub add_initial_permission_fn: Box<Fn(u32) -> Result<(), Error>>,
 	pub get_all_permissions_fn: Box<Fn(u32) -> Result<Vec<Permission>, Error>>,
@@ -18,6 +19,7 @@ pub struct PermissionDaoTesting {
 
 impl PermissionDaoTesting {
 	/// Creates a new PermissionDaoTesting struct with all functions set to return Error::TodoErr
+	#[allow(dead_code)]
 	pub fn new() -> PermissionDaoTesting {
 		PermissionDaoTesting {
 			add_initial_permission_fn: Box::new(|_| -> Result<(), Error> { Err(Error::TodoErr) }),
