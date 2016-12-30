@@ -10,7 +10,10 @@ pub enum Key {
 }
 
 fn get_tests_dir_path() -> PathBuf {
-	env::current_dir().expect("Error getting current directory")
+	let mut curr_dir = PathBuf::from(env::current_dir()
+		.expect("Error getting current directory"));
+	curr_dir.push("tests");
+	curr_dir
 }
 
 pub fn get_key_file_path(key: Key) -> PathBuf {
