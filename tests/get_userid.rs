@@ -5,6 +5,8 @@ mod common;
 
 use common::TestKey;
 
+use proton_cli::error::Error;
+
 
 #[test]
 // This test is pretty simple, but it checks that if the user_dao
@@ -29,9 +31,14 @@ fn fails_if_private_key_given() {
 }
 
 #[test]
-#[should_panic(expected = "UserNotFound")]
+#[should_panic(expected = "PublicKeyNotFound")]
 fn fails_if_public_key_given_doesnt_match() {
-    
+    let pub_key_path = common::get_key_file_path(TestKey::GoodKeyPub);
+    let mut user_dao = dao::UserDaoTesting::new();
+    user_dao.get_user_id_fn = Box::new(|pub_key| {
+        Err(Error::PublicKeyNotFound(pub_key))
+    });
+    let _ = proton_cli::get_user_id(user_dao, pub_key_path).expect("Error getting user id");    
 }
 
 #[test]
