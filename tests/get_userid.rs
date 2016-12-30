@@ -22,6 +22,10 @@ fn proper_id_returned_with_matching_public_key() {
 #[should_panic(expected = "InvalidPublicKey")]
 // Indirectly checks if invalid key given
 fn fails_if_private_key_given() {
+    let priv_key_path = common::get_key_file_path(TestKey::GoodKeyPem);
+    let mut user_dao = dao::UserDaoTesting::new();
+    user_dao.get_user_id_fn = Box::new(|_| { Ok(1) });
+    let _ = proton_cli::get_user_id(user_dao, priv_key_path).expect("Error getting user id");
 }
 
 #[test]
