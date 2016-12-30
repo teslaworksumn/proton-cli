@@ -296,7 +296,7 @@ fn copy_music_file<P: AsRef<Path>>(
 
 fn music_file_not_found<P: AsRef<Path>>(path: P) -> Error {
     let path_as_str = path.as_ref().to_str().expect("Path not valid UTF-8");
-    Error::MusicFileNotFound(path_as_str.to_string())
+    Error::FileNotFound(path_as_str.to_string())
 }
 
 /// Extracts the duration of a music file
