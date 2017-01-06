@@ -9,6 +9,7 @@ use proton_cli::project_types::User;
 /// Functions are boxed so their sizes are known (pointers).
 /// The general naming convention used is trait_function_name_fn, for all trait functions.
 /// &str references are converted to Strings so we don't have to deal with lifetime headaches (bookdude13 tried on 12/25/16)
+#[allow(dead_code)]
 pub struct UserDaoTesting {
 	pub add_initial_user_fn: Box<Fn(String, String, String) -> Result<u32, Error>>,
 	pub add_user_fn: Box<Fn(String, String, String) -> Result<u32, Error>>,
@@ -19,6 +20,7 @@ pub struct UserDaoTesting {
 
 impl UserDaoTesting {
 	/// Creates a new UserDaoTesting struct with all functions set to return Error::TodoErr
+	#[allow(dead_code)]
 	pub fn new() -> UserDaoTesting {
 		UserDaoTesting {
 			add_initial_user_fn: Box::new(|_, _, _| -> Result<u32, Error> { Err(Error::TodoErr) }),
