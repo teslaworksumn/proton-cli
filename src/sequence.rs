@@ -1,8 +1,7 @@
 //! This module manages project sequences
 
 use rustc_serialize::json;
-use std::path::{Path, PathBuf};
-use std::fs;
+use std::path::Path;
 
 use sfml::audio::Music;
 
@@ -48,11 +47,6 @@ pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, LD: Layou
     // Get duration of music file
     let music_duration_sec = try!(get_music_duration_sec(&music_file_path));
     
-    // Try to copy music file into music directory
-    //try!(copy_music_file(&music_file_path, &music_file_name, "Music"));
-
-    // TODO: revert music file copy if rest fails
-
     // Create sequence
     let sequence = try!(
         Sequence::new(
@@ -137,11 +131,6 @@ pub fn new_sequence<P: AsRef<Path>, DD: DataDao, LD: LayoutDao, PD: PermissionDa
     // Get duration of music file
     let music_duration_sec = try!(get_music_duration_sec(&music_file_path));
     
-    // Try to copy music file into music directory
-    try!(copy_music_file(&music_file_path, &music_file_name, "Music"));
-
-    // TODO: revert music file copy if rest fails
-
     // Create sequence with no data
     let sequence = try!(
         Sequence::new(
@@ -270,33 +259,6 @@ fn validate_file_type<P: AsRef<Path>>(music_file_path: P) -> Result<(), Error> {
         },
         None => Err(Error::UnsupportedFileType("No file extension".to_string())),
     }
-}
-
-/// Copies the file at music_file_path to the current directory
-/// Throw error if file does not exist
-///
-/// Impure.
-fn copy_music_file<P: AsRef<Path>>(
-    music_file_path: P,
-    music_file_name: &str,
-    dest_folder: &str
-) -> Result<PathBuf, Error> {
-
-    // Make sure source file exists
-    if !music_file_path.as_ref().exists() {
-        Err(music_file_not_found(music_file_path))
-    } else {
-        let dest_path = Path::new(&dest_folder).join(&music_file_name);
-        fs::copy(&music_file_path, &dest_path)
-            .map_err(Error::Io)
-            .map(|_| PathBuf::from(dest_path))
-    }
-
-}
-
-fn music_file_not_found<P: AsRef<Path>>(path: P) -> Error {
-    let path_as_str = path.as_ref().to_str().expect("Path not valid UTF-8");
-    Error::MusicFileNotFound(path_as_str.to_string())
 }
 
 /// Extracts the duration of a music file
