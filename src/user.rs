@@ -50,6 +50,7 @@ pub fn new_user<P: AsRef<Path>, UD: UserDao, PD: PermissionDao>(
 /// Assumes the current directory contains a Protonfile.json file.
 ///
 /// Impure.
+#[allow(unused_variables)]
 pub fn remove_user<P: AsRef<Path>>(
     admin_key_path: P,
     uid: u32

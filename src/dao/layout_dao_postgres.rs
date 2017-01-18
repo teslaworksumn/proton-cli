@@ -23,6 +23,26 @@ impl LayoutDao for LayoutDaoPostgres {
         Ok(layout)
     }
 
+    fn patch_channel(
+        &self,
+        layoutid: u32,
+        channel_internal: u32,
+        channel_dmx: u32
+    ) -> Result<u64, Error> {
+
+        let statement = "UPDATE channels SET channel_dmx=$1 \
+        WHERE chanid = get_internal_chan_id($2, $3)";
+        let rows_altered = try!(
+            self.conn.execute(statement, &[
+                &(channel_dmx as i32),
+                &(layoutid as i32),
+                &(channel_internal as i32)
+            ])
+            .map_err(Error::Postgres));
+
+        Ok(rows_altered)
+    }
+
     fn get_last_layout(&self, name: &str) -> Result<Layout, Error> {
         let query = "SELECT layoutid, fixtures FROM layouts WHERE name = $1 ORDER BY layoutid DESC";
         let results = try!(

@@ -14,6 +14,7 @@ pub struct FileLayout {
 #[derive(Debug, RustcDecodable)]
 #[allow(non_snake_case)]
 pub struct FileLayoutRow {
+    pub internalChannel: u32,
     pub dmxChannel: u32,
     pub fixtureName: String,
     pub channelName: String,
@@ -58,6 +59,11 @@ impl FileLayout {
         }
 
         for channel in &self.channels {
+
+            // Make sure internal channel > 0 (indexed same as DMX)
+            if channel.internalChannel < 1 {
+                return Err(Error::InvalidLayout(String::from("Internal channels start at 1, not 0")))
+            }
 
             // Make sure DMX > 0
             if channel.dmxChannel < 1 {
@@ -116,6 +122,7 @@ impl FileLayout {
                     c.num_primary,
                     c.num_secondary,
                     &c.color,
+                    c.internalChannel,
                     c.dmxChannel,
                     location,
                     rotation));

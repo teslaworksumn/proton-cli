@@ -3,15 +3,53 @@ use std::path::Path;
 
 use dao::{ChannelDao, FixtureDao, LayoutDao, PermissionDao, SequenceDao, UserDao};
 use error::Error;
-use project_types::{FileLayout, PermissionEnum};
+use project_types::{FileLayout, FilePatch, PermissionEnum};
 use utils;
 
-pub fn new_layout<P: AsRef<Path>, CD: ChannelDao, FD: FixtureDao, LD: LayoutDao, PD: PermissionDao, UD: UserDao>(
-    chan_dao: &CD,
-    fix_dao: &FD,
+
+pub fn patch_layout<P: AsRef<Path>, LD: LayoutDao, PD: PermissionDao, UD: UserDao> (
     layout_dao: &LD,
     perm_dao: &PD,
     user_dao: &UD,
+    admin_key_path: P,
+    layout_id: u32,
+    patch_file_path: P
+) -> Result<(), Error> {
+
+    // Check that the admin has sufficient privileges
+    let valid_permissions = vec![PermissionEnum::Administrate];
+    let _ = try!(utils::check_valid_permission(
+        perm_dao,
+        user_dao,
+        admin_key_path,
+        &valid_permissions));
+
+    // Load patch file
+    let patch_json = try!(utils::file_as_string(patch_file_path.as_ref()));
+    let patch_file: FilePatch = try!(json::decode(&patch_json).map_err(Error::JsonDecode));
+    
+    // Make sure patch is valid
+    try!(patch_file.validate());
+
+    // Apply patch
+    for patch in patch_file.patches.iter() {
+        match layout_dao.patch_channel(layout_id, patch.internalChannel, patch.dmxChannel) {
+            Ok(1) => {},
+            Ok(0) => println!("No channels patched. vix: {}, dmx: {}", patch.internalChannel, patch.dmxChannel),
+            Ok(num_ch) => println!("Patched {} channels.", num_ch),
+            Err(e) => println!("Error: {}", e),
+        }
+    }
+
+    Ok(())
+}
+
+
+
+pub fn new_layout<P: AsRef<Path>, CD: ChannelDao, FD: FixtureDao, LD: LayoutDao>(
+    chan_dao: &CD,
+    fix_dao: &FD,
+    layout_dao: &LD,
     layout_path: P,
 ) -> Result<u32, Error> {
 
@@ -35,13 +73,24 @@ pub fn new_layout<P: AsRef<Path>, CD: ChannelDao, FD: FixtureDao, LD: LayoutDao,
     Ok(layout.layout_id)
 }
 
-pub fn set_sequence_layout<P: AsRef<Path>, LD: LayoutDao, SD: SequenceDao>(
+pub fn set_sequence_layout<P: AsRef<Path>, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
     admin_key_path: P,
     layout_dao: &LD,
+    perm_dao: &PD,
     sequence_dao: &SD,
+    user_dao: &UD,
     layout_id: u32,
     seqid: u32
 ) -> Result<(), Error> {
+
+    // Check that the admin has sufficient privileges
+    let valid_permissions = vec![PermissionEnum::Administrate];
+    let _ = try!(utils::check_valid_permission(
+        perm_dao,
+        user_dao,
+        admin_key_path,
+        &valid_permissions));
+
 
     // Check that sequence exists
     let sequence = try!(sequence_dao.get_sequence(seqid));

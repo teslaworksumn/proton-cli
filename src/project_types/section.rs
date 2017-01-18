@@ -12,6 +12,7 @@ pub struct Section {
 impl Section {
 
     /// Creates a new section
+    #[allow(unused_variables)]
     pub fn new(
         uid: u32,
         seqid: u32,

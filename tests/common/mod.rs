@@ -20,7 +20,6 @@ use self::proton_cli::utils;
 use self::proton_cli::project_types::{Project, User};
 
 
-
 /// Returns the path to a music file in /.../cli/tests/music/
 pub fn get_music_file_path(file_name: &str) -> PathBuf {
     let mut music_file_path = get_test_directory_path();

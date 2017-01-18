@@ -1,9 +1,6 @@
-use rustc_serialize::json;
-
 use dao::{SequenceDao, SequenceDaoPostgres};
 use error::Error;
 use project_types::Sequence;
-use utils;
 
 
 impl SequenceDao for SequenceDaoPostgres {

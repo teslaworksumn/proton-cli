@@ -1,21 +1,19 @@
 //! This module manages project sequences
 
 use rustc_serialize::json;
-use std::path::{Path, PathBuf};
-use std::fs;
+use std::path::Path;
 
 use sfml::audio::Music;
 
 use error::Error;
 use project_types::{PermissionEnum, Sequence};
-use dao::{ChannelDao, DataDao, FixtureDao, LayoutDao, PermissionDao, ProjectDao, SequenceDao, UserDao};
+use dao::{ChannelDao, DataDao, LayoutDao, PermissionDao, ProjectDao, SequenceDao, UserDao};
 use utils;
 
 /// Creates a new sequence 
-pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, FD: FixtureDao, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
+pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
     chan_dao: &CD,
     data_dao: &DD,
-    fixture_dao: &FD,
     layout_dao: &LD,
     perm_dao: &PD,
     seq_dao: &SD,
@@ -23,6 +21,7 @@ pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, FD: Fixtu
     admin_key_path: P,
     name: &str,
     music_file_path: P,
+    seq_duration_ms: u32,
     frame_duration_ms: u32,
     data_file_path: P,
     layout_id: u32
@@ -30,7 +29,7 @@ pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, FD: Fixtu
 
     // Check that the admin has sufficient privileges
     let valid_permissions = vec![PermissionEnum::Administrate];
-    let admin_uid = try!(utils::check_valid_permission(
+    let _ = try!(utils::check_valid_permission(
         perm_dao,
         user_dao,
         admin_key_path,
@@ -38,9 +37,6 @@ pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, FD: Fixtu
 
     // Get layout (also checks if it exists)
     let layout = try!(layout_dao.get_layout(layout_id));
-
-    // Get number of channels
-    let num_channels = try!(layout.get_num_channels(fixture_dao));
 
     // Make sure the music file is a valid format
     try!(validate_file_type(&music_file_path));
@@ -51,21 +47,15 @@ pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, FD: Fixtu
     // Get duration of music file
     let music_duration_sec = try!(get_music_duration_sec(&music_file_path));
     
-    // Try to copy music file into music directory
-    try!(copy_music_file(&music_file_path, &music_file_name, "Music"));
-
-    // TODO: revert music file copy if rest fails
-
     // Create sequence
     let sequence = try!(
         Sequence::new(
-            admin_uid,
             name,
             &music_file_name,
             music_duration_sec,
+            seq_duration_ms,
             Some(frame_duration_ms),
-            &layout,
-            num_channels
+            &layout
         )
     );
 
@@ -88,7 +78,7 @@ pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, FD: Fixtu
     // For each channel the sequence created, update its data based on vixen_data
     for chanid in chan_ids {
         let channel = try!(chan_dao.get_channel(chanid));
-        let ref chan_data = vixen_data[channel.channel_dmx as usize - 1]; // TODO, check out of bounds
+        let ref chan_data = vixen_data[channel.channel_internal as usize - 1]; // TODO, check out of bounds
         try!(data_dao.new_data(seq.seqid, chanid, chan_data));
     }
 
@@ -99,9 +89,8 @@ pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, FD: Fixtu
 /// Assumes the current directory contains a Protonfile.json file.
 ///
 /// Impure.
-pub fn new_sequence<P: AsRef<Path>, DD: DataDao, FD: FixtureDao, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
+pub fn new_sequence<P: AsRef<Path>, DD: DataDao, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
     data_dao: &DD,
-    fixture_dao: &FD,
     layout_dao: &LD,
     perm_dao: &PD,
     seq_dao: &SD,
@@ -109,13 +98,14 @@ pub fn new_sequence<P: AsRef<Path>, DD: DataDao, FD: FixtureDao, LD: LayoutDao, 
     admin_key_path: P,
     name: &str,
     music_file_path: P,
+    seq_duration_ms: u32,
     frame_duration_ms: Option<u32>,
     layout_id: Option<u32>
 ) -> Result<u32, Error> {
 
     // Check that the admin has sufficient privileges
     let valid_permissions = vec![PermissionEnum::Administrate];
-    let admin_uid = try!(utils::check_valid_permission(
+    let _ = try!(utils::check_valid_permission(
         perm_dao,
         user_dao,
         admin_key_path,
@@ -132,9 +122,6 @@ pub fn new_sequence<P: AsRef<Path>, DD: DataDao, FD: FixtureDao, LD: LayoutDao, 
 
     let layout = try!(layout_dao.get_layout(lid));
 
-    // Get number of channels
-    let num_channels = try!(layout.get_num_channels(fixture_dao));
-
     // Make sure the music file is a valid format
     try!(validate_file_type(&music_file_path));
 
@@ -144,21 +131,15 @@ pub fn new_sequence<P: AsRef<Path>, DD: DataDao, FD: FixtureDao, LD: LayoutDao, 
     // Get duration of music file
     let music_duration_sec = try!(get_music_duration_sec(&music_file_path));
     
-    // Try to copy music file into music directory
-    try!(copy_music_file(&music_file_path, &music_file_name, "Music"));
-
-    // TODO: revert music file copy if rest fails
-
     // Create sequence with no data
     let sequence = try!(
         Sequence::new(
-            admin_uid,
             name,
             &music_file_name,
             music_duration_sec,
+            seq_duration_ms,
             frame_duration_ms,
-            &layout,
-            num_channels
+            &layout
         )
     );
 
@@ -176,14 +157,15 @@ pub fn new_sequence<P: AsRef<Path>, DD: DataDao, FD: FixtureDao, LD: LayoutDao, 
 }
 
 /// Adds the sequence with the given name to the project's playlist
-pub fn add_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, SD: SequenceDao, UD: UserDao>(
+pub fn insert_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, SD: SequenceDao, UD: UserDao>(
     perm_dao: &PMD,
     project_dao: &PTD,
     seq_dao: &SD,
     user_dao: &UD,
     admin_key_path: P,
     proj_name: &str,
-    seqid: u32
+    seqid: u32,
+    index: Option<u32>
 ) -> Result<(), Error> {
     
     // Check that the admin has sufficient privileges
@@ -197,9 +179,14 @@ pub fn add_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, SD: Seq
     // Check that seqid exists
     let _ = try!(seq_dao.get_sequence(seqid));
 
-    // Add sequence to project's playlist
+    // Get project
     let project = try!(project_dao.get_project(proj_name));
-    let new_project = try!(project.add_sequence(seqid));
+
+    // Get offset to insert at (default is end of playlist)
+    let offset = index.unwrap_or(project.playlist.len() as u32);
+
+    // Add sequence to project's playlist
+    let new_project = try!(project.insert_sequence(seqid, offset));
     project_dao.update_project(new_project)
 }
 
@@ -232,6 +219,7 @@ pub fn remove_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, UD: 
 }
 
 /// Deletes sequence from storage
+#[allow(unused_variables)]
 pub fn delete_sequence<P: AsRef<Path>, PD: PermissionDao, UD: UserDao, SD: SequenceDao> (
     perm_dao: &PD,
     user_dao: &UD,
@@ -271,33 +259,6 @@ fn validate_file_type<P: AsRef<Path>>(music_file_path: P) -> Result<(), Error> {
         },
         None => Err(Error::UnsupportedFileType("No file extension".to_string())),
     }
-}
-
-/// Copies the file at music_file_path to the current directory
-/// Throw error if file does not exist
-///
-/// Impure.
-fn copy_music_file<P: AsRef<Path>>(
-    music_file_path: P,
-    music_file_name: &str,
-    dest_folder: &str
-) -> Result<PathBuf, Error> {
-
-    // Make sure source file exists
-    if !music_file_path.as_ref().exists() {
-        Err(music_file_not_found(music_file_path))
-    } else {
-        let dest_path = Path::new(&dest_folder).join(&music_file_name);
-        fs::copy(&music_file_path, &dest_path)
-            .map_err(Error::Io)
-            .map(|_| PathBuf::from(dest_path))
-    }
-
-}
-
-fn music_file_not_found<P: AsRef<Path>>(path: P) -> Error {
-    let path_as_str = path.as_ref().to_str().expect("Path not valid UTF-8");
-    Error::MusicFileNotFound(path_as_str.to_string())
 }
 
 /// Extracts the duration of a music file

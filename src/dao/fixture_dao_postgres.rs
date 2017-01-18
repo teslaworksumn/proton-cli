@@ -68,6 +68,7 @@ impl FixtureDao for FixtureDaoPostgres {
         })
     }
 
+    #[allow(unused_variables)]
     fn get_fixture(&self, fixid: u32) -> Result<Fixture, Error> {
         Err(Error::TodoErr)
     }

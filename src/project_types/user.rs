@@ -1,5 +1,4 @@
 
-
 // Note: DO NOT return a uid in any public function. They are used for authentication and are
 // for internal function calls only.
 
@@ -16,4 +15,3 @@ impl PartialEq for User {
         self.public_key == other.public_key
     }
 }
-

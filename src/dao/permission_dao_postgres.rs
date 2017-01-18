@@ -44,6 +44,7 @@ impl PermissionDao for PermissionDaoPostgres {
         Ok(permissions)
     }
 
+    #[allow(unused_variables)]
     fn get_permission(&self, permid: u32) -> Result<Permission, Error> {
         Err(Error::TodoErr)
     }

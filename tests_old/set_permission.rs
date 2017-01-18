@@ -112,6 +112,15 @@ fn works_with_editseqsec() {
         Some("test_seq".to_owned()),
         Some(0));
 
+    // Make sure sequence editor was updated
+    let project = proton_cli::utils::read_protonfile(None::<&Path>)
+        .expect("Error reading project from file");
+    let sequence = project.find_sequence_by_name(&"test_seq")
+        .expect("Error reading sequence from project");
+    let section_1 = sequence.get_section(1)
+        .expect("Error getting sequence section");
+    assert_eq!(&section_1.editor, &Some(user));
+
     // Now try removing the permission
     setup::try_set_permission(
         &root.path(), 
