@@ -102,7 +102,6 @@ pub fn create_empty_directory<P: AsRef<Path>>(dir_path: P) -> Result<(), Error> 
 }
 
 /// Reads a file as a string.
-/// Wraps Read::read_to_string errors in proton_cli::Error
 pub fn file_as_string<P: AsRef<Path>>(path: P) -> Result<String, Error> {
     if !path.as_ref().exists() {
         return Err(Error::FileNotFound(path.as_ref().to_str().expect("Path not valid UTF-8").to_string()));

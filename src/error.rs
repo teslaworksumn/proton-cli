@@ -5,6 +5,7 @@ use postgres::error as postgres_err;
 use rustc_serialize::json;
 use std::{io, error, fmt};
 
+/// Proton's own error type, to make return types consistent.
 #[derive(Debug)]
 pub enum Error {
     Io(io::Error),
@@ -48,6 +49,7 @@ pub enum Error {
 }
 
 impl error::Error for Error {
+    /// This is a short description of what the error is (usually similar to the name)
     fn description(&self) -> &str {
         match *self {
             Error::Io(_) => "IO error occurred",
@@ -91,6 +93,8 @@ impl error::Error for Error {
         }
     }
 
+    /// The source cause of the error. Usually None. Some of the Error types that
+    /// are wrappers around other errors (io, ssl, rsfml, etc.) return the source error
     fn cause(&self) -> Option<&error::Error> {
         match *self {
            Error::Io(ref err) => Some(err),
@@ -136,6 +140,7 @@ impl error::Error for Error {
 }
 
 impl fmt::Display for Error {
+    // Put the error strings here. Makes them printable with {}
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Error::Io(ref err) => write!(f,

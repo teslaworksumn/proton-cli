@@ -7,6 +7,7 @@ use project_types::PermissionEnum;
 use utils;
 
 
+/// Lookup and return a user's user id from a public key
 pub fn get_user_id<P: AsRef<Path>, UD: UserDao>(
     user_dao: UD,
     public_key_path: P
@@ -25,11 +26,8 @@ pub fn get_user_id<P: AsRef<Path>, UD: UserDao>(
     Ok(uid)
 }
 
-/// Creates a new user for the project in the current directory.
-/// Generates a public/private key pair for the new user
-/// and returns the public key.
-///
-/// Impure.
+/// Creates a new user, generates a public/private key pair 
+/// for the new user, and returns the public key.
 pub fn new_user<P: AsRef<Path>, UD: UserDao, PD: PermissionDao>(
     user_dao: UD,
     perm_dao: PD,
@@ -55,10 +53,7 @@ pub fn new_user<P: AsRef<Path>, UD: UserDao, PD: PermissionDao>(
     Ok(user_pub_key)
 }
 
-/// Removes a user from the project in the current directory
-/// Assumes the current directory contains a Protonfile.json file.
-///
-/// Impure.
+/// Removes a user
 #[allow(unused_variables)]
 pub fn remove_user<P: AsRef<Path>>(
     admin_key_path: P,

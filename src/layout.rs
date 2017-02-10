@@ -1,3 +1,5 @@
+//! Layout-related functionality
+
 use rustc_serialize::json;
 use std::path::Path;
 
@@ -7,6 +9,7 @@ use project_types::{FileLayout, FilePatch, PermissionEnum};
 use utils;
 
 
+/// Patches a layout's channels based on a provided patch file
 pub fn patch_layout<P: AsRef<Path>, LD: LayoutDao, PD: PermissionDao, UD: UserDao> (
     layout_dao: &LD,
     perm_dao: &PD,
@@ -44,8 +47,7 @@ pub fn patch_layout<P: AsRef<Path>, LD: LayoutDao, PD: PermissionDao, UD: UserDa
     Ok(())
 }
 
-
-
+/// Creates a new layout
 pub fn new_layout<P: AsRef<Path>, CD: ChannelDao, FD: FixtureDao, LD: LayoutDao>(
     chan_dao: &CD,
     fix_dao: &FD,
@@ -73,6 +75,7 @@ pub fn new_layout<P: AsRef<Path>, CD: ChannelDao, FD: FixtureDao, LD: LayoutDao>
     Ok(layout.layout_id)
 }
 
+/// Set a layout's sequence
 pub fn set_sequence_layout<P: AsRef<Path>, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
     admin_key_path: P,
     layout_dao: &LD,
