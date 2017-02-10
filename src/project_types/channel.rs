@@ -1,4 +1,6 @@
 
+/// Collection of metadata for a channel, including name, channels (internal and external), 
+/// and location/rotation.
 #[derive(Debug)]
 pub struct Channel {
     pub chanid: u32,

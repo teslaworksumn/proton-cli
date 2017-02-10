@@ -1,4 +1,6 @@
 
+/// Holds metadata for a Fixture, which is logically a collection of channels 
+/// that can be used as a unit (e.g. sunbursts, net light)
 #[derive(Debug)]
 pub struct Fixture {
     pub fixid: u32,

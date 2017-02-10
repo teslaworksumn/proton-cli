@@ -4,6 +4,7 @@ use dao::{ChannelDao, FixtureDao};
 use error::Error;
 use project_types::{Channel, Fixture};
 
+/// Mapping for a layout JSON object
 #[derive(Debug, RustcDecodable)]
 #[allow(non_snake_case)]
 pub struct FileLayout {
@@ -11,6 +12,7 @@ pub struct FileLayout {
     pub channels: Vec<FileLayoutRow>,
 }
 
+/// Mapping for a row (channel) in a JSON layout
 #[derive(Debug, RustcDecodable)]
 #[allow(non_snake_case)]
 pub struct FileLayoutRow {
@@ -27,6 +29,8 @@ pub struct FileLayoutRow {
 
 impl FileLayout {
 
+    /// Helper function to convert a string to i32, making blank strings map to None 
+    /// and return an Error if the conversion fails.
     fn layout_str_to_i32<'a>(s: &'a str, err_msg: &'a str) -> Result<Option<i32>, Error> {
         match s.is_empty() {
             true => Ok(None::<i32>),
@@ -36,6 +40,8 @@ impl FileLayout {
         }
     }
 
+    /// Helper function to parse the layout's location and rotation triples
+    /// s should be of the form "x,y,z", where x, y, and z are integers
     fn layout_get_i32_tuple(s: &str) -> Result<(Option<i32>, Option<i32>, Option<i32>), Error> {
         let parts = s.trim_matches(',').split(',').collect::<Vec<&str>>();
         if parts.len() != 3 {
@@ -47,7 +53,7 @@ impl FileLayout {
         Ok((x,y,z))
     }
 
-    /// Check that all channels are valid
+    /// Check that all channels in the layout are valid
     pub fn validate(&self) -> Result<(), Error> {
 
         // Validate layout name not too long and only alphanumerics
@@ -103,6 +109,8 @@ impl FileLayout {
         Ok(())
     }
 
+    /// Creates new channels and fixtures based on this FileLayout's data. Part of 
+    /// this process is grouping the channels into fixtures.
     pub fn create_new_parts<CD: ChannelDao, FD: FixtureDao>(
         &self,
         chan_dao: &CD,

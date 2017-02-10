@@ -1,5 +1,6 @@
 use error::Error;
 
+/// [INCOMPLETE] The different permissions a user can have
 #[derive(Debug, PartialEq, RustcDecodable, RustcEncodable)]
 pub enum PermissionEnum {
     Administrate,
