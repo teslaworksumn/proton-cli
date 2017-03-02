@@ -23,10 +23,8 @@ impl UserDao for UserDaoPostgres {
         Ok(uid)
     }
 
-    /// Identifies a user by their public SSH key by finding the
-    /// public key in the database. This public key
-    /// acts like the user's password, and should be protected.
-    /// 
+    /// Identifies a user by their public SSH key
+    ///
     /// Impure.
     fn get_user_id(&self, public_key: &str) -> Result<u32, Error> {
         let public_string = public_key.trim_matches('\n');
@@ -36,7 +34,7 @@ impl UserDao for UserDaoPostgres {
             .map_err(Error::Postgres));
         
         match results.len() {
-            0 => Err(Error::AdminNotFound),
+            0 => Err(Error::PublicKeyNotFound(public_key.to_owned())),
             1 => {
                 let row = results.get(0);
                 let uid: i32 = row.get(0);

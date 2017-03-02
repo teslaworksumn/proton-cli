@@ -38,6 +38,12 @@ pub fn create_pub_priv_keys() -> Result<(String, String), Error> {
     Ok((public_key_str, private_key_str))
 }
 
+/// Checks that the given string is a valid RSA public key
+pub fn validate_rsa_pub_key(pub_key: &str) -> bool {
+    rsa::Rsa::public_key_from_pem(&pub_key.bytes().collect::<Vec<u8>>())
+        .is_ok()
+}
+
 /// Checks if the user with a public key at the given path has
 /// one of the given valid permissions
 /// Returns this user if found and has permission, else error
@@ -99,8 +105,9 @@ pub fn create_empty_directory<P: AsRef<Path>>(dir_path: P) -> Result<(), Error> 
 /// Wraps Read::read_to_string errors in proton_cli::Error
 pub fn file_as_string<P: AsRef<Path>>(path: P) -> Result<String, Error> {
     if !path.as_ref().exists() {
-        return Err(Error::InvalidLayout(path.as_ref().to_str().expect("Path not valid UTF-8").to_string()));
+        return Err(Error::FileNotFound(path.as_ref().to_str().expect("Path not valid UTF-8").to_string()));
     }
+    
     File::open(path)
         .and_then(|mut file| {
             let mut string = String::new();

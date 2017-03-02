@@ -11,6 +11,11 @@ pub struct Project {
 
 impl Project {
 
+    /// Checks to see that the given project name is valid (alphanumerics and spaces)
+    pub fn validate_name(name: &str) -> bool {
+        name.chars().all(|c| c.is_alphanumeric() || c == ' ')
+    }
+
     /// Inserts a sequence in the project's playlist at the given offset
     pub fn insert_sequence(&self, seqid: u32, offset: u32) -> Result<Project, Error> {
 
