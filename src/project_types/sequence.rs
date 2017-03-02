@@ -1,10 +1,7 @@
 use error::Error;
 use project_types::Layout;
 
-<<<<<<< HEAD
-=======
 /// Structure to hold sequence metadata
->>>>>>> Documented src/project_types
 #[derive(Clone, Debug)]
 pub struct Sequence {
     pub seqid: u32,
