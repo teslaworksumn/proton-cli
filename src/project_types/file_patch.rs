@@ -1,10 +1,12 @@
 use error::Error;
 
+/// Mapping for patch JSON object
 #[derive(Debug, RustcDecodable)]
 pub struct FilePatch {
     pub patches: Vec<FilePatchRow>,
 }
 
+/// Mapping for one row (patch) in the patch JSON object
 #[derive(Debug, RustcDecodable)]
 #[allow(non_snake_case)]
 pub struct FilePatchRow {
@@ -13,7 +15,6 @@ pub struct FilePatchRow {
 }
 
 impl FilePatch {
-
     /// Check that all channels are valid
     pub fn validate(&self) -> Result<(), Error> {
 

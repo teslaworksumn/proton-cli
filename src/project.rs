@@ -35,6 +35,7 @@ pub fn new_project<LD: LayoutDao, PMD: PermissionDao, PTD: ProjectDao, UD: UserD
     Ok(root_pub_key)
 }
 
+/// Fetches and returns a project
 pub fn get_project<PD: ProjectDao>(
     proj_dao: &PD,
     proj_name: &str
@@ -42,6 +43,7 @@ pub fn get_project<PD: ProjectDao>(
     proj_dao.get_project(proj_name)
 }
 
+/// Finds and returns a project's layout id
 pub fn get_layout_id<PD: ProjectDao>(
     proj_dao: &PD,
     proj_name: &str

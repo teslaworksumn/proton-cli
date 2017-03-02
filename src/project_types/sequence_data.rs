@@ -1,4 +1,5 @@
 
+/// Structure to contain the raw sequence output data
 #[derive(Debug, RustcEncodable, RustcDecodable)]
 pub struct SequenceData {
     pub name: String,

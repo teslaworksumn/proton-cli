@@ -82,6 +82,7 @@ impl ChannelDao for ChannelDaoPostgres {
         Ok(channel)
     }
 
+    /// Get the last channel added with the given name
     fn get_last_channel(&self, name: &str) -> Result<Channel, Error> {
         let query = "SELECT chanid,primary_num,secondary_num,color,channel_internal,channel_dmx,\
         location_x,location_y,location_z,rotation_a,rotation_b,rotation_c FROM channels \

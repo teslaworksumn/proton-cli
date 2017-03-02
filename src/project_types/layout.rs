@@ -1,6 +1,7 @@
 use dao::FixtureDao;
 use error::Error;
 
+/// Contains a layout (a logical collection of fixtures)
 #[derive(Debug)]
 pub struct Layout {
     pub layout_id: u32,

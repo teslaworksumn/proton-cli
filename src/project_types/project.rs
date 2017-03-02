@@ -1,7 +1,7 @@
 use error::Error;
 
 
-/// Structure to represent a Proton Project.
+/// Structure to represent a Proton project
 #[derive(Clone, Debug, PartialEq, Eq, RustcEncodable, RustcDecodable)]
 pub struct Project {
     pub name: String,
@@ -10,6 +10,10 @@ pub struct Project {
 }
 
 impl Project {
+    /// Checks to see that the given project name is valid (alphanumerics and spaces)
+    pub fn validate_name(name: &str) -> bool {
+        name.chars().all(|c| c.is_alphanumeric() || c == ' ')
+    }
 
     /// Checks to see that the given project name is valid (alphanumerics and spaces)
     pub fn validate_name(name: &str) -> bool {

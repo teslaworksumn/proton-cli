@@ -5,11 +5,13 @@ use project_types::Permission;
 use dao::PermissionDao;
 
 
+/// [INCOMPLETE] Gets the permissions a user has
 pub fn get_permissions<P: AsRef<Path>, PD: PermissionDao> (pdao: PD, uid: u32
 ) -> Result<Vec<Permission>, Error> {
     pdao.get_all_permissions(uid)
 }
 
+/// [INCOMPLETE] Sets a user's permission
 #[allow(unused_variables)]
 pub fn set_permission<P: AsRef<Path>> (
     admin_key_path: P,

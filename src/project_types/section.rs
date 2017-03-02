@@ -1,5 +1,9 @@
 use error::Error;
 
+/// Structure to represent a sequence section, which consists of both 
+/// a section of time in the sequence and a range of channels. This is 
+/// mainly used to make sure only one person can change a section of a 
+/// sequence at any given time (no merge conflicts).
 #[derive(Debug)]
 pub struct Section {
     pub secid: u32,

@@ -1,7 +1,5 @@
 
-// Note: DO NOT return a uid in any public function. They are used for authentication and are
-// for internal function calls only.
-
+/// Structure to contain user information
 #[derive(Clone, Debug, Eq, RustcEncodable, RustcDecodable)]
 pub struct User {
     pub uid: u32,
@@ -10,6 +8,8 @@ pub struct User {
 }
 
 impl PartialEq for User {
+	// Users are the same if either they have the same user id or they 
+	// have the same public key
     fn eq(&self, other: &User) -> bool {
         self.uid == other.uid ||
         self.public_key == other.public_key

@@ -2,7 +2,7 @@ use error::Error;
 use dao::PermissionDao;
 use project_types::PermissionEnum;
 
-
+/// Contains the metadata for a permission (what it is, what it applies to)
 #[derive(Debug, RustcDecodable, RustcEncodable)]
 pub struct Permission {
     pub permid: u32,
@@ -12,8 +12,7 @@ pub struct Permission {
     pub permission: PermissionEnum,
 }
 
-impl Permission {
-    
+impl Permission {    
     /// Creates a new Permission
     #[allow(unused_variables)]
     pub fn new(

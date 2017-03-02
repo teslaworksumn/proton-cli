@@ -1,6 +1,10 @@
 use error::Error;
 use project_types::Layout;
 
+<<<<<<< HEAD
+=======
+/// Structure to hold sequence metadata
+>>>>>>> Documented src/project_types
 #[derive(Clone, Debug)]
 pub struct Sequence {
     pub seqid: u32,
@@ -22,7 +26,7 @@ impl Sequence {
         frame_duration_ms: Option<u32>,
         layout: &Layout
     ) -> Result<Sequence, Error> {
-
+        
         // Defaults
         let frame_dur_ms = frame_duration_ms.unwrap_or(50);
         if frame_dur_ms < 25 {

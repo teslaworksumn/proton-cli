@@ -10,7 +10,7 @@ use project_types::{PermissionEnum, Sequence};
 use dao::{ChannelDao, DataDao, LayoutDao, PermissionDao, ProjectDao, SequenceDao, UserDao};
 use utils;
 
-/// Creates a new sequence 
+/// Creates a new sequence based on proton-vixen-converter data
 pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
     chan_dao: &CD,
     data_dao: &DD,
@@ -85,10 +85,7 @@ pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, LD: Layou
     Ok(seq.seqid)
 }
 
-/// Creates a new user for the project in the current directory.
-/// Assumes the current directory contains a Protonfile.json file.
-///
-/// Impure.
+/// Creates a new sequence
 pub fn new_sequence<P: AsRef<Path>, DD: DataDao, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
     data_dao: &DD,
     layout_dao: &LD,
@@ -156,7 +153,7 @@ pub fn new_sequence<P: AsRef<Path>, DD: DataDao, LD: LayoutDao, PD: PermissionDa
     Ok(seq.seqid)
 }
 
-/// Adds the sequence with the given name to the project's playlist
+/// Adds a sequence to the project's playlist at the given index
 pub fn insert_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, SD: SequenceDao, UD: UserDao>(
     perm_dao: &PMD,
     project_dao: &PTD,
@@ -190,8 +187,7 @@ pub fn insert_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, SD: 
     project_dao.update_project(new_project)
 }
 
-/// Removes the sequence with the given name from the project
-/// and deletes its files
+/// Removes a sequence from a project
 pub fn remove_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, UD: UserDao>(
     perm_dao: &PMD,
     project_dao: &PTD,
@@ -234,7 +230,7 @@ pub fn delete_sequence<P: AsRef<Path>, PD: PermissionDao, UD: UserDao, SD: Seque
     Err(Error::TodoErr)
 }
 
-/// Retrieves the given sequence
+/// Fetches and returns a sequence
 pub fn get_sequence<SD: SequenceDao>(seq_dao: &SD, seqid: u32) -> Result<Sequence, Error> {
     seq_dao.get_sequence(seqid)
 }
