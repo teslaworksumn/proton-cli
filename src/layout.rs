@@ -3,29 +3,18 @@
 use rustc_serialize::json;
 use std::path::Path;
 
-use dao::{ChannelDao, FixtureDao, LayoutDao, PermissionDao, SequenceDao, UserDao};
+use dao::{ChannelDao, FixtureDao, LayoutDao, SequenceDao};
 use error::Error;
-use project_types::{FileLayout, FilePatch, PermissionEnum};
+use project_types::{FileLayout, FilePatch};
 use utils;
 
 
 /// Patches a layout's channels based on a provided patch file
-pub fn patch_layout<P: AsRef<Path>, LD: LayoutDao, PD: PermissionDao, UD: UserDao> (
+pub fn patch_layout<P: AsRef<Path>, LD: LayoutDao> (
     layout_dao: &LD,
-    perm_dao: &PD,
-    user_dao: &UD,
-    admin_key_path: P,
     layout_id: u32,
     patch_file_path: P
 ) -> Result<(), Error> {
-
-    // Check that the admin has sufficient privileges
-    let valid_permissions = vec![PermissionEnum::Administrate];
-    let _ = try!(utils::check_valid_permission(
-        perm_dao,
-        user_dao,
-        admin_key_path,
-        &valid_permissions));
 
     // Load patch file
     let patch_json = try!(utils::file_as_string(patch_file_path.as_ref()));
@@ -76,23 +65,12 @@ pub fn new_layout<P: AsRef<Path>, CD: ChannelDao, FD: FixtureDao, LD: LayoutDao>
 }
 
 /// Set a layout's sequence
-pub fn set_sequence_layout<P: AsRef<Path>, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
-    admin_key_path: P,
+pub fn set_sequence_layout<LD: LayoutDao, SD: SequenceDao>(
     layout_dao: &LD,
-    perm_dao: &PD,
     sequence_dao: &SD,
-    user_dao: &UD,
     layout_id: u32,
     seqid: u32
 ) -> Result<(), Error> {
-
-    // Check that the admin has sufficient privileges
-    let valid_permissions = vec![PermissionEnum::Administrate];
-    let _ = try!(utils::check_valid_permission(
-        perm_dao,
-        user_dao,
-        admin_key_path,
-        &valid_permissions));
 
 
     // Check that sequence exists
