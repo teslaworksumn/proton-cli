@@ -6,19 +6,16 @@ use std::path::Path;
 use sfml::audio::Music;
 
 use error::Error;
-use project_types::{PermissionEnum, Sequence};
+use project_types::{Sequence};
 use dao::{ChannelDao, DataDao, LayoutDao, PermissionDao, ProjectDao, SequenceDao, UserDao};
 use utils;
 
 /// Creates a new sequence based on proton-vixen-converter data
-pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
+pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, LD: LayoutDao, SD: SequenceDao>(
     chan_dao: &CD,
     data_dao: &DD,
     layout_dao: &LD,
-    perm_dao: &PD,
     seq_dao: &SD,
-    user_dao: &UD,
-    admin_key_path: P,
     name: &str,
     music_file_path: P,
     seq_duration_ms: u32,
@@ -26,14 +23,6 @@ pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, LD: Layou
     data_file_path: P,
     layout_id: u32
 ) -> Result<u32, Error> {
-
-    // Check that the admin has sufficient privileges
-    let valid_permissions = vec![PermissionEnum::Administrate];
-    let _ = try!(utils::check_valid_permission(
-        perm_dao,
-        user_dao,
-        admin_key_path,
-        &valid_permissions));
 
     // Get layout (also checks if it exists)
     let layout = try!(layout_dao.get_layout(layout_id));
@@ -86,27 +75,16 @@ pub fn new_vixen_sequence<P: AsRef<Path>, CD: ChannelDao, DD: DataDao, LD: Layou
 }
 
 /// Creates a new sequence
-pub fn new_sequence<P: AsRef<Path>, DD: DataDao, LD: LayoutDao, PD: PermissionDao, SD: SequenceDao, UD: UserDao>(
+pub fn new_sequence<P: AsRef<Path>, DD: DataDao, LD: LayoutDao, SD: SequenceDao>(
     data_dao: &DD,
     layout_dao: &LD,
-    perm_dao: &PD,
     seq_dao: &SD,
-    user_dao: &UD,
-    admin_key_path: P,
     name: &str,
     music_file_path: P,
     seq_duration_ms: u32,
     frame_duration_ms: Option<u32>,
     layout_id: Option<u32>
 ) -> Result<u32, Error> {
-
-    // Check that the admin has sufficient privileges
-    let valid_permissions = vec![PermissionEnum::Administrate];
-    let _ = try!(utils::check_valid_permission(
-        perm_dao,
-        user_dao,
-        admin_key_path,
-        &valid_permissions));
 
     // Get layout (also checks if it exists)
     let lid = match layout_id {
@@ -154,24 +132,13 @@ pub fn new_sequence<P: AsRef<Path>, DD: DataDao, LD: LayoutDao, PD: PermissionDa
 }
 
 /// Adds a sequence to the project's playlist at the given index
-pub fn insert_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, SD: SequenceDao, UD: UserDao>(
-    perm_dao: &PMD,
-    project_dao: &PTD,
+pub fn insert_sequence<PD: ProjectDao, SD: SequenceDao>(
+    project_dao: &PD,
     seq_dao: &SD,
-    user_dao: &UD,
-    admin_key_path: P,
     proj_name: &str,
     seqid: u32,
     index: Option<u32>
 ) -> Result<(), Error> {
-    
-    // Check that the admin has sufficient privileges
-    let valid_permissions = vec![PermissionEnum::Administrate, PermissionEnum::EditSequence(seqid)];
-    let _ = try!(utils::check_valid_permission(
-        perm_dao,
-        user_dao,
-        admin_key_path,
-        &valid_permissions));
 
     // Check that seqid exists
     let _ = try!(seq_dao.get_sequence(seqid));
@@ -188,22 +155,11 @@ pub fn insert_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, SD: 
 }
 
 /// Removes a sequence from a project
-pub fn remove_sequence<P: AsRef<Path>, PMD: PermissionDao, PTD: ProjectDao, UD: UserDao>(
-    perm_dao: &PMD,
-    project_dao: &PTD,
-    user_dao: &UD,
-    admin_key_path: P,
+pub fn remove_sequence<PD: ProjectDao>(
+    project_dao: &PD,
     proj_name: &str,
     seqid: u32
 ) -> Result<(), Error> {
-    
-    // Check that the admin has sufficient privileges
-    let valid_permissions = vec![PermissionEnum::Administrate, PermissionEnum::EditSequence(seqid)];
-    let _ = try!(utils::check_valid_permission(
-        perm_dao,
-        user_dao,
-        admin_key_path,
-        &valid_permissions));
 
     // Remove sequence from project's playlist
     let project = try!(project_dao.get_project(proj_name));

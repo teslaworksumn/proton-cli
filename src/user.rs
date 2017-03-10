@@ -1,9 +1,8 @@
 //! This module manages project users
 use std::path::Path;
 
-use dao::{PermissionDao, UserDao};
+use dao::{UserDao};
 use error::Error;
-use project_types::PermissionEnum;
 use utils;
 
 
@@ -26,22 +25,10 @@ pub fn get_user_id<P: AsRef<Path>, UD: UserDao>(
     Ok(uid)
 }
 
-/// Creates a new user, generates a public/private key pair 
-/// for the new user, and returns the public key.
-pub fn new_user<P: AsRef<Path>, UD: UserDao, PD: PermissionDao>(
+pub fn new_user<UD: UserDao>(
     user_dao: UD,
-    perm_dao: PD,
-    admin_key_path: P,
     name: &str
 ) -> Result<String, Error> {
-
-    // See if admin has permission to add user
-    let valid_permissions = vec![PermissionEnum::Administrate];
-    let _ = try!(utils::check_valid_permission(
-        &perm_dao,
-        &user_dao,
-        admin_key_path,
-        &valid_permissions));
 
     // Create keys
     let (user_pub_key, user_private_key) = try!(utils::create_pub_priv_keys());
@@ -55,8 +42,7 @@ pub fn new_user<P: AsRef<Path>, UD: UserDao, PD: PermissionDao>(
 
 /// Removes a user
 #[allow(unused_variables)]
-pub fn remove_user<P: AsRef<Path>>(
-    admin_key_path: P,
+pub fn remove_user(
     uid: u32
 ) -> Result<(), Error> {
 
@@ -66,4 +52,3 @@ pub fn remove_user<P: AsRef<Path>>(
     // Remove user
 
 }
-

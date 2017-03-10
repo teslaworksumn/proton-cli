@@ -10,7 +10,8 @@ use docopt::Docopt;
 
 use proton_cli::error::Error;
 use proton_cli::dao::{self, LayoutDao};
-use proton_cli::project_types::{Project, Sequence};
+use proton_cli::project_types::{Project, Sequence, PermissionEnum};
+use proton_cli::utils;
 
 
 const USAGE: &'static str = "
@@ -132,7 +133,6 @@ fn main() {
 	};
 }
 
-/// delete-sequence <admin-key> <seqid>
 fn run_delete_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let admin_key = args.arg_admin_key.unwrap();
 	let admin_key_path = Path::new(&admin_key);
@@ -140,6 +140,8 @@ fn run_delete_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let user_dao = try!(dao::UserDaoPostgres::new());
 	let perm_dao = try!(dao::PermissionDaoPostgres::new());
 	let sequence_dao = try!(dao::SequenceDaoPostgres::new());
+
+	
 	try!(proton_cli::delete_sequence(
 		&user_dao,
 		&perm_dao,
@@ -210,8 +212,15 @@ fn run_insert_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let project_dao = try!(dao::ProjectDaoPostgres::new());
 	let seq_dao = try!(dao::SequenceDaoPostgres::new());
 	let user_dao = try!(dao::UserDaoPostgres::new());
+
+	let valid_permissions = vec![PermissionEnum::Administrate];
+    let _ = try!(utils::check_valid_permission(
+        &perm_dao,
+        &user_dao,
+        admin_key_path,
+        &valid_permissions));
 	
-	try!(proton_cli::insert_sequence(&perm_dao, &project_dao, &seq_dao, &user_dao, &admin_key_path, &proj_name, seqid, index));
+	try!(proton_cli::insert_sequence(&project_dao, &seq_dao, &proj_name, seqid, index));
 	Ok(ProtonReturn::NoReturn)
 }
 
@@ -278,13 +287,19 @@ fn run_new_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let perm_dao = try!(dao::PermissionDaoPostgres::new());
 	let sequence_dao = try!(dao::SequenceDaoPostgres::new());
 	let user_dao = try!(dao::UserDaoPostgres::new());
+
+	// Check that the admin has sufficient privileges
+    let valid_permissions = vec![PermissionEnum::Administrate];
+    let _ = try!(utils::check_valid_permission(
+        &perm_dao,
+        &user_dao,
+        admin_key_path,
+        &valid_permissions));
+
 	let seqid = try!(proton_cli::new_sequence(
 		&data_dao,
 		&layout_dao,
-		&perm_dao,
-		&user_dao,
 		&sequence_dao,
-		&admin_key_path,
 		&name,
 		&music_file_path,
 		seq_duration,
@@ -300,7 +315,16 @@ fn run_new_user(args: Args) -> Result<ProtonReturn, Error> {
 	let name = args.arg_name.unwrap();
 	let user_dao = try!(dao::UserDaoPostgres::new());
 	let perm_dao = try!(dao::PermissionDaoPostgres::new());
-	let public_key = try!(proton_cli::new_user(user_dao, perm_dao, &admin_key_path, &name));
+
+	// See if admin has permission to add user
+    let valid_permissions = vec![PermissionEnum::Administrate];
+    let _ = try!(utils::check_valid_permission(
+        &perm_dao,
+        &user_dao,
+        admin_key_path,
+        &valid_permissions));
+
+	let public_key = try!(proton_cli::new_user(user_dao, &name));
 	Ok(ProtonReturn::PublicKey(public_key))
 }
 
@@ -329,14 +353,20 @@ fn run_new_vixen_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let perm_dao = try!(dao::PermissionDaoPostgres::new());
 	let sequence_dao = try!(dao::SequenceDaoPostgres::new());
 	let user_dao = try!(dao::UserDaoPostgres::new());
+
+	// Check that the admin has sufficient privileges
+    let valid_permissions = vec![PermissionEnum::Administrate];
+    let _ = try!(utils::check_valid_permission(
+        &perm_dao,
+        &user_dao,
+        admin_key_path,
+        &valid_permissions));
+
 	let seqid = try!(proton_cli::new_vixen_sequence(
 		&channel_dao,
 		&data_dao,
 		&layout_dao,
-		&perm_dao,
-		&user_dao,
 		&sequence_dao,
-		&admin_key_path,
 		&name,
 		&music_file_path,
 		seq_duration,
@@ -355,14 +385,19 @@ fn run_patch_layout(args: Args) -> Result<ProtonReturn, Error> {
 	let patch_file_path = Path::new(&patch_file);
 
 	let layout_dao = try!(dao::LayoutDaoPostgres::new());
-	let permission_dao = try!(dao::PermissionDaoPostgres::new());
+	let perm_dao = try!(dao::PermissionDaoPostgres::new());
 	let user_dao = try!(dao::UserDaoPostgres::new());
+
+	// Check that the admin has sufficient privileges
+    let valid_permissions = vec![PermissionEnum::Administrate];
+    let _ = try!(utils::check_valid_permission(
+        &perm_dao,
+        &user_dao,
+        admin_key_path,
+        &valid_permissions));
 
 	try!(proton_cli::patch_layout(
 		&layout_dao,
-		&permission_dao,
-		&user_dao,
-		&admin_key_path,
 		layout_id,
 		&patch_file_path));
 	
@@ -378,16 +413,23 @@ fn run_remove_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let perm_dao = try!(dao::PermissionDaoPostgres::new());
 	let project_dao = try!(dao::ProjectDaoPostgres::new());
 	let user_dao = try!(dao::UserDaoPostgres::new());
-	try!(proton_cli::remove_sequence(&perm_dao, &project_dao, &user_dao, &admin_key_path, &proj_name, seqid));
+
+	// Check that the admin has sufficient privileges
+    let valid_permissions = vec![PermissionEnum::Administrate, PermissionEnum::EditSequence(seqid)];
+    let _ = try!(utils::check_valid_permission(
+        &perm_dao,
+        &user_dao,
+        admin_key_path,
+        &valid_permissions));
+    
+	try!(proton_cli::remove_sequence(&project_dao, &proj_name, seqid));
 	Ok(ProtonReturn::NoReturn)
 }
 
 /// remove-user <admin-key> <uid>
 fn run_remove_user(args: Args) -> Result<ProtonReturn, Error> {
-	let admin_key = args.arg_admin_key.unwrap();
-	let admin_key_path = Path::new(&admin_key);
 	let uid = args.arg_uid.unwrap();
-	try!(proton_cli::remove_user(&admin_key_path, uid));
+	try!(proton_cli::remove_user(uid));
 	Ok(ProtonReturn::NoReturn)
 }
 
@@ -424,12 +466,18 @@ fn run_set_sequence_layout(args: Args) -> Result<ProtonReturn, Error> {
 	let perm_dao = try!(dao::PermissionDaoPostgres::new());
 	let seq_dao = try!(dao::SequenceDaoPostgres::new());
 	let user_dao = try!(dao::UserDaoPostgres::new());
+
+	// Check that the admin has sufficient privileges
+    let valid_permissions = vec![PermissionEnum::Administrate];
+    let _ = try!(utils::check_valid_permission(
+        &perm_dao,
+        &user_dao,
+        admin_key_path,
+        &valid_permissions));
+
 	try!(proton_cli::set_sequence_layout(
-		&admin_key_path,
 		&layout_dao,
-		&perm_dao,
 		&seq_dao,
-		&user_dao,
 		layout_id,
 		seqid));
 	Ok(ProtonReturn::NoReturn)
