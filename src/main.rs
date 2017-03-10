@@ -140,6 +140,8 @@ fn run_delete_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let user_dao = try!(dao::UserDaoPostgres::new());
 	let perm_dao = try!(dao::PermissionDaoPostgres::new());
 	let sequence_dao = try!(dao::SequenceDaoPostgres::new());
+
+	
 	try!(proton_cli::delete_sequence(
 		&user_dao,
 		&perm_dao,
@@ -210,8 +212,15 @@ fn run_insert_sequence(args: Args) -> Result<ProtonReturn, Error> {
 	let project_dao = try!(dao::ProjectDaoPostgres::new());
 	let seq_dao = try!(dao::SequenceDaoPostgres::new());
 	let user_dao = try!(dao::UserDaoPostgres::new());
+
+	let valid_permissions = vec![PermissionEnum::Administrate];
+    let _ = try!(utils::check_valid_permission(
+        &perm_dao,
+        &user_dao,
+        admin_key_path,
+        &valid_permissions));
 	
-	try!(proton_cli::insert_sequence(&perm_dao, &project_dao, &seq_dao, &user_dao, &admin_key_path, &proj_name, seqid, index));
+	try!(proton_cli::insert_sequence(&project_dao, &seq_dao, &proj_name, seqid, index));
 	Ok(ProtonReturn::NoReturn)
 }
 
