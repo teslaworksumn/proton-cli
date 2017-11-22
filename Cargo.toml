@@ -12,9 +12,9 @@ license = "MIT"
 docopt = "0.6.*"
 openssl = "0.*"
 sfml = "0.*"
-rustc-serialize = "0.3.*"
+rustc-serialize = "^0.3"
 regex = "0.*"
-postgres = {version="0.*", features = ["with-rustc-serialize"]}
+postgres = {version="-0.14*", features = ["with-rustc-serialize"]}
 
 [dev-dependencies]
 tempdir = "0.*"
